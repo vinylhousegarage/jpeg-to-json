@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     git \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ARCH=$(uname -m) && \
@@ -22,3 +23,8 @@ RUN ARCH=$(uname -m) && \
     rm -rf aws awscliv2.zip
 
 RUN npm install -g aws-cdk
+
+RUN echo "node ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/node \
+    && chmod 0440 /etc/sudoers.d/node
+
+USER node
