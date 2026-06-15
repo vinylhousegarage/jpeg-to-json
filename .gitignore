@@ -15,6 +15,11 @@ cdk.out/
 node_modules/
 .terraform/
 
+# --- Infrastructure-specific build artifacts ---
+infra/*.js
+infra/*.d.ts
+!infra/jest.config.js
+
 # --- Security & Environment Variables ---
 .env
 .env.local
