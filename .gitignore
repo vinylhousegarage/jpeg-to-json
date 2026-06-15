@@ -1,0 +1,25 @@
+# --- Go ---
+/bin/
+/pkg/
+/src/
+/lambda/bin/
+/go/pkg/mod/
+/go/.cache/
+*.exe
+*.test
+*.out
+
+# --- AWS CDK & Node.js ---
+cdk.out/
+node_modules/
+.terraform/
+
+# --- Security & Environment Variables ---
+.env
+.env.local
+
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
