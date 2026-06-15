@@ -1,0 +1,9 @@
+{
+  "features": {
+    "ghcr.io/devcontainers-extra/features/aws-cdk:2": {
+      "version": "2.0.16",
+      "resolved": "ghcr.io/devcontainers-extra/features/aws-cdk@sha256:4628acad14164bb226d645154d010283995d2b1b20bcf8e029a195af9377959e",
+      "integrity": "sha256:4628acad14164bb226d645154d010283995d2b1b20bcf8e029a195af9377959e"
+    }
+  }
+}
