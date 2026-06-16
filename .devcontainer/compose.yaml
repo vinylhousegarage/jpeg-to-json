@@ -3,7 +3,7 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
-    container_name: dev_environment
+    container_name: dev
     volumes:
       - ..:/workspaces:cached
       - ~/.aws:/home/node/.aws:ro
