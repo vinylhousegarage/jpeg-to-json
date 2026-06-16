@@ -42,7 +42,12 @@ export class InfraStack extends cdk.Stack {
       autoDeleteObjects,
       websiteIndexDocument: 'index.html',
       publicReadAccess: true,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: false,
+        blockPublicPolicy: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false,
+      }),
     });
 
     // 差し替え用 Website HTML を Homepageバケットに挿入
