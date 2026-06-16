@@ -5,7 +5,7 @@ services:
     container_name: cdk
     working_dir: /workspace/infra
     volumes:
-      - ./infra:/workspace/infra
+      - .:/workspace
       - ~/.aws:/home/node/.aws:ro 
     command: sleep infinity
     tty: true
