@@ -62,7 +62,7 @@ export class InfraStack extends cdk.Stack {
     const presignHandler = new lambda.Function(this, 'PresignHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
-      code: lambda.Code.fromInline('// dummy code'),
+      code: lambda.Code.fromAsset('./dummy-lambda'),
       environment: {
         INPUT_BUCKET_NAME: inputBucket.bucketName,
       },
@@ -72,7 +72,7 @@ export class InfraStack extends cdk.Stack {
     const mainHandler = new lambda.Function(this, 'MainHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
-      code: lambda.Code.fromInline('// dummy code'),
+      code: lambda.Code.fromAsset('./dummy-lambda'),
       timeout: cdk.Duration.seconds(30),
       environment: {
         OUTPUT_BUCKET_NAME: outputBucket.bucketName,
