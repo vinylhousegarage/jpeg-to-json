@@ -52,7 +52,7 @@ export class InfraStack extends cdk.Stack {
 
     // 差し替え用 Website HTML を Homepageバケットに挿入
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset('../test-assets')],
+      sources: [s3deploy.Source.asset('./test-assets')],
       destinationBucket: websiteBucket,
     });
 
@@ -62,7 +62,7 @@ export class InfraStack extends cdk.Stack {
     const presignHandler = new lambda.Function(this, 'PresignHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
-      code: lambda.Code.fromAsset('./dummy-lambda'),
+      code: lambda.Code.fromAsset('./test-assets/dummy-lambda'),
       environment: {
         INPUT_BUCKET_NAME: inputBucket.bucketName,
       },
@@ -72,7 +72,7 @@ export class InfraStack extends cdk.Stack {
     const mainHandler = new lambda.Function(this, 'MainHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
-      code: lambda.Code.fromAsset('./dummy-lambda'),
+      code: lambda.Code.fromAsset('./test-assets/dummy-lambda'),
       timeout: cdk.Duration.seconds(30),
       environment: {
         OUTPUT_BUCKET_NAME: outputBucket.bucketName,
