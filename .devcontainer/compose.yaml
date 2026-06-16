@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: dev_environment
+    volumes:
+      - ..:/workspaces:cached
+      - ~/.aws:/home/node/.aws:ro
+    command: sleep infinity
+    tty: true
+    stdin_open: true
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
