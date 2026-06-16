@@ -1,0 +1,12 @@
+services:
+  infra:
+    build:
+      context: ./infra
+    container_name: cdk
+    working_dir: /workspace/infra
+    volumes:
+      - ./infra:/workspace/infra
+      - ~/.aws:/home/node/.aws:ro 
+    command: sleep infinity
+    tty: true
+    stdin_open: true
