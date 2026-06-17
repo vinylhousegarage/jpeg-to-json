@@ -25,5 +25,5 @@ const app = new cdk.App();
 
 // 開発環境用
 new InfraStack(app, 'Dev-InfraStack', {
-  env: { account: process.env.AWS_ACCOUNT_ID, region: 'ap-northeast-1' },
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'ap-northeast-1' },
 });
