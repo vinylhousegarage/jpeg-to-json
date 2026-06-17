@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'infra/**'
+      - '.github/workflows/infra-cd.yml'
 
 permissions:
   id-token: write
@@ -37,6 +38,3 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: CDK Deploy
-        run: npx cdk deploy --require-approval never
