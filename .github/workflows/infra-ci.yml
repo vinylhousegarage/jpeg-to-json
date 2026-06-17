@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'infra/**'
+      - '.github/workflows/infra-cd.yml'
+      - '.github/workflows/infra-ci.yml'
 
 permissions:
   id-token: write
