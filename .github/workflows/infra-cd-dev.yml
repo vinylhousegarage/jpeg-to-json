@@ -3,7 +3,7 @@ name: Infra CD
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
       - 'infra/**'
       - '.github/workflows/infra-cd-dev.yml'
