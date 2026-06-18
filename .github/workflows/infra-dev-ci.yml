@@ -2,10 +2,12 @@ name: Infra CI
 
 on:
   pull_request:
+    branches:
+      - dev
     paths:
       - 'infra/**'
-      - '.github/workflows/infra-cd-dev.yml'
-      - '.github/workflows/infra-ci.yml'
+      - '.github/workflows/infra-dev-cd.yml'
+      - '.github/workflows/infra-dev-ci.yml'
 
 permissions:
   id-token: write
