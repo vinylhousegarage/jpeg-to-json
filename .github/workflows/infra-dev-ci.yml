@@ -1,19 +1,20 @@
-name: Infra CD
+name: Infra CI
 
 on:
-  push:
+  pull_request:
     branches:
-      - main
+      - dev
     paths:
       - 'infra/**'
-      - '.github/workflows/infra-cd.yml'
+      - '.github/workflows/infra-dev-cd.yml'
+      - '.github/workflows/infra-dev-ci.yml'
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,6 +22,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.3'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,8 +39,17 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::626635405187:role/jpeg-to-json-cicd-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/jpeg-to-json-cicd-role
           aws-region: ap-northeast-1
+
+      - name: Lint
+        run: npm run lint
 
       - name: Build
         run: npm run build
+
+      - name: CDK Synth
+        run: npx cdk synth
+
+      - name: CDK Diff
+        run: npx cdk diff

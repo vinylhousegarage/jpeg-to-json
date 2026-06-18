@@ -6,7 +6,7 @@ services:
     working_dir: /workspace/infra
     volumes:
       - .:/workspace
-      - ~/.aws:/home/node/.aws:ro 
+      - ~/.aws:/home/node/.aws
     command: sleep infinity
     tty: true
     stdin_open: true
