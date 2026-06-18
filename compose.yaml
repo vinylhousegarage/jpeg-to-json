@@ -10,3 +10,16 @@ services:
     command: sleep infinity
     tty: true
     stdin_open: true
+
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    container_name: go
+    volumes:
+      - ./backend:/app
+      - ~/.aws:/root/.aws:ro
+    ports:
+      - "8080:8080"
+    environment:
+      - INPUT_BUCKET_NAME=${INPUT_BUCKET_NAME}
