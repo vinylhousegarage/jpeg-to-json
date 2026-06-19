@@ -15,7 +15,8 @@ RUN addgroup -g ${GID} -S appgroup && \
 WORKDIR /workspace/backend
 
 # モジュールキャッシュの権限設定
-RUN chown appuser:appgroup /workspace/backend /go/pkg/mod /go/bin
+RUN mkdir -p /go/pkg/mod /go/bin && \
+    chown -R appuser:appgroup /workspace/backend /go/pkg /go/bin
 
 # ユーザー切り替え
 USER appuser
