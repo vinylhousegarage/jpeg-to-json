@@ -7,7 +7,6 @@ on:
       - 'backend/**'
       - '.github/workflows/backend-dev-ci.yml'
 
-
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
@@ -28,10 +27,13 @@ jobs:
         run: go mod tidy
 
       - name: Run Linter
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           version: v2.12.2
           working-directory: ./backend
+          args: --timeout 5m --out-format=colored-line-number
+          skip-cache: true
+          skip-save-cache: true
 
       - name: Run tests
         run: go test ./...
