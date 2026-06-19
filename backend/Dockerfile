@@ -17,6 +17,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN groupadd -g ${GID} appgroup && \
     useradd -u ${UID} -g ${GID} -s /bin/zsh -m appuser
 
+# zshにGitブランチ表示と色付けを設定
+RUN echo 'autoload -Uz vcs_info' >> /home/appuser/.zshrc && \
+    echo 'precmd() { vcs_info }' >> /home/appuser/.zshrc && \
+    echo "zstyle ':vcs_info:*' formats '%F{green}(%b)%f'" >> /home/appuser/.zshrc && \
+    echo 'PROMPT="%F{cyan}%~%f ${vcs_info_msg_0_} %# "' >> /home/appuser/.zshrc && \
+    chown appuser:appgroup /home/appuser/.zshrc
+
+# ディレクトリ
 WORKDIR /workspace/backend
 
 # モジュールキャッシュの権限設定
@@ -30,7 +38,7 @@ USER appuser
 ENV PATH=$PATH:/go/bin
 
 # Air + golangci-lint インストール
-RUN --mount=type=cache,target=/go/pkg/mod \
+RUN --mount=type=cache,target=/go/pkg/mod,uid=${UID},gid=${GID} \
     go install github.com/air-verse/air@v1.65.3 && \
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
 
