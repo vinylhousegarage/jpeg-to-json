@@ -1,16 +1,21 @@
 # 開発用 (Target: dev)
-FROM golang:1.26.3-alpine3.23 AS dev
+FROM golang:1.26.3-trixie AS dev
 
 # UID/GIDの受け取り
 ARG UID=1000
 ARG GID=1000
 
 # 依存関係をインストール
-RUN apk add --no-cache git build-base zsh curl
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    build-essential \
+    zsh \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # ユーザー作成
-RUN addgroup -g ${GID} -S appgroup && \
-    adduser -u ${UID} -S appuser -G appgroup -s /bin/zsh
+RUN groupadd -g ${GID} appgroup && \
+    useradd -u ${UID} -g ${GID} -s /bin/zsh -m appuser
 
 WORKDIR /workspace/backend
 
@@ -38,7 +43,7 @@ CMD ["air"]
 
 
 # 本番ビルド用 (Target: builder)
-# FROM golang:1.26.3-alpine3.23 AS builder
+# FROM golang:1.26.3-trixie AS builder
 
 # ディレクトリ
 # WORKDIR /workspace/backend
