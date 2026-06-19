@@ -30,8 +30,9 @@ USER appuser
 ENV PATH=$PATH:/go/bin
 
 # Air + golangci-lint インストール
-RUN go install github.com/air-verse/air@latest && \
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go install github.com/air-verse/air@v1.65.3 && \
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
 
 # モジュールダウンロード
 COPY --chown=appuser:appgroup go.mod go.sum* ./
