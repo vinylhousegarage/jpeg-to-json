@@ -15,10 +15,13 @@ services:
     build:
       context: ./backend
       target: dev
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     container_name: go
     volumes:
-      - ./backend:/app
-      - ~/.aws:/root/.aws:ro
+      - .:/workspace
+      - ~/.aws:/home/appuser/.aws
     ports:
       - "8080:8080"
     environment:
