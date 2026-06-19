@@ -29,8 +29,9 @@ USER appuser
 # パス設定
 ENV PATH=$PATH:/go/bin
 
-# Air インストール
-RUN go install github.com/air-verse/air@latest
+# Air + golangci-lint インストール
+RUN go install github.com/air-verse/air@latest && \
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 # モジュールダウンロード
 COPY --chown=appuser:appgroup go.mod go.sum* ./
@@ -45,7 +46,6 @@ CMD ["air"]
 # 本番ビルド用 (Target: builder)
 # FROM golang:1.26.3-trixie AS builder
 
-# ディレクトリ
 # WORKDIR /workspace/backend
 
 # 依存関係をキャッシュしてダウンロード
@@ -59,12 +59,10 @@ CMD ["air"]
 # CGO_ENABLED=0 で静的リンク、ファイル名は 'bootstrap'
 # -trimpath と -ldflags="-s -w" でバイナリサイズを削減
 
-# PresignHandler ビルド（bin/presign/）
+# PresignHandler ビルド（bin/presign/）+ MainHandler ビルド（bin/textract/）
 # RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
 #     go build -tags lambda.norpc -trimpath -ldflags="-s -w" \
-#     -o /workspace/backend/bin/presign/bootstrap ./cmd/presign/main.go
-
-# MainHandler ビルド（bin/textract/）
-# RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
+#     -o bin/presign/bootstrap ./cmd/presign/main.go && \
+#     CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
 #     go build -tags lambda.norpc -trimpath -ldflags="-s -w" \
-#     -o /workspace/backend/bin/textract/bootstrap ./cmd/textract/main.go
+#     -o bin/textract/bootstrap ./cmd/textract/main.go
