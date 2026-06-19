@@ -32,6 +32,9 @@ jobs:
           version: v1.64.8
           working-directory: ./backend
           args: --timeout 5m
+          install-mode: source
+          skip-cache: false 
+          skip-save-cache: false
 
       - name: Run tests
         run: go test ./...
