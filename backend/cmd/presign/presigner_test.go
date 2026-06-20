@@ -16,7 +16,7 @@ func TestEnableCORS(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		// 関数呼び出し
-		enableCORS(w, req)
+		enableCORS(w, req, origin)
 
 		// ステータスコード検証
 		if w.Code != http.StatusOK {
@@ -34,7 +34,7 @@ func TestEnableCORS(t *testing.T) {
 		req := httptest.NewRequest("POST", "/", nil)
 		w := httptest.NewRecorder()
 
-		enableCORS(w, req)
+		enableCORS(w, req, origin)
 
 		// ヘッダーがセットされているか確認
 		if got := w.Header().Get("Access-Control-Allow-Methods"); got != "POST, OPTIONS" {
