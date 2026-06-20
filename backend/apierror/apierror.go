@@ -7,8 +7,9 @@ import (
 type ErrorCode string
 
 const (
-    ErrInvalidJSON ErrorCode = "invalid_json"
-    ErrS3Access    ErrorCode = "s3_access_failed"
+    ErrorCodeInvalidJSON     ErrorCode = "invalid_json"
+		ErrorCodeInvalidMethod   ErrorCode = "invalid_method"
+		ErrorCodeMissingFilename ErrorCode = "missing_filename"
 )
 
 type APIError struct {
