@@ -6,16 +6,21 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"go.uber.org/zap"
 )
 
 func TestWriteError(t *testing.T) {
+	t.Parallel()
+	
+	logger := zap.NewNop()
 	t.Run("should return the specified status and code when APIError is provided", func(t *testing.T) {
 		t.Parallel()
 
 		err := New(ErrorCodeMissingFilename, http.StatusBadRequest, nil)
 		w := httptest.NewRecorder()
 
-		WriteError(w, err)
+		WriteError(w, err, logger)
 
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("expected status %d, but got %d", http.StatusBadRequest, w.Code)
@@ -36,7 +41,7 @@ func TestWriteError(t *testing.T) {
 		err := errors.New("unknown database error")
 		w := httptest.NewRecorder()
 
-		WriteError(w, err)
+		WriteError(w, err, logger)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("expected status %d, but got %d", http.StatusInternalServerError, w.Code)
