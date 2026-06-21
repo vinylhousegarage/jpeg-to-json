@@ -2,9 +2,13 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
 )
@@ -120,5 +124,32 @@ func TestValidateRequest(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// テスト用モック
+type mockPresigner struct{}
+
+func (m *mockPresigner) PresignPutObject(
+  ctx context.Context,
+  params *s3.PutObjectInput,
+  optFns ...func(*s3.PresignOptions),
+) (*v4.PresignedHTTPRequest, error) {
+	return &v4.PresignedHTTPRequest{URL: "https://example.com/test.jpg"}, nil
+}
+
+func TestGeneratePresignURL(t *testing.T) {
+	// コンストラクタを使用
+	client := newPresignClient(&mockPresigner{}, "test-bucket")
+
+	url, err := client.generatePresignURL(context.Background(), "test.jpg")
+
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	expected := "https://example.com/test.jpg"
+	if url != expected {
+		t.Errorf("expected URL %s, got %s", expected, url)
 	}
 }
