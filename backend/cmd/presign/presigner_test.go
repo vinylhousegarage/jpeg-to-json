@@ -3,10 +3,11 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"time"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -140,4 +141,45 @@ func TestGeneratePresignURL(t *testing.T) {
 	if expiresAt.Before(time.Now()) {
 			t.Errorf("expected future expiration, got %v", expiresAt)
   }
+}
+
+func TestWriteJSON(t *testing.T) {
+	// テスト用データ
+	url := "https://example.com/upload"
+	duration := 15 * time.Minute
+	expiresAt := time.Now().Add(duration).Truncate(time.Second)
+
+	// HTTPレスポンスレコーダー
+	w := httptest.NewRecorder()
+
+	// 関数を実行
+	writeJSON(w, url, expiresAt)
+
+	// 検証
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	// ステータスコードのチェック
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status OK, got %v", resp.StatusCode)
+	}
+
+	// Content-Typeのチェック
+	if contentType := resp.Header.Get("Content-Type"); contentType != "application/json" {
+		t.Errorf("expected Content-Type application/json, got %v", contentType)
+	}
+
+	// JSONのデコードと検証
+	var got PresignResponse
+	if err := json.NewDecoder(resp.Body).Decode(&got); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+
+	if got.UploadURL != url {
+		t.Errorf("expected URL %s, got %s", url, got.UploadURL)
+	}
+
+	if got.ExpiresAt.Sub(expiresAt).Abs() > time.Second {
+    t.Errorf("expected time near %v, got %v", expiresAt, got.ExpiresAt)
+	}
 }

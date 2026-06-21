@@ -92,3 +92,27 @@ func (c *PresignClient) generatePresignURL(
 
     return request.URL, expiresAt, nil
 }
+
+// レスポンス構造体
+type PresignResponse struct {
+  ExpiresAt time.Time `json:"expires_at"`
+	UploadURL string    `json:"upload_url"`
+}
+
+func writeJSON(w http.ResponseWriter, url string, expiresAt time.Time) {
+	// Content-Type を指定
+	w.Header().Set("Content-Type", "application/json")
+	// ステータスコードを明示
+	w.WriteHeader(http.StatusOK)
+
+	// レスポンスを生成
+	resp := PresignResponse{
+			ExpiresAt: expiresAt,
+			UploadURL: url,
+	}
+
+	// エンコード
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+			fmt.Printf("failed to encode json: %v\n", err)
+	}
+}
