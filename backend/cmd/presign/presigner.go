@@ -14,15 +14,10 @@ import (
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
 )
 
-func enableCORS(w http.ResponseWriter, r *http.Request, origin string) {
+func setCORSHeaders(w http.ResponseWriter, origin string) {
 	w.Header().Set("Access-Control-Allow-Origin", origin)
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
 }
 
 type PresignRequest struct {
@@ -46,7 +41,6 @@ func validateRequest(r *http.Request) (*PresignRequest, error) {
 
 	return &req, nil
 }
-
 
 // インターフェース
 type S3Presigner interface {
