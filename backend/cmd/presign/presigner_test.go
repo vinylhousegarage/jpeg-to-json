@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"time"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
@@ -125,7 +126,7 @@ func TestGeneratePresignURL(t *testing.T) {
 	// コンストラクタを使用
 	client := newPresignClient(&mockPresigner{}, "test-bucket")
 
-	url, err := client.generatePresignURL(context.Background(), "test.jpg")
+	url, expiresAt, err := client.generatePresignURL(context.Background(), "test.jpg")
 
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -135,4 +136,8 @@ func TestGeneratePresignURL(t *testing.T) {
 	if url != expected {
 		t.Errorf("expected URL %s, got %s", expected, url)
 	}
+
+	if expiresAt.Before(time.Now()) {
+			t.Errorf("expected future expiration, got %v", expiresAt)
+  }
 }
