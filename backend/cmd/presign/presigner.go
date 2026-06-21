@@ -70,17 +70,25 @@ func newPresignClient(
 
 // 署名付きURLを作成
 func (c *PresignClient) generatePresignURL(
-  ctx context.Context,
-  filename string,
-) (string, error) {
-	request, err := c.s3Presigner.PresignPutObject(ctx, &s3.PutObjectInput{
-		Bucket: aws.String(c.bucketName),
-		Key:    aws.String(filename),
-	}, s3.WithPresignExpires(15*time.Minute))
+    ctx context.Context,
+    filename string,
+) (string, time.Time, error) {
+    // 有効期限の起点を設定
+    now := time.Now()
+    duration := 15 * time.Minute
 
-	if err != nil {
-		return "", fmt.Errorf("failed to sign request: %w", err)
-	}
+    // 署名付きURLを生成
+    request, err := c.s3Presigner.PresignPutObject(ctx, &s3.PutObjectInput{
+        Bucket: aws.String(c.bucketName),
+        Key:    aws.String(filename),
+    }, s3.WithPresignExpires(duration))
 
-	return request.URL, nil
+    if err != nil {
+        return "", time.Time{}, fmt.Errorf("failed to sign request: %w", err)
+    }
+
+    // 有効期限を計算
+    expiresAt := now.Add(duration)
+
+    return request.URL, expiresAt, nil
 }
