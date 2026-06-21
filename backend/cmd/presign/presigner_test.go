@@ -13,6 +13,26 @@ import (
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
 )
 
+func TestSetCORSHeaders(t *testing.T) {
+	origin := "http://localhost:3000"
+	w := httptest.NewRecorder()
+
+	setCORSHeaders(w, origin)
+
+	expected := map[string]string{
+		"Access-Control-Allow-Origin":  origin,
+		"Access-Control-Allow-Methods": "POST, OPTIONS",
+		"Access-Control-Allow-Headers": "Content-Type",
+	}
+
+	for header, want := range expected {
+		got := w.Header().Get(header)
+		if got != want {
+			t.Errorf("expected header %s to be %q, got %q", header, want, got)
+		}
+	}
+}
+
 const StatusCodeIgnore = 0
 
 func TestValidateRequest(t *testing.T) {
