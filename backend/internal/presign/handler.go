@@ -15,6 +15,15 @@ type PresignHandler struct {
 	logger *zap.Logger
 }
 
+// コンストラクタ
+func NewPresignHandler(origins []string, client *PresignClient, logger *zap.Logger) *PresignHandler {
+  return &PresignHandler{
+    allowedOrigins: origins,
+    client:         client,
+    logger:         logger,
+  }
+}
+
 func (h *PresignHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// CORSヘッダーの設定
 	origin := r.Header.Get("Origin")
