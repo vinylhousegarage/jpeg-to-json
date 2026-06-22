@@ -18,8 +18,8 @@ type S3Presigner interface {
 
 // PresignClient 構造体
 type PresignClient struct {
-	s3Presigner S3Presigner
 	bucketName  string
+	s3Presigner S3Presigner
 }
 
 // コンストラクタ
