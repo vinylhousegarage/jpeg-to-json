@@ -12,20 +12,30 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
+
+	"go.uber.org/zap"
 )
 
-func setCORSHeaders(w http.ResponseWriter, origin string) {
+// 署名付き PutObject リクエスト生成用インターフェース
+type S3Presigner interface {
+	PresignPutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error)
+}
+
+// PresignClient 構造体
+type PresignClient struct {
+	s3Presigner S3Presigner
+	bucketName  string
+}
+
+// CORSヘッダー設定
+func (h *PresignHandler) setCORSHeaders(w http.ResponseWriter, origin string) {
 	w.Header().Set("Access-Control-Allow-Origin", origin)
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 }
 
-type PresignRequest struct {
-	Filename string `json:"filename"`
-	FileType string `json:"filetype"`
-}
-
-func validateRequest(r *http.Request) (*PresignRequest, error) {
+// リクエスト検証
+func (h *PresignHandler) validateRequest(r *http.Request) (*PresignRequest, error) {
 	if r.Method != http.MethodPost {
 		return nil, apierror.New(apierror.ErrorCodeInvalidMethod, http.StatusMethodNotAllowed, nil)
 	}
@@ -42,77 +52,34 @@ func validateRequest(r *http.Request) (*PresignRequest, error) {
 	return &req, nil
 }
 
-// インターフェース
-type S3Presigner interface {
-	PresignPutObject(
-    ctx context.Context,
-    params *s3.PutObjectInput,
-    optFns ...func(*s3.PresignOptions),
-  ) (*v4.PresignedHTTPRequest, error)
-}
+// PresignURL 生成
+func (h *PresignHandler) generatePresignURL(ctx context.Context, filename string) (string, time.Time, error) {
+	now := time.Now()
+	duration := 15 * time.Minute
 
-// S3 プレサイン用インターフェース
-type PresignClient struct {
-	s3Presigner S3Presigner
-	bucketName  string
-}
+	request, err := h.client.s3Presigner.PresignPutObject(ctx, &s3.PutObjectInput{
+		Bucket: aws.String(h.client.bucketName),
+		Key:    aws.String(filename),
+	}, s3.WithPresignExpires(duration))
 
-// PresignClient 生成
-func newPresignClient(
-  presigner S3Presigner,
-  bucketName string,
-) *PresignClient {
-	return &PresignClient{
-		s3Presigner: presigner,
-		bucketName:  bucketName,
+	if err != nil {
+		return "", time.Time{}, fmt.Errorf("failed to sign request: %w", err)
 	}
+
+	return request.URL, now.Add(duration), nil
 }
 
-// 署名付きURLを作成
-func (c *PresignClient) generatePresignURL(
-    ctx context.Context,
-    filename string,
-) (string, time.Time, error) {
-    // 有効期限の起点を設定
-    now := time.Now()
-    duration := 15 * time.Minute
-
-    // 署名付きURLを生成
-    request, err := c.s3Presigner.PresignPutObject(ctx, &s3.PutObjectInput{
-        Bucket: aws.String(c.bucketName),
-        Key:    aws.String(filename),
-    }, s3.WithPresignExpires(duration))
-
-    if err != nil {
-        return "", time.Time{}, fmt.Errorf("failed to sign request: %w", err)
-    }
-
-    // 有効期限を計算
-    expiresAt := now.Add(duration)
-
-    return request.URL, expiresAt, nil
-}
-
-// レスポンス構造体
-type PresignResponse struct {
-  ExpiresAt time.Time `json:"expires_at"`
-	UploadURL string    `json:"upload_url"`
-}
-
-func writeJSON(w http.ResponseWriter, url string, expiresAt time.Time) {
-	// Content-Type を指定
+// JSONレスポンス書き込み
+func (h *PresignHandler) writeJSON(w http.ResponseWriter, url string, expiresAt time.Time) {
 	w.Header().Set("Content-Type", "application/json")
-	// ステータスコードを明示
 	w.WriteHeader(http.StatusOK)
 
-	// レスポンスを生成
 	resp := PresignResponse{
-			ExpiresAt: expiresAt,
-			UploadURL: url,
+		ExpiresAt: expiresAt,
+		UploadURL: url,
 	}
 
-	// エンコード
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
-			fmt.Printf("failed to encode json: %v\n", err)
+		h.logger.Error("failed to encode json", zap.Error(err))
 	}
 }
