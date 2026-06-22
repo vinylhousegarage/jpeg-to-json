@@ -3,35 +3,41 @@ package config
 import (
 	"fmt"
 	"os"
-  "strings"
+	"strings"
 
-  "github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
-  AllowedOrigins []string
+	AllowedOrigins []string
+	AppEnv         string
 	BucketName     string
 	Region         string
 }
 
 func LoadConfig() (*Config, error) {
-  err := godotenv.Load("backend/.env")
-    if err != nil {
-        fmt.Println("Warning: .env file not found")
-    }
+	err := godotenv.Load("backend/.env")
+	if err != nil {
+		fmt.Println("Warning: .env file not found")
+	}
 
-  origins := os.Getenv("ALLOWED_ORIGINS")
-  if origins == "" {
+	origins := os.Getenv("ALLOWED_ORIGINS")
+	if origins == "" {
 		return nil, fmt.Errorf("ALLOWED_ORIGINS is required")
 	}
 
-  var allowed []string
-  for _, s := range strings.Split(origins, ",") {
-    trimmed := strings.TrimSpace(s)
-    if trimmed != "" {
-      allowed = append(allowed, trimmed)
-    }
-  }
+	var allowed []string
+	for _, s := range strings.Split(origins, ",") {
+		trimmed := strings.TrimSpace(s)
+		if trimmed != "" {
+			allowed = append(allowed, trimmed)
+		}
+	}
+
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "development"
+	}
 
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	if bucket == "" {
@@ -44,7 +50,8 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-    AllowedOrigins: allowed,
+		AllowedOrigins: allowed,
+    AppEnv:         env,
 		BucketName:     bucket,
 		Region:         region,
 	}, nil
