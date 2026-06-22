@@ -2,6 +2,8 @@ package logger
 
 import (
 	"testing"
+
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 )
 
 func TestNewLogger(t *testing.T) {
@@ -9,8 +11,10 @@ func TestNewLogger(t *testing.T) {
 
 	t.Run("Production mode", func(t *testing.T) {
 		t.Parallel()
-
-		l, err := NewLogger(true)
+		
+		cfg := &config.Config{AppEnv: "production"}
+		
+		l, err := NewLogger(cfg)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
@@ -21,8 +25,10 @@ func TestNewLogger(t *testing.T) {
 
 	t.Run("Development mode", func(t *testing.T) {
 		t.Parallel()
-
-		l, err := NewLogger(false)
+		
+		cfg := &config.Config{AppEnv: "development"}
+		
+		l, err := NewLogger(cfg)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
