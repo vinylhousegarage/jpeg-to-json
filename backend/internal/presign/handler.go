@@ -3,7 +3,6 @@ package presign
 import (
 	"context"
 	"net/http"
-	"time"
 
 	
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
@@ -34,18 +33,6 @@ type PresignHandler struct {
 	allowedOrigins []string
 	client *PresignClient
 	logger *zap.Logger
-}
-
-// リクエスト構造体
-type PresignRequest struct {
-	Filename string `json:"filename"`
-	FileType string `json:"filetype"`
-}
-
-// レスポンス構造体
-type PresignResponse struct {
-  ExpiresAt time.Time `json:"expires_at"`
-	UploadURL string    `json:"upload_url"`
 }
 
 func (h *PresignHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
