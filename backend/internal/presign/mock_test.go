@@ -14,5 +14,8 @@ func (m *mockPresigner) PresignPutObject(
 	params *s3.PutObjectInput,
 	optFns ...func(*s3.PresignOptions),
 ) (*v4.PresignedHTTPRequest, error) {
-	return nil, nil
+
+	return &v4.PresignedHTTPRequest{
+		URL: "https://example.com/test.jpg",
+	}, nil
 }
