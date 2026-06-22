@@ -12,11 +12,12 @@ import (
 func TestPresignHandler_ServeHTTP_Integration(t *testing.T) {
 	t.Parallel()
 
-	h := &PresignHandler{
-		logger:         zap.NewNop(),
-		client:         &PresignClient{s3Presigner: &mockPresigner{}, bucketName: "test-bucket"},
-		allowedOrigins: []string{"http://localhost:3000"},
-	}
+	client := NewPresignClient(&mockPresigner{}, "test-bucket")
+	h := NewPresignHandler(
+		[]string{"http://localhost:3000"},
+		client,
+		zap.NewNop(),
+	)
 
 	t.Run("CORS: Valid Origin", func(t *testing.T) {
 		t.Parallel()
