@@ -16,15 +16,6 @@ import (
 	"go.uber.org/zap"
 )
 
-
-// ※config.go 拡張のため、ハンドラー構造体を仮置き
-type PresignHandler struct {
-	allowedOrigins []string
-	client *PresignClient
-	logger *zap.Logger
-}
-
-
 // 署名付き PutObject リクエスト生成用インターフェース
 type S3Presigner interface {
 	PresignPutObject(

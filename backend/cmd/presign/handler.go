@@ -4,7 +4,16 @@ import (
 	"net/http"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
+
+	"go.uber.org/zap"
 )
+
+// ※ハンドラー構造体
+type PresignHandler struct {
+	allowedOrigins []string
+	client *PresignClient
+	logger *zap.Logger
+}
 
 func (h *PresignHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     // CORSヘッダーの設定
