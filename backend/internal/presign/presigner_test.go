@@ -9,24 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
 
 	"go.uber.org/zap"
 )
-
-// テスト用モック
-type mockPresigner struct{}
-
-func (m *mockPresigner) PresignPutObject(
-	ctx context.Context,
-	params *s3.PutObjectInput,
-	optFns ...func(*s3.PresignOptions),
-) (*v4.PresignedHTTPRequest, error) {
-	return &v4.PresignedHTTPRequest{URL: "https://example.com/test.jpg"}, nil
-}
 
 // テスト用ハンドラー
 func setupTestHandler() *PresignHandler {
