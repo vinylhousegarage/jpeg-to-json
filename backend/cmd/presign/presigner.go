@@ -19,8 +19,9 @@ import (
 
 // ※config.go 拡張のため、ハンドラー構造体を仮置き
 type PresignHandler struct {
-	logger *zap.Logger
+	allowedOrigins []string
 	client *PresignClient
+	logger *zap.Logger
 }
 
 
