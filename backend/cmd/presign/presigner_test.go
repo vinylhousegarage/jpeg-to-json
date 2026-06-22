@@ -13,25 +13,66 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
+
+	"go.uber.org/zap"
 )
 
+// テスト用モック
+type mockPresigner struct{}
+
+func (m *mockPresigner) PresignPutObject(
+	ctx context.Context,
+	params *s3.PutObjectInput,
+	optFns ...func(*s3.PresignOptions),
+) (*v4.PresignedHTTPRequest, error) {
+	return &v4.PresignedHTTPRequest{URL: "https://example.com/test.jpg"}, nil
+}
+
+// テスト用ハンドラー
+func setupTestHandler() *PresignHandler {
+	return &PresignHandler{
+		logger: zap.NewNop(),
+		client: &PresignClient{
+			s3Presigner: &mockPresigner{},
+			bucketName:  "test-bucket",
+		},
+	}
+}
+
 func TestSetCORSHeaders(t *testing.T) {
-	origin := "http://localhost:3000"
-	w := httptest.NewRecorder()
+	t.Parallel()
 
-	setCORSHeaders(w, origin)
-
-	expected := map[string]string{
-		"Access-Control-Allow-Origin":  origin,
-		"Access-Control-Allow-Methods": "POST, OPTIONS",
-		"Access-Control-Allow-Headers": "Content-Type",
+	// 許可リストを定義
+	allowed := []string{"http://localhost:3000"}
+	
+	// 許可リストを渡す
+	h := &PresignHandler{
+		allowedOrigins: allowed,
+		logger:         zap.NewNop(),
 	}
 
-	for header, want := range expected {
-		got := w.Header().Get(header)
-		if got != want {
-			t.Errorf("expected header %s to be %q, got %q", header, want, got)
-		}
+	tests := []struct {
+		name          string
+		origin        string
+		wantHeaderSet bool
+	}{
+		{"Allowed", "http://localhost:3000", true},
+		{"Denied", "http://malicious.com", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			h.setCORSHeaders(w, tt.origin)
+
+			got := w.Header().Get("Access-Control-Allow-Origin")
+			if tt.wantHeaderSet && got != tt.origin {
+				t.Errorf("expected header %s, got %s", tt.origin, got)
+			}
+			if !tt.wantHeaderSet && got != "" {
+				t.Errorf("expected no header, got %s", got)
+			}
+		})
 	}
 }
 
@@ -39,6 +80,9 @@ const StatusCodeIgnore = 0
 
 func TestValidateRequest(t *testing.T) {
 	t.Parallel()
+
+	h := setupTestHandler()
+
 	tests := []struct {
 		name           string
 		method         string
@@ -77,8 +121,9 @@ func TestValidateRequest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			req := httptest.NewRequest(tt.method, "/presign", bytes.NewBufferString(tt.body))
-			got, err := validateRequest(req)
+			got, err := h.validateRequest(req)
 
 			if tt.wantErrCode != "" {
 				// 異常系
@@ -112,22 +157,12 @@ func TestValidateRequest(t *testing.T) {
 	}
 }
 
-// テスト用モック
-type mockPresigner struct{}
-
-func (m *mockPresigner) PresignPutObject(
-  ctx context.Context,
-  params *s3.PutObjectInput,
-  optFns ...func(*s3.PresignOptions),
-) (*v4.PresignedHTTPRequest, error) {
-	return &v4.PresignedHTTPRequest{URL: "https://example.com/test.jpg"}, nil
-}
-
 func TestGeneratePresignURL(t *testing.T) {
-	// コンストラクタを使用
-	client := newPresignClient(&mockPresigner{}, "test-bucket")
+	t.Parallel()
 
-	url, expiresAt, err := client.generatePresignURL(context.Background(), "test.jpg")
+	h := setupTestHandler()
+
+	url, expiresAt, err := h.generatePresignURL(context.Background(), "test.jpg") // メソッド呼び出しに変更
 
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -139,21 +174,20 @@ func TestGeneratePresignURL(t *testing.T) {
 	}
 
 	if expiresAt.Before(time.Now()) {
-			t.Errorf("expected future expiration, got %v", expiresAt)
-  }
+		t.Errorf("expected future expiration, got %v", expiresAt)
+	}
 }
 
 func TestWriteJSON(t *testing.T) {
-	// テスト用データ
-	url := "https://example.com/upload"
-	duration := 15 * time.Minute
-	expiresAt := time.Now().Add(duration).Truncate(time.Second)
+	t.Parallel()
 
-	// HTTPレスポンスレコーダー
+	h := setupTestHandler()
+	url := "https://example.com/upload"
+	expiresAt := time.Now().Add(15 * time.Minute).Truncate(time.Second)
+
 	w := httptest.NewRecorder()
 
-	// 関数を実行
-	writeJSON(w, url, expiresAt)
+	h.writeJSON(w, url, expiresAt)
 
 	// 検証
 	resp := w.Result()

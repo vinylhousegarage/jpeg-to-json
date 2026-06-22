@@ -3,13 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
+  "strings"
 
   "github.com/joho/godotenv"
 )
 
 type Config struct {
-	BucketName string
-	Region     string
+  AllowedOrigins []string
+	BucketName     string
+	Region         string
 }
 
 func LoadConfig() (*Config, error) {
@@ -17,6 +19,19 @@ func LoadConfig() (*Config, error) {
     if err != nil {
         fmt.Println("Warning: .env file not found")
     }
+
+  origins := os.Getenv("ALLOWED_ORIGINS")
+  if origins == "" {
+		return nil, fmt.Errorf("ALLOWED_ORIGINS is required")
+	}
+
+  var allowed []string
+  for _, s := range strings.Split(origins, ",") {
+    trimmed := strings.TrimSpace(s)
+    if trimmed != "" {
+      allowed = append(allowed, trimmed)
+    }
+  }
 
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	if bucket == "" {
@@ -29,7 +44,8 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		BucketName: bucket,
-		Region:     region,
+    AllowedOrigins: allowed,
+		BucketName:     bucket,
+		Region:         region,
 	}, nil
 }
