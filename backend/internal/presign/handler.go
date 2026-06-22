@@ -1,32 +1,12 @@
 package presign
 
 import (
-	"context"
 	"net/http"
-
-	
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
 
 	"go.uber.org/zap"
 )
-
-// 署名付き PutObject リクエスト生成用インターフェース
-type S3Presigner interface {
-	PresignPutObject(
-		ctx context.Context,
-		params *s3.PutObjectInput,
-		optFns ...func(*s3.PresignOptions),
-	) (*v4.PresignedHTTPRequest, error)
-}
-
-// PresignClient 構造体
-type PresignClient struct {
-	s3Presigner S3Presigner
-	bucketName  string
-}
 
 // ハンドラー構造体
 type PresignHandler struct {
