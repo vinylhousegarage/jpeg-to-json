@@ -54,7 +54,17 @@ type PresignResponse struct {
 
 // CORSヘッダー設定
 func (h *PresignHandler) setCORSHeaders(w http.ResponseWriter, origin string) {
-	w.Header().Set("Access-Control-Allow-Origin", origin)
+	isAllowed := false
+	for _, allowed := range h.allowedOrigins {
+		if allowed == origin {
+			isAllowed = true
+			break
+		}
+	}
+
+	if isAllowed {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+	}
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 }
