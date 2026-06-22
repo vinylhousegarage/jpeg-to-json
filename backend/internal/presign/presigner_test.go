@@ -10,19 +10,25 @@ import (
 	"time"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 
 	"go.uber.org/zap"
 )
 
 // テスト用ハンドラー
 func setupTestHandler() *PresignHandler {
-	return &PresignHandler{
-		logger: zap.NewNop(),
-		client: &PresignClient{
-			s3Presigner: &mockPresigner{},
-			bucketName:  "test-bucket",
-		},
+	cfg := &config.Config{
+			AllowedOrigins: []string{"http://localhost:3000"},
+			BucketName:     "test-bucket",
 	}
+	
+	client := NewPresignClient(&mockPresigner{}, cfg.BucketName)
+
+	return NewPresignHandler(
+			cfg.AllowedOrigins, 
+			client,
+			zap.NewNop(),
+	)
 }
 
 func TestSetCORSHeaders(t *testing.T) {
