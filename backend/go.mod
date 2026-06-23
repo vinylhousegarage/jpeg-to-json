@@ -3,9 +3,11 @@ module github.com/vinylhousegarage/jpeg-to-json/backend
 go 1.26.3
 
 require (
+	github.com/aws/aws-lambda-go v1.54.0
 	github.com/aws/aws-sdk-go-v2 v1.42.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.25
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.104.0
+	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/joho/godotenv v1.5.1
 	go.uber.org/zap v1.28.0
 )
