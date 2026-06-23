@@ -113,6 +113,7 @@ export class InfraStack extends cdk.Stack {
       corsPreflight: {
         allowOrigins: ['*'],
         allowMethods: [apigwv2.CorsHttpMethod.ANY],
+        allowHeaders: ['*'],
       },
     });
 
@@ -120,7 +121,7 @@ export class InfraStack extends cdk.Stack {
     const presignIntegration = new HttpLambdaIntegration('PresignIntegration', presignHandler);
     api.addRoutes({
       path: '/presign',
-      methods: [apigwv2.HttpMethod.GET],
+      methods: [apigwv2.HttpMethod.POST],
       integration: presignIntegration,
     });
 
