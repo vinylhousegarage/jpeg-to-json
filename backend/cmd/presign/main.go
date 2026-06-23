@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/logger"
@@ -52,8 +54,20 @@ func main() {
   mux.Handle("/presign", presignHandler)
 
   // サーバー起動
-  srv := &http.Server{Addr: ":8080", Handler: mux}
-  if err := srv.ListenAndServe(); err != nil {
-    log.Fatalf("server failed: %v", err)
-  }
+	if cfg.IsLambda {
+		// Lambda 環境
+		l.Info("Starting server on AWS Lambda")
+
+		adapter := httpadapter.New(mux)
+		lambda.Start(adapter.ProxyWithContext)
+
+	} else {
+		// ローカル環境
+		l.Info("Starting local server on :8080")
+
+		srv := &http.Server{Addr: ":8080", Handler: mux}
+		if err := srv.ListenAndServe(); err != nil {
+			log.Fatalf("server failed: %v", err)
+		}
+	}
 }
