@@ -59,24 +59,26 @@ export class InfraStack extends cdk.Stack {
     // 2. Lambda 関数の作成（Goランタイム）
 
     // PresignHandler（署名付きURL発行）
-    const presignHandler = new lambda.Function(this, 'PresignHandlerv2', {
+    const presignHandler = new lambda.Function(this, 'PresignHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
       code: lambda.Code.fromAsset('../backend/bin/presign'),
       environment: {
+        ALLOWED_ORIGINS: '*',
         INPUT_BUCKET_NAME: inputBucket.bucketName,
       },
     });
 
     // MainHandler（Textract解析・JSON生成・Slack通知）
-    const mainHandler = new lambda.Function(this, 'MainHandlerv2', {
+    const mainHandler = new lambda.Function(this, 'MainHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
       code: lambda.Code.fromAsset('./test-assets/dummy-lambda'),
       timeout: cdk.Duration.seconds(30),
       environment: {
+        ALLOWED_ORIGINS: '*',
         OUTPUT_BUCKET_NAME: outputBucket.bucketName,
         OUTPUT_FORMAT: 'json', 
         SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL || '',
