@@ -62,4 +62,4 @@ jobs:
       - name: CDK Deploy to Dev
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-        run: npx cdk deploy Dev-InfraStack --hotswap --require-approval never
+        run: npx cdk deploy Dev-InfraStack --require-approval never
