@@ -59,7 +59,7 @@ export class InfraStack extends cdk.Stack {
     // 2. Lambda 関数の作成（Goランタイム）
 
     // PresignHandler（署名付きURL発行）
-    const presignHandler = new lambda.Function(this, 'PresignHandler', {
+    const presignHandler = new lambda.Function(this, 'PresignHandlerv2', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
@@ -70,7 +70,7 @@ export class InfraStack extends cdk.Stack {
     });
 
     // MainHandler（Textract解析・JSON生成・Slack通知）
-    const mainHandler = new lambda.Function(this, 'MainHandler', {
+    const mainHandler = new lambda.Function(this, 'MainHandlerv2', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
