@@ -39,6 +39,7 @@ jobs:
           version: v1.64.8
           args: --timeout 5m
           working-directory: ./backend
+          install-mode: goinstall
 
       - name: Run tests
         run: go test ./...
@@ -48,6 +49,7 @@ jobs:
   # ==========================================
   test-infra:
     runs-on: ubuntu-latest
+    needs: test-backend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -57,7 +59,7 @@ jobs:
         with:
           go-version: '1.26.3'
 
-      - name: Build Presign Handler (Dry Run)
+      - name: Build Presign Handler
         working-directory: ./backend
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
