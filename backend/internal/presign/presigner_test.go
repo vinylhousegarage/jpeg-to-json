@@ -9,34 +9,26 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 
 	"go.uber.org/zap"
 )
 
-// テスト用モック
-type mockPresigner struct{}
-
-func (m *mockPresigner) PresignPutObject(
-	ctx context.Context,
-	params *s3.PutObjectInput,
-	optFns ...func(*s3.PresignOptions),
-) (*v4.PresignedHTTPRequest, error) {
-	return &v4.PresignedHTTPRequest{URL: "https://example.com/test.jpg"}, nil
-}
-
 // テスト用ハンドラー
 func setupTestHandler() *PresignHandler {
-	return &PresignHandler{
-		logger: zap.NewNop(),
-		client: &PresignClient{
-			s3Presigner: &mockPresigner{},
-			bucketName:  "test-bucket",
-		},
+	cfg := &config.Config{
+			AllowedOrigins: []string{"http://localhost:3000"},
+			BucketName:     "test-bucket",
 	}
+	
+	client := NewPresignClient(&mockPresigner{}, cfg.BucketName)
+
+	return NewPresignHandler(
+			cfg.AllowedOrigins, 
+			client,
+			zap.NewNop(),
+	)
 }
 
 func TestSetCORSHeaders(t *testing.T) {
