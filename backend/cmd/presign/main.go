@@ -33,7 +33,7 @@ func main() {
 	// 署名専用クライアントに変換
 	s3PresignClient := s3.NewPresignClient(baseS3Client)
 	// 依存を注入
-  presignClient := presign.NewPresignClient(s3PresignClient, cfg.BucketName)
+  presignClient := presign.NewPresignClient(s3PresignClient, cfg.InputBucketName)
 
   // logger の初期化
   l, err := logger.NewLogger(cfg)
