@@ -62,7 +62,7 @@ export class InfraStack extends cdk.Stack {
     const presignHandler = new lambda.Function(this, 'PresignHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
-      code: lambda.Code.fromAsset('./test-assets/dummy-lambda'),
+      code: lambda.Code.fromAsset('../backend/bin/presign'),
       environment: {
         INPUT_BUCKET_NAME: inputBucket.bucketName,
       },
