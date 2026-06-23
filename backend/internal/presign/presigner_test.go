@@ -19,10 +19,10 @@ import (
 func setupTestHandler() *PresignHandler {
 	cfg := &config.Config{
 			AllowedOrigins: []string{"http://localhost:3000"},
-			BucketName:     "test-bucket",
+			InputBucketName:     "test-bucket",
 	}
 	
-	client := NewPresignClient(&mockPresigner{}, cfg.BucketName)
+	client := NewPresignClient(&mockPresigner{}, cfg.InputBucketName)
 
 	return NewPresignHandler(
 			cfg.AllowedOrigins, 

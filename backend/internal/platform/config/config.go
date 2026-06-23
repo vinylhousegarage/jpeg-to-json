@@ -9,11 +9,11 @@ import (
 )
 
 type Config struct {
-	AllowedOrigins []string
-	AppEnv         string
-	BucketName     string
-	IsLambda       bool
-	Region         string
+	AllowedOrigins  []string
+	AppEnv          string
+	InputBucketName string
+	IsLambda        bool
+	Region          string
 }
 
 func LoadConfig() (*Config, error) {
@@ -40,9 +40,9 @@ func LoadConfig() (*Config, error) {
 		env = "development"
 	}
 
-	bucket := os.Getenv("S3_BUCKET_NAME")
-	if bucket == "" {
-		return nil, fmt.Errorf("S3_BUCKET_NAME is required")
+	inputBucket := os.Getenv("INPUT_BUCKET_NAME")
+	if inputBucket == "" {
+		return nil, fmt.Errorf("INPUT_BUCKET_NAME is required")
 	}
 
 	isLambda := os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != ""
@@ -53,10 +53,10 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		AllowedOrigins: allowed,
-		AppEnv:         env,
-		BucketName:     bucket,
-		IsLambda:       isLambda,
-		Region:         region,
+		AllowedOrigins:  allowed,
+		AppEnv:          env,
+		InputBucketName: inputBucket,
+		IsLambda:        isLambda,
+		Region:          region,
 	}, nil
 }
