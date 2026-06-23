@@ -58,7 +58,7 @@ func main() {
 		// Lambda 環境
 		l.Info("Starting server on AWS Lambda")
 
-		adapter := httpadapter.New(mux)
+		adapter := httpadapter.NewV2(mux)
 		lambda.Start(adapter.ProxyWithContext)
 
 	} else {
