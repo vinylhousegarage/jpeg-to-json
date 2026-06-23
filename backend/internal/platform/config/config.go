@@ -12,6 +12,7 @@ type Config struct {
 	AllowedOrigins []string
 	AppEnv         string
 	BucketName     string
+	IsLambda       bool
 	Region         string
 }
 
@@ -44,6 +45,8 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("S3_BUCKET_NAME is required")
 	}
 
+	isLambda := os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != ""
+
 	region := os.Getenv("AWS_REGION")
 	if region == "" {
 		region = "ap-northeast-1"
@@ -51,8 +54,9 @@ func LoadConfig() (*Config, error) {
 
 	return &Config{
 		AllowedOrigins: allowed,
-    AppEnv:         env,
+		AppEnv:         env,
 		BucketName:     bucket,
+		IsLambda:       isLambda,
 		Region:         region,
 	}, nil
 }
