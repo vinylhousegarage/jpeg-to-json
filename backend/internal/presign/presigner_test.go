@@ -183,7 +183,9 @@ func TestWriteJSON(t *testing.T) {
 
 	// 検証
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() {
+			_ = resp.Body.Close()
+	}()
 
 	// ステータスコードのチェック
 	if resp.StatusCode != http.StatusOK {
