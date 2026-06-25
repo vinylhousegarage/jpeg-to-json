@@ -33,12 +33,12 @@ jobs:
         with:
           go-version: '1.26.3'
           cache: true
-          cache-dependencies: backend/go.sum
+          cache-dependency-path: backend/go.sum
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          version: v2.12.2
           args: --timeout 5m
           working-directory: ./backend
           install-mode: binary
