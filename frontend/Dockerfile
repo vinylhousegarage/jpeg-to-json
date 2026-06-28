@@ -33,7 +33,11 @@ RUN npm ci
 # ソースコードをコピー
 COPY --chown=node:node . .
 
-CMD ["npm", "run", "dev"]
+# Vite 開発サーバーのポートを開放
+EXPOSE 5173
+
+# --host 0.0.0.0 からのアクセスを許可
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # ------------------------------------
 # --- ビルド用 (Target: builder) ---
@@ -41,19 +45,18 @@ CMD ["npm", "run", "dev"]
 FROM base AS builder
 USER node
 COPY --chown=node:node package*.json package-lock.json ./
-RUN npm ci
+RUN npm install
 COPY --chown=node:node . .
+# Vite でビルドして dist フォルダを作成
 RUN npm run build
 
 # ------------------------------------
 # --- 本番用 (Target: runner) ---
 # ------------------------------------
-FROM base AS runner
-USER node
-ENV NODE_ENV=production
-# ビルド成果物のみを builder からコピー
-COPY --from=builder --chown=node:node /workspace/frontend/.next ./.next
-COPY --from=builder --chown=node:node /workspace/frontend/public ./public
-COPY --from=builder --chown=node:node /workspace/frontend/package.json ./package.json
-COPY --from=builder --chown=node:node /workspace/frontend/node_modules ./node_modules
-CMD ["npm", "start"]
+FROM nginx:alpine AS runner
+# ビルド成果物を Nginx の公開ディリレクトリにコピー
+COPY --from=builder /workspace/frontend/dist /usr/share/nginx/html
+# Nginx ポート
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
