@@ -3,6 +3,12 @@
 # ------------------------------
 FROM node:24-trixie-slim AS base
 
+# パッケージリストの更新とツールのインストール
+RUN apt-get update && apt-get install -y \
+    git \
+    zsh \
+    && rm -rf /var/lib/apt/lists/*
+
 # UID/GIDの受け取り
 ARG UID=1000
 ARG GID=1000
@@ -13,7 +19,11 @@ RUN usermod -u ${UID} node && groupmod -g ${GID} node
 # ディリレクトリ
 WORKDIR /workspace/frontend
 
-# 権限設定
+# Zshプラグインのインストール
+RUN git clone https://github.com/zsh-users/zsh-autosuggestions /home/node/.oh-my-zsh/custom/plugins/zsh-autosuggestions \
+    && echo 'source /home/node/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh' >> /home/node/.zshrc
+
+# 所有者をユーザーに変更
 RUN chown -R node:node /workspace/frontend
 
 # ------------------------------------
