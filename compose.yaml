@@ -2,14 +2,19 @@ services:
   infra:
     build:
       context: ./infra
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     container_name: cdk
     working_dir: /workspace/infra
     volumes:
-      - .:/workspace
+      - ./infra:/workspace/infra
       - ~/.aws:/home/node/.aws
     command: sleep infinity
     tty: true
     stdin_open: true
+    networks:
+      - app-network
 
   backend:
     build:
@@ -19,10 +24,36 @@ services:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
     container_name: go
+    working_dir: /workspace/backend
     volumes:
-      - .:/workspace
+      - ./backend:/workspace/backend
       - ~/.aws:/home/appuser/.aws
+      - /workspace/backend/pkg
+      - /workspace/backend/bin
     ports:
       - "8080:8080"
     environment:
       - INPUT_BUCKET_NAME=${INPUT_BUCKET_NAME}
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: typescript
+    working_dir: /workspace/frontend
+    volumes:
+      - ./frontend:/workspace/frontend
+      - /workspace/frontend/node_modules
+    ports:
+      - "8081:5173"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
