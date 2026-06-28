@@ -1,6 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
@@ -14,6 +16,7 @@ export class InfraStack extends cdk.Stack {
 
     // 1. S3 バケットの作成
 
+    // S3 バケット削除設定
     const removalPolicy = cdk.RemovalPolicy.DESTROY;
     const autoDeleteObjects = true;
 
@@ -40,23 +43,29 @@ export class InfraStack extends cdk.Stack {
     const websiteBucket = new s3.Bucket(this, 'WebsiteBucket', {
       removalPolicy,
       autoDeleteObjects,
-      websiteIndexDocument: 'index.html',
-      publicReadAccess: true,
-      blockPublicAccess: new s3.BlockPublicAccess({
-        blockPublicAcls: false,
-        blockPublicPolicy: false,
-        ignorePublicAcls: false,
-        restrictPublicBuckets: false,
-      }),
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, 
     });
 
-    // 差し替え用 Website HTML を Homepageバケットに挿入
+    // 2. CloudFront の作成
+
+    // CloudFront
+    const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(websiteBucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+      defaultRootObject: 'index.html',
+    });
+
+    // デプロイ時は CloudFront のキャッシュを最新に更新
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
       sources: [s3deploy.Source.asset('./test-assets')],
       destinationBucket: websiteBucket,
+      distribution: distribution,
+      distributionPaths: ['/*'],
     });
 
-    // 2. Lambda 関数の作成（Goランタイム）
+    // 3. Lambda 関数の作成（Goランタイム）
 
     // PresignHandler（署名付きURL発行）
     const presignHandler = new lambda.Function(this, 'PresignHandler', {
@@ -85,7 +94,7 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
-    // 3. 権限（IAM）と トリガー（Event）の設定
+    // 4. 権限（IAM）と トリガー（Event）の設定
 
     // PresignHandlerには、Inputバケットへ「書き込む」権限のみ付与
     inputBucket.grantWrite(presignHandler);
@@ -106,8 +115,9 @@ export class InfraStack extends cdk.Stack {
       new s3n.LambdaDestination(mainHandler)
     );
 
-    // 4. API Gateway の構築 (HTTP API)
+    // 5. API Gateway の構築 (HTTP API)
 
+    // HTTP API
     const api = new apigwv2.HttpApi(this, 'JpegToJsonHttpApi', {
       apiName: 'Jpeg To Json HTTP API',
       corsPreflight: {
@@ -125,7 +135,7 @@ export class InfraStack extends cdk.Stack {
       integration: presignIntegration,
     });
 
-    // 5. デプロイ後の出力も更新
-    new cdk.CfnOutput(this, 'ApiEndpoint', { value: api.apiEndpoint });
+    // 6. ログでURLを出力
+    new cdk.CfnOutput(this, 'CloudFrontURL', { value: distribution.distributionDomainName });
   }
 }
