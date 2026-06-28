@@ -3,6 +3,12 @@
 # ------------------------------
 FROM node:24-trixie-slim AS base
 
+# パッケージリストの更新とツールのインストール
+RUN apt-get update && apt-get install -y \
+    git \
+    zsh \
+    && rm -rf /var/lib/apt/lists/*
+
 # UID/GIDの受け取り
 ARG UID=1000
 ARG GID=1000
