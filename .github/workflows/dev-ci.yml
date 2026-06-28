@@ -1,14 +1,18 @@
 name: Dev CI
 
 on:
-  pull_request:
+  push:
     branches:
       - dev
-    paths:
+    paths: &dev-ci-paths
       - 'backend/**'
       - 'infra/**'
       - '.github/workflows/dev-cd.yml'
       - '.github/workflows/dev-ci.yml'
+  pull_request:
+    branches:
+      - dev
+    paths: *dev-ci-paths
 
 permissions:
   id-token: write
