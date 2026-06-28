@@ -15,7 +15,7 @@
 
 	// The optional 'workspaceFolder' property is the path VS Code should open by default when
 	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
-	"workspaceFolder": "/workspace",
+	"workspaceFolder": "/workspace/frontend",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
@@ -32,7 +32,7 @@
 	// "shutdownAction": "none",
 
 	// Uncomment the next line to run commands after the container is created.
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "sudo chown -R node:node /workspace/frontend && npm install",
 
 	// Configure tool-specific properties.
   "customizations": {
