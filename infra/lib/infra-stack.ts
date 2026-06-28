@@ -136,6 +136,6 @@ export class InfraStack extends cdk.Stack {
     });
 
     // 6. ログでURLを出力
-    new cdk.CfnOutput(this, 'CloudFrontURL', { value: distribution.distributionDomainName });
+    new cdk.CfnOutput(this, 'CloudFrontURL', { value: `https://${distribution.distributionDomainName}`});
   }
 }
