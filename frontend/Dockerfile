@@ -34,6 +34,9 @@ FROM base AS dev
 # ユーザー切り替え
 USER node
 
+# Git 所有権エラー回避
+RUN git config --global --add safe.directory '*'
+
 # 設定ファイルをコピー
 COPY --chown=node:node package*.json ./
 
