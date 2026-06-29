@@ -49,6 +49,7 @@ services:
     volumes:
       - ./frontend:/workspace/frontend
       - /workspace/frontend/node_modules
+      - ./.git:/workspace/.git:ro
     ports:
       - "8081:5173"
     networks:
