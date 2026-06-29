@@ -31,8 +31,14 @@ RUN chown -R node:node /workspace/frontend
 # ------------------------------------
 FROM base AS dev
 
+# ChromiumブラウザとOS依存ライブラリをインストール
+RUN npx playwright install chromium --with-deps
+
 # ユーザー切り替え
 USER node
+
+# Git 所有権エラー回避
+RUN git config --global --add safe.directory '*'
 
 # 設定ファイルをコピー
 COPY --chown=node:node package*.json ./
@@ -45,9 +51,6 @@ COPY --chown=node:node . .
 
 # Vite 開発サーバーのポートを開放
 EXPOSE 5173
-
-# --host 0.0.0.0 からのアクセスを許可
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # ------------------------------------
 # --- ビルド用 (Target: builder) ---

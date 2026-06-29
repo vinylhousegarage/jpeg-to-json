@@ -49,10 +49,13 @@ services:
     volumes:
       - ./frontend:/workspace/frontend
       - /workspace/frontend/node_modules
+      - ./.git:/workspace/.git:ro
     ports:
       - "8081:5173"
     networks:
       - app-network
+
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
 
 networks:
   app-network:
