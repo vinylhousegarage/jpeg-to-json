@@ -54,6 +54,8 @@ services:
     networks:
       - app-network
 
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
 networks:
   app-network:
     driver: bridge
