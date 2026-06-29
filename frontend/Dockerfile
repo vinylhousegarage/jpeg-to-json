@@ -31,6 +31,9 @@ RUN chown -R node:node /workspace/frontend
 # ------------------------------------
 FROM base AS dev
 
+# ChromiumブラウザとOS依存ライブラリをインストール
+RUN npx playwright install chromium --with-deps
+
 # ユーザー切り替え
 USER node
 
