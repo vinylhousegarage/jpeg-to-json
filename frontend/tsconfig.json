@@ -5,6 +5,9 @@
     "module": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
 
+    /* 型定義の設定 */
+    "types": ["node"],
+
     /* モジュール解決 */
     "moduleResolution": "bundler",
     "esModuleInterop": true,
@@ -22,11 +25,15 @@
     "isolatedModules": true
   },
   "include": [
-  "src",
-  "test",
-  "tests",
-  "**/*.spec.ts",
-  "**/*.test.ts"
+    "src",
+    "test",
+    "tests",
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ],
-  "exclude": ["node_modules", "dist"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests/**/*.ts"
+  ]
 }
