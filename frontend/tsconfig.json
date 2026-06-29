@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    /* 基本設定 */
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+
+    /* モジュール解決 */
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+
+    /* React / JSX */
+    "jsx": "react-jsx",
+
+    /* 型チェック */
+    "strict": true,
+    "skipLibCheck": true,
+
+    /* ビルド・ツール統合 */
+    "types": ["vite/client", "vitest/globals"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "isolatedModules": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"],
+}
