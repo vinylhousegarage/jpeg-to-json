@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    /* 基本設定 */
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+
+    /* 型定義の設定 */
+    "types": ["node"],
+
+    /* モジュール解決 */
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+
+    /* React / JSX */
+    "jsx": "react-jsx",
+
+    /* 型チェック */
+    "strict": true,
+    "skipLibCheck": true,
+
+    /* ビルド・ツール統合 */
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "src",
+    "test",
+    "tests",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests/**/*.ts"
+  ]
+}
