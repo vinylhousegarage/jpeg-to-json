@@ -1,7 +1,13 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
-  test: {
-    exclude: ['tests/**', 'node_modules'],
+  use: {
+    baseURL: 'http://localhost:5173',
+  },
+
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
   },
 });
