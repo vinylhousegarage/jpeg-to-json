@@ -6,7 +6,7 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
 
     /* 型定義の設定 */
-    "types": ["node"],
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom"],
 
     /* モジュール解決 */
     "moduleResolution": "bundler",
