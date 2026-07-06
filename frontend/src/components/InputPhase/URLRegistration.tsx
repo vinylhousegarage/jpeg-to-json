@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { uploadUrlSchema } from '../types/schema';
+import { uploadUrlSchema } from '../../types/schema';
 
 type Props = {
   onRegister: (url: string) => void;
