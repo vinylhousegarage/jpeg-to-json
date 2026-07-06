@@ -14,7 +14,9 @@ describe('compressImage', () => {
 
     // onload のトリガー
     vi.spyOn(HTMLImageElement.prototype, 'src', 'set').mockImplementation(function (this: HTMLImageElement) {
-      setTimeout(() => this.dispatchEvent(new Event('load')), 0);
+      queueMicrotask(() => {
+        this.dispatchEvent(new Event('load'));
+      });
     });
   });
 
