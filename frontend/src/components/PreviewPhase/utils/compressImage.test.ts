@@ -1,55 +1,71 @@
+import 'vitest-canvas-mock';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { compressImage } from './compressImage';
-import { getImageDimensions } from './getImageDimensions';
 
 describe('compressImage', () => {
   beforeEach(() => {
-    // グローバルオブジェクト（URLなど）のモックが必要な場合はここでリセット
     vi.restoreAllMocks();
+
+    // URL をモック
+    vi.stubGlobal('URL', {
+      createObjectURL: vi.fn(() => 'blob:mock-url'),
+      revokeObjectURL: vi.fn(),
+    });
+
+    // onload のトリガー
+    vi.spyOn(HTMLImageElement.prototype, 'src', 'set').mockImplementation(function (this: HTMLImageElement) {
+      setTimeout(() => this.dispatchEvent(new Event('load')), 0);
+    });
   });
 
-  // 変換をテスト
-  it('should return a Blob when given a File', async () => {
-    const file = new File(['hello'], 'test.jpg', { type: 'image/jpeg' });
+  // =============================================================
+  // 変換パイプラインをテスト（Blob → URL → Image → Blob）
+  // =============================================================
+  it('should successfully output a JPEG Blob through the full conversion pipeline', async () => {
+    const file = new File(['dummy'], 'photo.png', { type: 'image/png' });
     const result = await compressImage(file);
     
     expect(result).toBeInstanceOf(Blob);
     expect(result.type).toBe('image/jpeg');
   });
 
+  // =============================================================
   // 2000px 制限の圧縮をテスト
-  it('should resize the long edge to 2000px or less and return a JPEG Blob', async () => {
-    const dummyJpgBase64 = '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
-    const bin = atob(dummyJpgBase64);
-    const buffer = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) {
-      buffer[i] = bin.charCodeAt(i);
-    }
+  // =============================================================
+  it('should resize the long edge to 2000px or less maintaining aspect ratio', async () => {
+    // ブラウザ環境（JSDOM）のImageオブジェクトにダミーの画像サイズ（3000x1500）を設定
+    vi.spyOn(HTMLImageElement.prototype, 'width', 'get').mockReturnValue(3000);
+    vi.spyOn(HTMLImageElement.prototype, 'height', 'get').mockReturnValue(1500);
 
-    const file = new File([buffer], 'large-image.jpg', { type: 'image/jpeg' });
-    const result = await compressImage(file);
+    // ブラウザ標準の Canvas API (drawImage) を監視
+    const drawImageSpy = vi.spyOn(CanvasRenderingContext2D.prototype, 'drawImage');
 
-    expect(result.type).toBe('image/jpeg');
-    expect(result.size).toBeGreaterThan(0);
-
-    const dimensions = await getImageDimensions(result);
-    expect(dimensions.width).toBeLessThanOrEqual(2000);
-    expect(dimensions.height).toBeLessThanOrEqual(2000);
-  });
-
-  // 品質 85% 指定をテスト
-  it('should call canvas.toBlob with quality parameter set to 0.85', async () => {
-    // HTMLCanvasElement のプロトタイプから toBlob を監視
-    const toBlobSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toBlob');
-
-    const file = new File(['dummy content'], 'test.jpg', { type: 'image/jpeg' });
+    const file = new File(['dummy'], 'large.jpg', { type: 'image/jpeg' });
     await compressImage(file);
 
-    // toBlob が呼び出された際の引数 (callback, type, quality) を検証
+    expect(drawImageSpy).toHaveBeenCalled();
+    const args = drawImageSpy.mock.calls[0];
+
+    // ctx.drawImage(img, dx, dy, dWidth, dHeight) の引数が 2000x1000 に縮小されているか検証
+    expect(args[3]).toBe(2000); 
+    expect(args[4]).toBe(1000); 
+  });
+
+  // =============================================================
+  // 品質 85% 指定の書き出しをテスト
+  // =============================================================
+  it('should call canvas.toBlob with quality parameter set to 0.85', async () => {
+    // ブラウザ標準の Canvas API (toBlob) を監視
+    const toBlobSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toBlob');
+
+    const file = new File(['dummy'], 'test.jpg', { type: 'image/jpeg' });
+    await compressImage(file);
+
     expect(toBlobSpy).toHaveBeenCalled();
     const mostRecentCall = toBlobSpy.mock.calls[0];
-    
-    expect(mostRecentCall[1]).toBe('image/jpeg'); // 第2引数がJPEG形式か
-    expect(mostRecentCall[2]).toBe(0.85);         // 第3引数が「0.85（品質85%）」か
+
+    // toBlob(callback, type, quality) の第2, 第3引数を検証
+    expect(mostRecentCall[1]).toBe('image/jpeg'); 
+    expect(mostRecentCall[2]).toBe(0.85);         
   });
 });
