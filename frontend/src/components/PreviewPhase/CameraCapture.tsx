@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { compressImage } from './utils/compressImage';
+import { standardButtonStyle } from './styles/button';
 
 type Props = {
   onCapture: (blob: Blob) => void;
@@ -7,19 +8,6 @@ type Props = {
   onSubmit: () => void;
   isSending?: boolean;
   onError?: (error: Error) => void;
-};
-
-// 共通スタイル定義
-const standardButtonStyle: React.CSSProperties = {
-  display: 'inline-block',
-  padding: '6px 12px',
-  backgroundColor: '#efefef',
-  border: '1px solid #767676',
-  borderRadius: '2px',
-  cursor: 'pointer',
-  fontSize: '13.33px',
-  color: 'black',
-  textAlign: 'center',
 };
 
 export const CameraCapture: React.FC<Props> = ({ 
