@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { standardButtonStyle } from './styles/button';
+import { standardButtonStyle } from '../styles/button';
 import { PreviewAreaProps } from './PreviewArea.types';
 
 export const PreviewArea = ({
