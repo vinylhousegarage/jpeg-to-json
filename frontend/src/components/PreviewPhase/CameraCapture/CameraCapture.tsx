@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { compressImage } from './utils/compressImage';
-import { standardButtonStyle } from './styles/button';
+import { compressImage } from '../utils/compressImage';
+import { standardButtonStyle } from '../styles/button';
 import { CameraCaptureProps } from './CameraCapture.types';
 
 export const CameraCapture = ({ 
