@@ -1,22 +1,16 @@
 import React, { useState } from 'react';
-import { compressImage } from './utils/compressImage';
-import { standardButtonStyle } from './styles/button';
+import { compressImage } from '../utils/compressImage';
+import { standardButtonStyle } from '../styles/button';
+import { CameraCaptureProps } from './CameraCapture.types';
 
-type Props = {
-  onCapture: (blob: Blob) => void;
-  onClearPreview: () => void; 
-  onSubmit: () => void;
-  isSending?: boolean;
-  onError?: (error: Error) => void;
-};
-
-export const CameraCapture: React.FC<Props> = ({ 
+export const CameraCapture = ({ 
   onCapture, 
   onClearPreview, 
   onSubmit, 
   isSending = false, 
   onError 
-}) => {
+}: CameraCaptureProps) => {
+
   // 圧縮処理中の Loading を管理する状態
   const [isCompressing, setIsCompressing] = useState(false);
 

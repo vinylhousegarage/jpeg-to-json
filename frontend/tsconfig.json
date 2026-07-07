@@ -11,29 +11,29 @@
     /* モジュール解決 */
     "moduleResolution": "bundler",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
 
     /* React / JSX */
     "jsx": "react-jsx",
 
-    /* 型チェック */
+    /* 厳格な型チェック (既存設定 + 新規推奨) */
     "strict": true,
     "skipLibCheck": true,
+    "noUnusedLocals": true,         
+    "noUnusedParameters": true,     
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
 
     /* ビルド・ツール統合 */
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+
+    /* パスエイリアス */
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": [
-    "src",
-    "test",
-    "tests",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "tests/**/*.ts"
-  ]
+  "include": ["src", "tests/**/*.ts", "tests/**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
 }

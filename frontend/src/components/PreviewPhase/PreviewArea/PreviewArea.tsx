@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
-import { standardButtonStyle } from './styles/button';
+import { standardButtonStyle } from '../styles/button';
+import { PreviewAreaProps } from './PreviewArea.types';
 
-type Props = {
-  blob: Blob;
-  onRetake: () => void;
-  onSend: () => void;
-  isSending: boolean;
-};
-
-export const PreviewArea: React.FC<Props> = ({ blob, onRetake, onSend, isSending }) => {
+export const PreviewArea = ({
+  blob,
+  onRetake,
+  onSend,
+  isSending
+}: PreviewAreaProps) => {
   const [imageUrl, setImageUrl] = useState<string>('');
 
   useEffect(() => {
