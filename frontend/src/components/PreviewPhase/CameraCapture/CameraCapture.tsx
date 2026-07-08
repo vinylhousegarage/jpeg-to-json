@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { compressImage } from '../utils/compressImage';
-import { standardButtonStyle } from '../styles/button';
+import { useImageProcessor } from '../../../hooks/useImageProcessor';
 import { CameraCaptureProps } from './CameraCapture.types';
+import { standardButtonStyle } from '../styles/button';
 
 export const CameraCapture = ({ 
   onCapture, 
@@ -12,31 +11,15 @@ export const CameraCapture = ({
 }: CameraCaptureProps) => {
 
   // 圧縮処理中の Loading を管理する状態
-  const [isCompressing, setIsCompressing] = useState(false);
+  const { isCompressing, processImage } = useImageProcessor(onCapture, onClearPreview, onError);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    try {
-      // 圧縮処理中の Loading を実行
-      setIsCompressing(true);
-      
-      // プレビューエリアの画像を消去
-      onClearPreview();
+    await processImage(file);
 
-      // 撮影した画像を圧縮
-      const compressedBlob = await compressImage(file);
-      
-      // 圧縮した画像をプレビューエリアにセット
-      onCapture(compressedBlob);
-    } catch (error) {
-      console.error('Image compression failed:', error);
-      if (onError) onError(error instanceof Error ? error : new Error('Failed to compress image'));
-    } finally {
-      setIsCompressing(false);
-      event.target.value = ''; 
-    }
+    event.target.value = '';
   };
 
   return (
