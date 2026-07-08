@@ -1,4 +1,5 @@
-import { appReducer, AppPhase, AppAction } from './reducer';
+import { appReducer } from './appReducer';
+import { AppPhase, AppAction } from '../../../types';
 
 describe('appReducer', () => {
   const initialState: AppPhase = { type: 'input', slackUrl: 'https://example.com' };
