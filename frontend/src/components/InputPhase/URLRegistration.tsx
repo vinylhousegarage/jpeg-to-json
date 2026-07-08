@@ -1,30 +1,11 @@
-import React, { useState } from 'react';
-import { uploadUrlSchema } from '../../types/schema';
+import { useUrlRegistration } from '../../hooks/useUrlRegistration';
 
 type Props = {
   onRegister: (url: string) => void;
 };
 
 export const URLRegistration: React.FC<Props> = ({ onRegister }) => {
-  const [url, setUrl] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Zodによるバリデーション
-    const result = uploadUrlSchema.safeParse(url);
-
-    if (!result.success) {
-      // エラーメッセージを状態にセット
-      setError(result.error.issues[0].message);
-      return;
-    }
-
-    // バリデーション通過後、親コンポーネントへURLを渡す
-    setError(null);
-    onRegister(result.data);
-  };
+  const { url, setUrl, error, handleSubmit } = useUrlRegistration(onRegister);
 
   return (
     <div className="url-registration">

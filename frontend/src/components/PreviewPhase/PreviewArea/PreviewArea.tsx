@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { standardButtonStyle } from '../styles/button';
+import { usePreviewUrl } from '../../../hooks/usePreviewUrl';
 import { PreviewAreaProps } from './PreviewArea.types';
+import { standardButtonStyle } from '../styles/button';
 
 export const PreviewArea = ({
   blob,
@@ -8,13 +8,11 @@ export const PreviewArea = ({
   onSend,
   isSending
 }: PreviewAreaProps) => {
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const imageUrl = usePreviewUrl(blob);
 
-  useEffect(() => {
-    const url = URL.createObjectURL(blob);
-    setImageUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [blob]);
+  if (!imageUrl) {
+    return null;
+  }
 
   return (
     <div className="preview-container">
