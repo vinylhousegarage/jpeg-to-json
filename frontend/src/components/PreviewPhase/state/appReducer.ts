@@ -25,7 +25,7 @@ export const appReducer = (state: AppPhase, action: AppAction): AppPhase => {
     case 'SEND':
       if (state.type === 'preview') {
         return {
-          type: 'uploading',
+          type: 'upload',
           slackUrl: state.slackUrl,
         };
       }
@@ -36,7 +36,7 @@ export const appReducer = (state: AppPhase, action: AppAction): AppPhase => {
 
     case 'START_UPLOAD':
       return {
-        type: 'uploading',
+        type: 'upload',
         slackUrl: state.slackUrl ?? '',
       };
 
