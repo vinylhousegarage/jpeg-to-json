@@ -10,8 +10,8 @@ export type PreviewPhase = {
   previewUrl: string;
 };
 
-export type UploadingPhase = {
-  type: 'uploading';
+export type UploadPhase = {
+  type: 'upload';
   slackUrl: string;
 };
 
@@ -22,7 +22,7 @@ export type ResultPhase = {
   error?: Error;
 }
 
-export type AppPhase = InputPhase | PreviewPhase | UploadingPhase | ResultPhase;
+export type AppPhase = InputPhase | PreviewPhase | UploadPhase | ResultPhase;
 
 export type AppAction =
   | { type: 'SUBMIT'; slackUrl: string }
