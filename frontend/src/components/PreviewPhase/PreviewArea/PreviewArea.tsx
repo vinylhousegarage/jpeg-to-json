@@ -1,6 +1,6 @@
 import { usePreviewUrl } from '../../../hooks/usePreviewUrl';
 import { PreviewAreaProps } from './PreviewArea.types';
-import { standardButtonStyle } from '../styles/button';
+import { standardButtonStyle } from '../../../styles/button';
 
 export const PreviewArea = ({
   blob,
