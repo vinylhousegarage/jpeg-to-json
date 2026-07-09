@@ -1,6 +1,6 @@
 import { useImageProcessor } from '../../../hooks/useImageProcessor';
 import { CameraCaptureProps } from './CameraCapture.types';
-import { standardButtonStyle } from '../styles/button';
+import { standardButtonStyle } from '../../../styles/button';
 
 export const CameraCapture = ({ 
   onCapture, 

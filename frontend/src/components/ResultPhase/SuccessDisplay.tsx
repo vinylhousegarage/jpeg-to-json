@@ -1,4 +1,4 @@
-import { standardButtonStyle } from '../PreviewPhase/styles/button';
+import { standardButtonStyle } from '../../styles/button';
 
 type Props = {
   onContinue: () => void;
