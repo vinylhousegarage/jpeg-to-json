@@ -13,13 +13,18 @@ export const URLRegistration: React.FC<Props> = ({ onRegister }) => {
       style={{ 
         maxWidth: '375px', 
         margin: '0 auto', 
-        padding: '0 20px'
+        textAlign: 'center'
       }}
     >
       <h2>Slack通知設定</h2>
       <form 
         onSubmit={handleSubmit} 
-        style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+        style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '10px',
+          alignItems: 'center'
+        }}
       >
         <label htmlFor="url">URLを入力</label>
         <input
