@@ -1,2 +1,2 @@
-export * from './CameraCapture';
-export * from './PreviewArea';
+export { CameraCapture } from './CameraCapture';
+export { PreviewArea as PreviewPhase } from './PreviewArea';
