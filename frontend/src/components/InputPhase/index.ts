@@ -1,1 +1,2 @@
-export * from './URLRegistration';
+export { URLRegistration as InputPhase } from './URLRegistration';
+
