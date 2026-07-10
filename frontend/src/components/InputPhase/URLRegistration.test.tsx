@@ -12,8 +12,8 @@ describe('URLRegistration', () => {
     render(<URLRegistration onRegister={mockOnRegister} />);
 
     // 画面の操作を再現
-    const input = screen.getByLabelText(/Slack Webhook URL/i);
-    const button = screen.getByRole('button', { name: /登録して次へ/i });
+    const input = screen.getByLabelText(/URLを入力/i);
+    const button = screen.getByRole('button', { name: /登録して撮影/i });
 
     fireEvent.change(input, { target: { value: 'https://hooks.slack.com/test' } });
     fireEvent.click(button);
@@ -25,8 +25,8 @@ describe('URLRegistration', () => {
   it('should display an error message when an invalid URL is submitted', () => {
     render(<URLRegistration onRegister={vi.fn()} />);
 
-    const input = screen.getByLabelText(/Slack Webhook URL/i);
-    const button = screen.getByRole('button', { name: /登録して次へ/i });
+    const input = screen.getByLabelText(/URLを入力/i);
+    const button = screen.getByRole('button', { name: /登録して撮影/i });
 
     fireEvent.change(input, { target: { value: 'invalid-url' } });
     fireEvent.click(button);
