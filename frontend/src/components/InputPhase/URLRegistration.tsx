@@ -11,7 +11,7 @@ export const URLRegistration: React.FC<Props> = ({ onRegister }) => {
     <div className="url-registration">
       <h2>Slack通知設定</h2>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <label htmlFor="url">URLを入力</label>
+        <label htmlFor="url">Slack Webhook URL</label>
         <input
           id="url"
           type="text"
@@ -20,7 +20,7 @@ export const URLRegistration: React.FC<Props> = ({ onRegister }) => {
           placeholder="https://hooks.slack.com/..."
         />
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit">登録して撮影</button>
+        <button type="submit">登録して次へ</button>
       </form>
     </div>
   );
