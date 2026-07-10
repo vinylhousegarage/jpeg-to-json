@@ -1,4 +1,3 @@
-// src/components/Main.tsx
 export const Main = () => {
   return (
     <main>
