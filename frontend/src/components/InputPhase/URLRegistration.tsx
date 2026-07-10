@@ -10,7 +10,7 @@ export const URLRegistration: React.FC<Props> = ({ onRegister }) => {
   return (
     <div className="url-registration">
       <h2>Slack通知設定</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <label htmlFor="url">Slack Webhook URL</label>
         <input
           id="url"
