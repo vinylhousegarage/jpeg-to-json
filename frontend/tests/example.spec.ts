@@ -7,5 +7,5 @@ const __dirname = dirname(__filename);
 
 test('has title', async ({ page }) => {
   await page.goto('file://' + resolve(__dirname, '../index.html'));
-  await expect(page).toHaveTitle(/Playwright/);
+  await expect(page).toHaveTitle(/React App/);
 });
