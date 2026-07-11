@@ -49,7 +49,7 @@ jobs:
           node-version: '24'
 
       - name: Start Backend
-        run: docker-compose up -d backend
+        run: docker compose up -d backend
         env:
           ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
           INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
