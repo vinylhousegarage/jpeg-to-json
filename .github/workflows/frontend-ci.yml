@@ -39,23 +39,33 @@ jobs:
       - name: Build
         run: npm run build
 
-  e2e-test:
-    needs: test-and-build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
+    e2e-test:
+      needs: test-and-build
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-node@v4
+          with:
+            node-version: '24'
 
-      - name: Install
-        run: npm ci --legacy-peer-deps
+        - name: Start Backend
+          run: docker-compose up -d backend
+          env:
+            ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+            INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_LAMBDA_FUNCTION_NAME: ""
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        - name: Install
+          run: npm ci --legacy-peer-deps
+          working-directory: frontend
 
-      - name: Run E2E Tests
-        run: npm run test:e2e
+        - name: Install Playwright Browsers
+          run: npx playwright install --with-deps
+          working-directory: frontend
+
+        - name: Run E2E Tests
+          run: npm run test:e2e
+          working-directory: frontend
+          env:
+            BASE_URL: http://localhost:8080
