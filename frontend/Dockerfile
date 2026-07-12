@@ -34,6 +34,9 @@ FROM base AS dev
 # root を明示
 USER root
 
+# ブラウザをインストールする場所を固定
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
 # 依存関係をインストール
 RUN apt-get update && apt-get install -y \
     libnss3 \
