@@ -52,6 +52,8 @@ services:
       - ./.git:/workspace/.git:ro
     ports:
       - "8081:5173"
+    environment:
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
     networks:
       - app-network
 
