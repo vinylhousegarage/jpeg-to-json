@@ -9,7 +9,7 @@ test.describe('S3 Upload Pipeline', () => {
     );
 
     // バックエンドからPresigned URLを取得
-    const response = await request.post('/presign', {
+    const response = await request.post('http://backend:8080/presign', {
       data: { filename: 'test-image.jpg' }
     });
 
