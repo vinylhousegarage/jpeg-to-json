@@ -13,6 +13,14 @@ test.describe('S3 Upload Pipeline', () => {
       data: { filename: 'test-image.jpg' }
     });
 
+    // --- デバッグ用出力 ---
+    if (!response.ok()) {
+      console.log('--- [DEBUG] Presigned URL acquisition failed ---');
+      console.log('Status:', response.status());
+      console.log('Body:', await response.text());
+    }
+    // -----------------------
+
     expect(response.ok()).toBeTruthy();
 
     // レスポンスから uploadURL を抽出
@@ -20,13 +28,21 @@ test.describe('S3 Upload Pipeline', () => {
     const { uploadURL } = body;
     expect(uploadURL).toBeDefined();
 
-    // S3へ直接PUTリクエストを送信
+    // 2. S3へ直接PUTリクエストを送信
     const putResponse = await request.put(uploadURL, {
       data: dummyImageBuffer,
       headers: {
         'Content-Type': 'image/jpeg'
       }
     });
+
+    // --- デバッグ用出力 ---
+    if (!putResponse.ok()) {
+      console.log('--- [DEBUG] S3 Upload failed ---');
+      console.log('Status:', putResponse.status());
+      console.log('Body:', await putResponse.text());
+    }
+    // -----------------------
 
     // アップロード結果を検証
     expect(putResponse.ok()).toBeTruthy();
