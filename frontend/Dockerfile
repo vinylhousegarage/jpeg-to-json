@@ -31,8 +31,38 @@ RUN chown -R node:node /workspace/frontend
 # ------------------------------------
 FROM base AS dev
 
+# root を明示
+USER root
+
+# ブラウザをインストールする場所を固定
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# 依存関係をインストール
+RUN apt-get update && apt-get install -y \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2t64 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libxcursor1 \
+    libgtk-3-0 \
+    libgdk-pixbuf-xlib-2.0-0 \
+    libcairo-gobject2 \
+    libxss1 \
+    && rm -rf /var/lib/apt/lists/*
+
 # ChromiumブラウザとOS依存ライブラリをインストール
-RUN npx playwright install chromium --with-deps
+RUN npx playwright install chromium
 
 # ユーザー切り替え
 USER node
