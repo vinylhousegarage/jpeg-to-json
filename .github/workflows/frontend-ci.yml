@@ -41,70 +41,64 @@ jobs:
         run: npm run build
 
   e2e-test:
-    needs: test-and-build
-    runs-on: ubuntu-latest
-    env:
-      ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
-      AWS_LAMBDA_FUNCTION_NAME: ""
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      BASE_URL: http://127.0.0.1:8081
-      INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
+      needs: test-and-build
+      runs-on: ubuntu-latest
+      env:
+        ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+        AWS_LAMBDA_FUNCTION_NAME: ""
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        BASE_URL: http://127.0.0.1:8081
+        INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-node@v4
+          with:
+            node-version: '24'
 
-      - name: Start Services
-        run: docker compose up -d
+        - name: Start Services
+          run: docker compose up -d
 
-      - name: Fix Permissions
-        run: sudo chown -R $USER:$USER .
-        working-directory: frontend
-
-      - name: Install Dependencies
-        run: npm ci --legacy-peer-deps
-        working-directory: frontend
-
-      - name: Get Playwright Version
-        id: playwright-version
-        run: |
-          VERSION=$(node -e "console.log(require('./frontend/package-lock.json').packages['node_modules/@playwright/test'].version)")
-          echo "PLAYWRIGHT_VERSION=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Cache Playwright Browsers
-        id: cache-playwright
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
-
-      - name: Install Playwright Browsers
-        if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-        working-directory: frontend
-
-      - name: Run Dev Server
-        run: |
-          npm run dev > server.log 2>&1 &
-          
-          echo "Waiting for dev server to start on 8081..."
-          for i in {1..15}; do
-            if curl -s http://127.0.0.1:8081 > /dev/null; then
-              echo "Server is ready!"
-              break
-            fi
-            echo "Waiting... ($i/15)"
-            sleep 5
-          done
-
-          if ! curl -s http://127.0.0.1:8081 > /dev/null; then
-            echo "::error::Server failed to start. Printing logs:"
-            cat server.log
+        - name: Wait for Frontend Service
+          run: |
+            echo "Waiting for Docker-based server to be ready on 8081..."
+            for i in {1..20}; do
+              if curl -s http://127.0.0.1:8081 > /dev/null; then
+                echo "Server is ready!"
+                exit 0
+              fi
+              echo "Waiting... ($i/20)"
+              sleep 5
+            done
+            echo "::error::Server failed to start."
+            docker compose logs frontend
             exit 1
-          fi
-        working-directory: frontend
 
-      - name: Run E2E Tests
-        run: npm run test:e2e
-        working-directory: frontend
+        - name: Fix Permissions
+          run: sudo chown -R $USER:$USER .
+          working-directory: frontend
+
+        - name: Install Dependencies
+          run: npm ci --legacy-peer-deps
+          working-directory: frontend
+
+        - name: Get Playwright Version
+          id: playwright-version
+          run: |
+            VERSION=$(node -e "console.log(require('./frontend/package-lock.json').packages['node_modules/@playwright/test'].version)")
+            echo "PLAYWRIGHT_VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+        - name: Cache Playwright Browsers
+          id: cache-playwright
+          uses: actions/cache@v4
+          with:
+            path: ~/.cache/ms-playwright
+            key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
+
+        - name: Install Playwright Browsers
+          if: steps.cache-playwright.outputs.cache-hit != 'true'
+          run: npx playwright install --with-deps
+          working-directory: frontend
+
+        - name: Run E2E Tests
+          run: npx playwright test
+          working-directory: frontend
