@@ -31,8 +31,14 @@ RUN chown -R node:node /workspace/frontend
 # ------------------------------------
 FROM base AS dev
 
+# root を明示
+USER root
+
+# 依存関係をインストール
+RUN apt-get update && apt-get install -y libxcursor1 libgtk-3-0 libgdk-pixbuf2.0-0 libpangocairo-1.0-0 libcairo-gobject2 libxcomposite1 libxdamage1 libxrandr2 libasound2 libcups2 libxss1 libnss3 && rm -rf /var/lib/apt/lists/*
+
 # ChromiumブラウザとOS依存ライブラリをインストール
-RUN npx playwright install chromium --with-deps
+RUN npx playwright install chromium
 
 # ユーザー切り替え
 USER node
