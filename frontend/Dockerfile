@@ -35,7 +35,28 @@ FROM base AS dev
 USER root
 
 # 依存関係をインストール
-RUN apt-get update && apt-get install -y libxcursor1 libgtk-3-0 libgdk-pixbuf2.0-0 libpangocairo-1.0-0 libcairo-gobject2 libxcomposite1 libxdamage1 libxrandr2 libasound2 libcups2 libxss1 libnss3 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2t64 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libxcursor1 \
+    libgtk-3-0 \
+    libgdk-pixbuf-xlib-2.0-0 \
+    libcairo-gobject2 \
+    libxss1 \
+    && rm -rf /var/lib/apt/lists/*
 
 # ChromiumブラウザとOS依存ライブラリをインストール
 RUN npx playwright install chromium
