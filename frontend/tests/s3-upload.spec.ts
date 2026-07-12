@@ -10,25 +10,26 @@ test.describe('S3 Upload Pipeline', () => {
 
     // バックエンドからPresigned URLを取得
     const response = await request.post('http://backend:8080/presign', {
+      headers: { 'Content-Type': 'application/json' },
       data: { filename: 'test-image.jpg' }
     });
 
-    // --- デバッグ用出力 ---
+    // エラー発生時に詳細を表示
     if (!response.ok()) {
-      console.log('--- [DEBUG] Presigned URL acquisition failed ---');
-      console.log('Status:', response.status());
-      console.log('Body:', await response.text());
+      const errorBody = await response.text();
+      console.error(`[DEBUG] Presigned URL acquisition failed (Status: ${response.status()})`);
+      console.error(`[DEBUG] Response Body: ${errorBody}`);
+      
+      // エラー内容
+      expect(response.ok(), `Failed to acquire presigned URL: ${response.status()} - ${errorBody}`).toBeTruthy();
     }
-    // -----------------------
-
-    expect(response.ok()).toBeTruthy();
 
     // レスポンスから uploadURL を抽出
     const body = await response.json();
     const { uploadURL } = body;
     expect(uploadURL).toBeDefined();
 
-    // 2. S3へ直接PUTリクエストを送信
+    // S3へ直接PUTリクエストを送信
     const putResponse = await request.put(uploadURL, {
       data: dummyImageBuffer,
       headers: {
@@ -36,15 +37,13 @@ test.describe('S3 Upload Pipeline', () => {
       }
     });
 
-    // --- デバッグ用出力 ---
+    // アップロード結果の検証とエラー出力
     if (!putResponse.ok()) {
-      console.log('--- [DEBUG] S3 Upload failed ---');
-      console.log('Status:', putResponse.status());
-      console.log('Body:', await putResponse.text());
+      const errorBody = await putResponse.text();
+      console.error(`[DEBUG] S3 Upload failed (Status: ${putResponse.status()})`);
+      console.error(`[DEBUG] Response Body: ${errorBody}`);
+      
+      expect(putResponse.ok(), `Failed to upload to S3: ${putResponse.status()} - ${errorBody}`).toBeTruthy();
     }
-    // -----------------------
-
-    // アップロード結果を検証
-    expect(putResponse.ok()).toBeTruthy();
   });
 });
