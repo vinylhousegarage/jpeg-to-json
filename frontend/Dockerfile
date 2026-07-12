@@ -37,8 +37,13 @@ USER root
 # ブラウザをインストールする場所を固定
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-# 依存関係をインストール
+# デバッグ用ツール・依存関係をインストール
 RUN apt-get update && apt-get install -y \
+    curl \
+    iputils-ping \
+    net-tools \
+    procps \
+    lsof \
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
