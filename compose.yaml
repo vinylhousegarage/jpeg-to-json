@@ -60,3 +60,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  frontend_node_modules:
