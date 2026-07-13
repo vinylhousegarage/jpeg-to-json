@@ -52,11 +52,12 @@ jobs:
       - name: Start Services
         env:
           ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
-          AWS_LAMBDA_FUNCTION_NAME: ""
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          BASE_URL: http://127.0.0.1:8081
           INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
-        run: docker compose up -d
+        run: |
+          mkdir -p backend
+          touch backend/.env
+          docker compose up -d
 
       - name: Wait for Frontend Service
         run: |
@@ -71,7 +72,7 @@ jobs:
             sleep 5
           done
           echo "::error::Server failed to start."
-          docker compose logs frontend
+          docker compose logs backend frontend
           exit 1
 
       - name: Install Dependencies
