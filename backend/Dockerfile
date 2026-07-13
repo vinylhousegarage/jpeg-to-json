@@ -5,12 +5,22 @@ FROM golang:1.26.3-trixie AS dev
 ARG UID=1000
 ARG GID=1000
 
-# 依存関係をインストール
+# 依存関係・AWS CLI・デバッグツールをインストール
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     build-essential \
     zsh \
     curl \
+    unzip \
+    less \
+    groff \
+    jq \
+    iputils-ping \
+    net-tools \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install \
+    && rm -rf aws awscliv2.zip \
     && rm -rf /var/lib/apt/lists/*
 
 # ユーザー作成
