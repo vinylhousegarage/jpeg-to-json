@@ -37,14 +37,6 @@ services:
       - "8080:8080"
     env_file:
       - ./backend/.env
-    environment:
-      - ALLOWED_ORIGINS
-      - APP_ENV=development
-      - AWS_LAMBDA_FUNCTION_NAME=
-      - AWS_PROFILE=j2j
-      - AWS_SDK_LOAD_CONFIG=true
-      - INPUT_BUCKET_NAME
-      - IS_LAMBDA=false
     networks:
       - app-network
 
