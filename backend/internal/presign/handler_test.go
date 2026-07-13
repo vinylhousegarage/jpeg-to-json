@@ -82,8 +82,8 @@ func TestPresignHandler_ServeHTTP_Integration(t *testing.T) {
 		if w.Code != http.StatusOK {
 			t.Errorf("expected 200, got %d", w.Code)
 		}
-		if !bytes.Contains(w.Body.Bytes(), []byte("upload_url")) {
-			t.Error("response body does not contain upload_url")
+		if !bytes.Contains(w.Body.Bytes(), []byte("uploadURL")) {
+			t.Error("response body does not contain uploadURL")
 		}
 	})
 }
