@@ -28,6 +28,7 @@ services:
     volumes:
       - ./backend:/workspace/backend
       - ~/.aws:/home/appuser/.aws
+      - ~/.aws/sso/cache:/home/appuser/.aws/sso/cache
       - /workspace/backend/pkg
       - /workspace/backend/bin
     ports:
@@ -35,10 +36,12 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - ALLOWED_ORIGINS=*
+      - ALLOWED_ORIGINS
       - APP_ENV=development
       - AWS_LAMBDA_FUNCTION_NAME=
-      - INPUT_BUCKET_NAME=${INPUT_BUCKET_NAME}
+      - AWS_PROFILE=j2j
+      - AWS_SDK_LOAD_CONFIG=true
+      - INPUT_BUCKET_NAME
       - IS_LAMBDA=false
     networks:
       - app-network
