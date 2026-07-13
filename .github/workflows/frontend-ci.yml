@@ -57,6 +57,10 @@ jobs:
         run: |
           mkdir -p backend
           touch backend/.env
+
+          sudo chown -R $USER:$USER .
+          chmod -R 777 backend frontend
+
           docker compose up -d
 
       - name: Fix permissions
