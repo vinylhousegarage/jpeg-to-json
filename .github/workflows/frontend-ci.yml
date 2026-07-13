@@ -59,6 +59,10 @@ jobs:
           touch backend/.env
           docker compose up -d
 
+      - name: Fix permissions
+        run: |
+          sudo chown -R $USER:$USER .
+
       - name: Wait for Frontend Service
         run: |
           TARGET_URL="http://127.0.0.1:8081"
