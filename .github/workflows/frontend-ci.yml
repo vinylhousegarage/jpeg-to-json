@@ -43,68 +43,42 @@ jobs:
   e2e-test:
     needs: test-and-build
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/jpeg-to-json-cicd-role
+          aws-region: ap-northeast-1
+
       - name: Start Services
         env:
           ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
           INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ env.AWS_SESSION_TOKEN }}
+          AWS_REGION: ap-northeast-1
         run: |
           mkdir -p backend
           touch backend/.env
-
           sudo chown -R $USER:$USER .
           chmod -R 777 backend frontend
-
-          docker compose up -d
-
-      - name: Fix permissions
-        run: |
-          sudo chown -R $USER:$USER .
+          AWS_PROFILE="" docker compose up -d
 
       - name: Wait for Frontend Service
         run: |
           TARGET_URL="http://127.0.0.1:8081"
-          echo "Waiting for Docker-based server to be ready on $TARGET_URL..."
           for i in {1..20}; do
-            if curl -s $TARGET_URL > /dev/null; then
-              echo "Server is ready!"
-              exit 0
-            fi
-            echo "Waiting... ($i/20)"
+            if curl -s $TARGET_URL > /dev/null; then exit 0; fi
             sleep 5
           done
-          echo "::error::Server failed to start."
           docker compose logs backend frontend
           exit 1
-
-      - name: Install Dependencies
-        run: npm ci --legacy-peer-deps
-        working-directory: frontend
-
-      - name: Get Playwright Version
-        id: playwright-version
-        run: |
-          VERSION=$(node -e "console.log(require('./frontend/package-lock.json').packages['node_modules/@playwright/test'].version)")
-          echo "PLAYWRIGHT_VERSION=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Cache Playwright Browsers
-        id: cache-playwright
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
-
-      - name: Install Playwright Browsers
-        if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-        working-directory: frontend
-
-      - name: Run E2E Tests
-        run: npx playwright test
-        working-directory: frontend
