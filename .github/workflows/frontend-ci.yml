@@ -49,30 +49,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Set permissions
-        run: sudo chown -R 1000:1000 .
-
-      - name: Create .env file
-        run: |
-          sudo rm -rf backend
-          mkdir -p backend
-          cat <<EOF > backend/.env
-          ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
-          AWS_LAMBDA_FUNCTION_NAME=
-          AWS_REGION=${{ secrets.AWS_REGION }}
-          BASE_URL=http://127.0.0.1:8081
-          INPUT_BUCKET_NAME=${{ secrets.INPUT_BUCKET_NAME }}
-          EOF
-          sudo chmod 644 backend/.env
-
       - name: Start Services
+        env:
+          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+          AWS_LAMBDA_FUNCTION_NAME: ""
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          BASE_URL: http://127.0.0.1:8081
+          INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
         run: docker compose up -d
 
       - name: Wait for Frontend Service
         run: |
-          echo "Waiting for Docker-based server to be ready on 8081..."
+          TARGET_URL="http://127.0.0.1:8081"
+          echo "Waiting for Docker-based server to be ready on $TARGET_URL..."
           for i in {1..20}; do
-            if curl -s http://127.0.0.1:8081 > /dev/null; then
+            if curl -s $TARGET_URL > /dev/null; then
               echo "Server is ready!"
               exit 0
             fi
