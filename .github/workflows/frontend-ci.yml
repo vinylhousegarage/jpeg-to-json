@@ -57,10 +57,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Services
-        run: docker compose -f compose.yml -f compose.ci.yml build
+        run: |
+          cd ..
+          docker compose -f compose.yml -f compose.ci.yml build
 
       - name: Start Services
-        run: docker compose -f compose.yml -f compose.ci.yml up -d
+        run: |
+          cd ..
+          docker compose -f compose.yml -f compose.ci.yml up -d
 
       - name: Wait for Frontend Service
         run: |
