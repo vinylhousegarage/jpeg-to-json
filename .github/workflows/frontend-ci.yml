@@ -58,13 +58,13 @@ jobs:
 
       - name: Build Services
         run: |
-          cd ..
-          docker compose -f compose.yml -f compose.ci.yml build
+          docker compose build
 
       - name: Start Services
         run: |
-          cd ..
-          docker compose -f compose.yml -f compose.ci.yml up -d
+          docker compose up -d
+          docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
+          docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
 
       - name: Wait for Frontend Service
         run: |
@@ -95,4 +95,4 @@ jobs:
           docker compose exec -T backend  aws sts get-caller-identity || echo "AWS Authentication failed in backend container"
 
       - name: Run E2E Tests
-        run: docker compose exec -T -u root frontend npm run test:e2e
+        run: docker compose exec -T frontend npm run test:e2e
