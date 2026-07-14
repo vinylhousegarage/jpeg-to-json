@@ -74,6 +74,6 @@ networks:
     driver: bridge
 
 volumes:
-  frontend_node_modules:
-  backend_pkg:
   backend_bin:
+  backend_pkg:
+  frontend_node_modules:
