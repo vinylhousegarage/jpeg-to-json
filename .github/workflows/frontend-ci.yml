@@ -43,42 +43,25 @@ jobs:
   e2e-test:
     needs: test-and-build
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
+    env:
+      ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+      AWS_LAMBDA_FUNCTION_NAME: ""
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      BASE_URL: http://127.0.0.1:8081
+      INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/jpeg-to-json-cicd-role
-          aws-region: ap-northeast-1
 
       - name: Start Services
-        env:
-          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
-          INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
-          AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ env.AWS_SESSION_TOKEN }}
-          AWS_REGION: ap-northeast-1
-        run: |
-          mkdir -p backend
-          touch backend/.env
-          sudo chown -R $USER:$USER .
-          chmod -R 777 backend frontend
-          AWS_PROFILE="" docker compose up -d
+        run: docker compose up -d
 
       - name: Wait for Frontend Service
         run: |
-          TARGET_URL="http://127.0.0.1:8081"
           for i in {1..20}; do
-            if curl -s $TARGET_URL > /dev/null; then exit 0; fi
+            if curl -s http://127.0.0.1:8081 > /dev/null; then exit 0; fi
             sleep 5
           done
-          docker compose logs backend frontend
           exit 1
+
+      - name: Run E2E Tests
+        run: docker compose exec -T frontend npm run test:e2e
