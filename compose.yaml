@@ -35,8 +35,15 @@ services:
       - backend_bin:/go/bin
     ports:
       - "8080:8080"
-    env_file:
-      - ./backend/.env
+    environment:
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - APP_ENV=${APP_ENV}
+      - AWS_LAMBDA_FUNCTION_NAME=${AWS_LAMBDA_FUNCTION_NAME}
+      - AWS_PROFILE=${AWS_PROFILE}
+      - AWS_SDK_LOAD_CONFIG=${AWS_SDK_LOAD_CONFIG}
+      - AWS_REGION=${AWS_REGION}
+      - INPUT_BUCKET_NAME=${INPUT_BUCKET_NAME}
+      - IS_LAMBDA=${IS_LAMBDA}
     networks:
       - app-network
 
