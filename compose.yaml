@@ -64,6 +64,7 @@ services:
     ports:
       - "8081:5173"
     environment:
+      - API_BASE_URL=http://backend:8080
       - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
     networks:
       - app-network
