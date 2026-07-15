@@ -37,14 +37,10 @@ RUN echo 'autoload -Uz vcs_info' >> /home/appuser/.zshrc && \
 # ディレクトリ
 WORKDIR /workspace/backend
 
-# CI 環境設定
-RUN mkdir -p /workspace/backend/tmp && \
-    chown -R appuser:appgroup /workspace/backend/tmp && \
+# CI 環境・モジュールキャッシュの権限設定
+RUN mkdir -p /workspace/backend/tmp /go/pkg/mod /go/bin && \
+    chown -R appuser:appgroup /workspace/backend /go/pkg /go/bin && \
     chmod -R 777 /workspace/backend/tmp
-
-# モジュールキャッシュの権限設定
-RUN mkdir -p /go/pkg/mod /go/bin && \
-    chown -R appuser:appgroup /workspace/backend /go/pkg /go/bin
 
 # ユーザー切り替え
 USER appuser
