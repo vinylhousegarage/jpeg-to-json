@@ -64,6 +64,9 @@ jobs:
         run: |
           docker compose up -d
 
+          echo "--- Current Docker Compose Config ---"
+          docker compose config
+
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
           docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
 
