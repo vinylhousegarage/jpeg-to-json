@@ -98,6 +98,14 @@ jobs:
       - name: Run E2E Tests
         run: docker compose exec -T frontend npm run test:e2e
 
+      - name: Debug Backend Status
+        if: failure()
+        run: |
+          echo "--- Inspecting running processes and network ---"
+          ls -l /proc/1/exe || echo "Process 1 not found"
+          
+          docker compose logs backend
+
       - name: Debug Container Logs
         if: failure()
         run: docker compose logs frontend backend
@@ -105,18 +113,6 @@ jobs:
       - name: Check Open Ports
         if: failure()
         run: docker compose exec -T backend ss -tuln || docker compose exec -T backend netstat -tuln
-
-      - name: Debug Inside Container
-        if: failure()
-        run: |
-          docker compose exec -T backend ps aux
-          docker compose exec -T backend ls -l /workspace/backend
-
-      - name: Check Backend SSO Status
-        if: failure()
-        run: |
-          echo "Checking backend SSO/Auth status..."
-          docker compose exec -T backend aws sts get-caller-identity || echo "AWS Authentication failed in backend container"
 
       - name: Inspect Network Configuration
         if: failure()
