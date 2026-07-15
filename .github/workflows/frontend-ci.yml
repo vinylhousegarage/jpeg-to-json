@@ -63,7 +63,6 @@ jobs:
         env:
           ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
           APP_ENV: ${{ secrets.APP_ENV }}
-          AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_SDK_LOAD_CONFIG: ${{ secrets.AWS_SDK_LOAD_CONFIG }}
           INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
@@ -73,14 +72,14 @@ jobs:
           ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
           APP_ENV=${APP_ENV}
           AWS_LAMBDA_FUNCTION_NAME=
-          AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
+          AWS_PROFILE=
           AWS_REGION=${AWS_REGION}
-          AWS_SDK_LOAD_CONFIG: ${{ secrets.AWS_SDK_LOAD_CONFIG }}
+          AWS_SDK_LOAD_CONFIG=${AWS_SDK_LOAD_CONFIG}
           INPUT_BUCKET_NAME=${INPUT_BUCKET_NAME}
           IS_LAMBDA=${IS_LAMBDA}
-          AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-          AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-          AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+          AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN=${{ env.AWS_SESSION_TOKEN }}
           EOF
 
       - name: Start Services
@@ -89,6 +88,12 @@ jobs:
 
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
           docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
+
+      - name: Debug Environment Variables
+        if: failure()
+        run: |
+          echo "--- Inspecting Backend Environment Variables ---"
+          docker compose -f compose.yaml -f compose.prod.yaml exec -T backend env | grep AWS
 
       - name: Run E2E Tests
         run: docker compose exec -T frontend npm run test:e2e
