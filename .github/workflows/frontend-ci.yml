@@ -63,14 +63,19 @@ jobs:
         env:
           ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
           APP_ENV: ${{ secrets.APP_ENV }}
+          AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_SDK_LOAD_CONFIG: ${{ secrets.AWS_SDK_LOAD_CONFIG }}
           INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
           IS_LAMBDA: ${{ secrets.IS_LAMBDA }}
         run: |
           cat <<EOF > .env
           ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
           APP_ENV=${APP_ENV}
+          AWS_LAMBDA_FUNCTION_NAME=
+          AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
           AWS_REGION=${AWS_REGION}
+          AWS_SDK_LOAD_CONFIG: ${{ secrets.AWS_SDK_LOAD_CONFIG }}
           INPUT_BUCKET_NAME=${INPUT_BUCKET_NAME}
           IS_LAMBDA=${IS_LAMBDA}
           AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
