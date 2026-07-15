@@ -50,7 +50,7 @@ jobs:
       AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_SDK_LOAD_CONFIG: ${{ secrets.AWS_SDK_LOAD_CONFIG }}
-      BASE_URL: http://backend:8081
+      BASE_URL: http://127.0.0.1:8081
       INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
       IS_LAMBDA: ${{ secrets.IS_LAMBDA }}
     steps:
@@ -69,7 +69,7 @@ jobs:
       - name: Wait for Frontend Service
         run: |
           for i in {1..20}; do
-            if curl -s http://backend:8081 > /dev/null; then exit 0; fi
+            if curl -s http://127.0.0.1:8081 > /dev/null; then exit 0; fi
             sleep 5
           done
           exit 1
@@ -96,10 +96,3 @@ jobs:
 
       - name: Run E2E Tests
         run: docker compose exec -T frontend npm run test:e2e
-
-      - name: Setup tmate session
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
-        with:
-          timeout-minutes: 5
-          limit-access-to-actor: true
