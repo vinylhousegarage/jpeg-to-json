@@ -13,6 +13,6 @@ export default defineConfig({
     command: isCI ? 'echo "Server already running"' : 'npm run preview',
     url: isCI ? 'http://frontend:5173' : 'http://127.0.0.1:5173',
     reuseExistingServer: true,
-    timeout: 60 * 1000,
+    timeout: 120 * 1000,
   },
 });
