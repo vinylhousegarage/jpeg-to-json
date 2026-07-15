@@ -59,4 +59,4 @@ RUN go mod download
 # ソースコードをコピー
 COPY --chown=appuser:appgroup . .
 
-CMD ["sh", "-c", "${BACKEND_COMMAND:-air}"]
+CMD ["go", "run", "./cmd/presign/main.go"]
