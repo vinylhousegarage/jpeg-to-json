@@ -2,4 +2,6 @@ services:
   backend:
     build:
       target: runner
+    working_dir: /app
     volumes: []
+    entrypoint: ["./server"]
