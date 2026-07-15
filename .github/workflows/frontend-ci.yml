@@ -49,14 +49,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Build Services
+        run: docker compose build --no-cache
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/jpeg-to-json-cicd-role
           aws-region: ap-northeast-1
 
-      - name: Build Services
-        run: docker compose build --no-cache
+      - name: Generate .env file
+        shell: bash
+        env:
+          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+          APP_ENV: ${{ secrets.APP_ENV }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
+          IS_LAMBDA: ${{ secrets.IS_LAMBDA }}
+        run: |
+          cat <<EOF > .env
+          ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+          APP_ENV=${APP_ENV}
+          AWS_REGION=${AWS_REGION}
+          INPUT_BUCKET_NAME=${INPUT_BUCKET_NAME}
+          IS_LAMBDA=${IS_LAMBDA}
+          AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+          AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+          AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+          EOF
 
       - name: Start Services
         run: |
@@ -64,16 +84,6 @@ jobs:
 
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
           docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
-        env:
-          AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ env.AWS_SESSION_TOKEN }}
-          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
-          APP_ENV: ${{ secrets.APP_ENV }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
-          IS_LAMBDA: ${{ secrets.IS_LAMBDA }}
-          BASE_URL: http://127.0.0.1:8081
 
       - name: Debug Backend Connectivity
         run: |
