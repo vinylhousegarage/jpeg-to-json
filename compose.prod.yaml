@@ -9,5 +9,5 @@ services:
       - AWS_PROFILE=
       - AWS_SDK_LOAD_CONFIG=1
 
-frontend:
+  frontend:
     command: ["sh", "-c", "npm run preview -- --host 0.0.0.0"]
