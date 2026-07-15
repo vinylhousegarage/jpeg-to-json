@@ -100,17 +100,24 @@ jobs:
       - name: Inspect Network Configuration
         if: failure()
         run: |
+          echo "--- Checking running containers ---"
+          docker compose ps
+          
+          FRONTEND_CONTAINER=$(docker compose ps -q frontend)
+          BACKEND_CONTAINER=$(docker compose ps -q backend)
+
           echo "--- Frontend IP Address ---"
-          docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' frontend
+          docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $FRONTEND_CONTAINER
+          
           echo "--- Backend IP Address ---"
-          docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' backend
+          docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $BACKEND_CONTAINER
 
           echo "--- DNS Resolution Check (inside frontend) ---"
           docker compose exec -T frontend nslookup backend || echo "nslookup backend failed"
           docker compose exec -T frontend nslookup go || echo "nslookup go failed"
 
           echo "--- Connectivity Check (curl to Backend IP) ---"
-          BACKEND_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' backend)
+          BACKEND_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $BACKEND_CONTAINER)
           docker compose exec -T frontend curl -v http://$BACKEND_IP:8080/presign || echo "Curl to IP failed"
 
           echo "--- Network Bridge Details ---"
