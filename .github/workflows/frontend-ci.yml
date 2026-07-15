@@ -43,99 +43,43 @@ jobs:
   e2e-test:
     needs: test-and-build
     runs-on: ubuntu-latest
-    env:
-      ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
-      APP_ENV: ${{ secrets.APP_ENV }}
-      AWS_LAMBDA_FUNCTION_NAME: ""
-      AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_SDK_LOAD_CONFIG: ${{ secrets.AWS_SDK_LOAD_CONFIG }}
-      BASE_URL: http://127.0.0.1:8081
-      INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
-      IS_LAMBDA: ${{ secrets.IS_LAMBDA }}
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/jpeg-to-json-cicd-role
+          aws-region: ap-northeast-1
+
       - name: Build Services
-        run: |
-          docker compose build --no-cache
+        run: docker compose build --no-cache
 
       - name: Start Services
         run: |
           docker compose up -d
 
-          echo "--- Current Docker Compose Config ---"
-          docker compose config
-
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
           docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
+        env:
+          AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ env.AWS_SESSION_TOKEN }}
+          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+          APP_ENV: ${{ secrets.APP_ENV }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          INPUT_BUCKET_NAME: ${{ secrets.INPUT_BUCKET_NAME }}
+          IS_LAMBDA: ${{ secrets.IS_LAMBDA }}
+          BASE_URL: http://127.0.0.1:8081
 
       - name: Debug Backend Connectivity
         run: |
-          echo "--- 1. Check if Backend is listening on 8080 ---"
+          sleep 10 
           docker compose exec -T backend netstat -tuln | grep 8080 || echo "Backend is NOT listening on 8080"
-
-          echo "--- 2. Check Backend process status ---"
-          docker compose exec -T backend ps aux | grep "go run" || echo "Go process not found"
-
-          echo "--- 3. Verify inter-container connectivity ---"
-          docker compose exec -T frontend curl -v http://backend:8080/presign || echo "Frontend -> Backend curl failed"
-
-      - name: Wait for Frontend Service
-        run: |
-          for i in {1..20}; do
-            if curl -s http://127.0.0.1:8081 > /dev/null; then exit 0; fi
-            sleep 5
-          done
-          exit 1
-
-      - name: Debug Container Logs
-        if: failure()
-        run: docker compose logs frontend
-
-      - name: Check Open Ports
-        if: failure()
-        run: docker compose exec -T frontend ss -tuln || docker compose exec -T frontend netstat -tuln
-
-      - name: Debug Inside Container
-        if: failure()
-        run: |
-          docker compose exec -T frontend ps aux
-          docker compose exec -T frontend ls -l /app
-
-      - name: Check Backend SSO Status
-        if: failure()
-        run: |
-          echo "Checking backend SSO/Auth status..."
-          docker compose exec -T backend  aws sts get-caller-identity || echo "AWS Authentication failed in backend container"
+          docker compose exec -T backend ps aux | grep "go run"
 
       - name: Run E2E Tests
         run: docker compose exec -T frontend npm run test:e2e
-
-      - name: Inspect Network Configuration
-        if: failure()
-        run: |
-          echo "--- 1. Check all containers (including stopped ones) ---"
-          docker compose ps -a
-
-          echo "--- 2. Frontend IP Address ---"
-          FRONTEND_CONTAINER=$(docker compose ps -q frontend)
-          if [ -n "$FRONTEND_CONTAINER" ]; then
-            docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $FRONTEND_CONTAINER
-          else
-            echo "Frontend container not found."
-          fi
-
-          echo "--- 3. Backend Container Logs (All) ---"
-          docker compose logs backend
-
-          echo "--- 4. Backend Container Status (inspect) ---"
-          docker compose inspect backend || echo "Backend container does not exist."
-
-          echo "--- 5. DNS Resolution Check (inside frontend) ---"
-          docker compose exec -T frontend nslookup backend || echo "nslookup backend failed"
-
-          echo "--- 6. Network Bridge Details ---"
-          docker network inspect app-network
-
-          exit 0
