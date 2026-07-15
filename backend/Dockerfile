@@ -59,4 +59,4 @@ RUN go mod download
 # ソースコードをコピー
 COPY --chown=appuser:appgroup . .
 
-CMD ["air"]
+CMD ["sh", "-c", "${BACKEND_COMMAND:-air}"]
