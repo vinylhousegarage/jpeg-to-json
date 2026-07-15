@@ -62,6 +62,7 @@ jobs:
 
       - name: Start Services
         run: |
+          docker compose down -v
           docker compose up -d
 
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
