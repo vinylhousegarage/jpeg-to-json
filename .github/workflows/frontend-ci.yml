@@ -85,7 +85,7 @@ jobs:
 
       - name: Start Services
         run: |
-          docker compose -f compose.yaml -f compose.ci.yaml up -d
+          docker compose -f compose.yaml -f compose.prod.yaml up -d
 
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
           docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
