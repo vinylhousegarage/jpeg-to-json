@@ -62,8 +62,7 @@ jobs:
 
       - name: Start Services
         run: |
-          docker compose down -v
-          BACKEND_COMMAND="go run ./cmd/presign/main.go" docker compose up -d
+          docker compose up -d
 
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
           docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
