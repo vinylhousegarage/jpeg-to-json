@@ -67,11 +67,6 @@ jobs:
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
           docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
 
-          docker compose exec -T -u root backend mkdir -p /workspace/backend/tmp
-          docker compose exec -T -u root backend chmod -R 777 /workspace/backend/tmp
-
-          docker compose restart backend
-
       - name: Wait for Frontend Service
         run: |
           for i in {1..20}; do
