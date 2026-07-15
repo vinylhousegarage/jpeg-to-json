@@ -70,6 +70,17 @@ jobs:
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
           docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
 
+      - name: Debug Backend Connectivity
+        run: |
+          echo "--- 1. Check if Backend is listening on 8080 ---"
+          docker compose exec -T backend netstat -tuln | grep 8080 || echo "Backend is NOT listening on 8080"
+
+          echo "--- 2. Check Backend process status ---"
+          docker compose exec -T backend ps aux | grep "go run" || echo "Go process not found"
+
+          echo "--- 3. Verify inter-container connectivity ---"
+          docker compose exec -T frontend curl -v http://backend:8080/presign || echo "Frontend -> Backend curl failed"
+
       - name: Wait for Frontend Service
         run: |
           for i in {1..20}; do
