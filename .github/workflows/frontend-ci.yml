@@ -58,7 +58,7 @@ jobs:
 
       - name: Build Services
         run: |
-          docker compose build
+          docker compose build --no-cache
 
       - name: Start Services
         run: |
