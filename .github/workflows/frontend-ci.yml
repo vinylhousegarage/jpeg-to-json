@@ -95,4 +95,4 @@ jobs:
           docker compose exec -T backend  aws sts get-caller-identity || echo "AWS Authentication failed in backend container"
 
       - name: Run E2E Tests
-        run: docker compose exec -T frontend npm run test:e2e
+        run: docker compose exec -T -e BACKEND_URL=http://backend:8080 frontend npm run test:e2e
