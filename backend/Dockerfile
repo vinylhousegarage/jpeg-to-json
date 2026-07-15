@@ -1,4 +1,6 @@
+# ------------------------------------
 # 開発用 (Target: dev)
+# ------------------------------------
 FROM golang:1.26.3-trixie AS dev
 
 # UID/GIDの受け取り
@@ -59,4 +61,26 @@ RUN go mod download
 # ソースコードをコピー
 COPY --chown=appuser:appgroup . .
 
-CMD ["go", "run", "./cmd/presign/main.go"]
+CMD ["air", "-c", ".air.toml"]
+
+# ------------------------------------
+# ビルド用 (Target: builder)
+# ------------------------------------
+FROM golang:1.26.3-trixie AS builder
+WORKDIR /workspace/backend
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+
+# バイナリとしてビルド
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/server ./cmd/presign/main.go
+
+# ------------------------------------
+# 本番用 (Target: runner)
+# ------------------------------------
+FROM debian:13-slim AS runner
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/server .
+USER 1000:1000
+CMD ["./server"]
