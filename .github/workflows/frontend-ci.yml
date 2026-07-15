@@ -97,9 +97,26 @@ jobs:
       - name: Run E2E Tests
         run: docker compose exec -T -e BACKEND_URL=http://backend:8080 frontend npm run test:e2e
 
-      - name: Setup tmate session
+      - name: Inspect Network Configuration
         if: failure()
-        uses: mxschmitt/action-tmate@v3
-        with:
-          timeout-minutes: 5
-          limit-access-to-actor: true
+        run: |
+          echo "--- Frontend IP Address ---"
+          docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' frontend
+          echo "--- Backend IP Address ---"
+          docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' backend
+
+          echo "--- DNS Resolution Check (inside frontend) ---"
+          docker compose exec -T frontend nslookup backend || echo "nslookup backend failed"
+          docker compose exec -T frontend nslookup go || echo "nslookup go failed"
+
+          echo "--- Connectivity Check (curl to Backend IP) ---"
+          BACKEND_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' backend)
+          docker compose exec -T frontend curl -v http://$BACKEND_IP:8080/presign || echo "Curl to IP failed"
+
+          echo "--- Network Bridge Details ---"
+          docker network inspect app-network
+
+          echo "--- Backend Logs (Last 50 lines) ---"
+          docker compose logs --tail 50 backend
+
+          exit 0
