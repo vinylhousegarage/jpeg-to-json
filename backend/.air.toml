@@ -12,7 +12,6 @@ tmp_dir = "tmp"
     fi
   """
   delay = 1000
-  # exclude_dirにtmpを含めない（air自身がtmpを使うため、ここから除外すると競合する可能性がある）
   exclude_dir = ["bin", "vendor"]
   exclude_file = []
   exclude_regex = ["_test.go"]
