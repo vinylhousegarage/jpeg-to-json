@@ -1,16 +1,28 @@
+# ------------------------------------
 # 開発用 (Target: dev)
+# ------------------------------------
 FROM golang:1.26.3-trixie AS dev
 
 # UID/GIDの受け取り
 ARG UID=1000
 ARG GID=1000
 
-# 依存関係をインストール
+# 依存関係・AWS CLI・デバッグツールをインストール
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     build-essential \
     zsh \
     curl \
+    unzip \
+    less \
+    groff \
+    jq \
+    iputils-ping \
+    net-tools \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install \
+    && rm -rf aws awscliv2.zip \
     && rm -rf /var/lib/apt/lists/*
 
 # ユーザー作成
@@ -49,4 +61,26 @@ RUN go mod download
 # ソースコードをコピー
 COPY --chown=appuser:appgroup . .
 
-CMD ["air"]
+CMD ["air", "-c", ".air.toml"]
+
+# ------------------------------------
+# ビルド用 (Target: builder)
+# ------------------------------------
+FROM golang:1.26.3-trixie AS builder
+WORKDIR /workspace/backend
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+
+# バイナリとしてビルド
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/server ./cmd/presign/main.go
+
+# ------------------------------------
+# 本番用 (Target: runner)
+# ------------------------------------
+FROM debian:13-slim AS runner
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/server .
+USER 1000:1000
+CMD ["./server"]

@@ -1,0 +1,13 @@
+services:
+  backend:
+    build:
+      target: runner
+    working_dir: /app
+    volumes: []
+    entrypoint: ["./server"]
+    environment:
+      - AWS_PROFILE=
+      - AWS_SDK_LOAD_CONFIG=1
+
+  frontend:
+    command: ["sh", "-c", "npm run build && npx serve -s dist -l 5173"]

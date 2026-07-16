@@ -5,6 +5,7 @@ services:
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
+    user: "${UID:-1000}:${GID:-1000}"
     container_name: cdk
     working_dir: /workspace/infra
     volumes:
@@ -19,21 +20,35 @@ services:
   backend:
     build:
       context: ./backend
-      target: dev
+      target: ${DOCKER_TARGET:-dev}
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
+    user: "${UID:-1000}:${GID:-1000}"
     container_name: go
     working_dir: /workspace/backend
     volumes:
       - ./backend:/workspace/backend
       - ~/.aws:/home/appuser/.aws
-      - /workspace/backend/pkg
-      - /workspace/backend/bin
+      - ~/.aws/sso/cache:/home/appuser/.aws/sso/cache
+      - backend_pkg:/go/pkg
+      - backend_bin:/go/bin
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - APP_ENV=${APP_ENV}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_LAMBDA_FUNCTION_NAME=${AWS_LAMBDA_FUNCTION_NAME}
+      - AWS_PROFILE=${AWS_PROFILE}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_SDK_LOAD_CONFIG=${AWS_SDK_LOAD_CONFIG}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
       - INPUT_BUCKET_NAME=${INPUT_BUCKET_NAME}
+      - IS_LAMBDA=${IS_LAMBDA}
     networks:
       - app-network
 
@@ -44,6 +59,7 @@ services:
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
+    user: "${UID:-1000}:${GID:-1000}"
     container_name: typescript
     working_dir: /workspace/frontend
     volumes:
@@ -56,12 +72,14 @@ services:
       - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
     networks:
       - app-network
-
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
 
 networks:
   app-network:
+    name: app-network
     driver: bridge
 
 volumes:
+  backend_bin:
+  backend_pkg:
   frontend_node_modules:
