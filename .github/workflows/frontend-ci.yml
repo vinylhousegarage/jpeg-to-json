@@ -89,17 +89,17 @@ jobs:
         run: |
           echo "--- 1. Verifying Bucket Name ---"
           docker compose exec -T backend printenv INPUT_BUCKET_NAME
-          
+
           echo "--- 2. Checking AWS Identity ---"
           docker compose exec -T backend aws sts get-caller-identity
-          
+
           echo "--- 3. Debug IAM Policy Simulation ---"
-          # INPUT_BUCKET_NAME を利用してARNを動的に生成
-          BUCKET_NAME=${INPUT_BUCKET_NAME}
-          docker compose exec -T backend aws iam simulate-principal-policy \
+      - name: Debug IAM Policy Simulation
+        run: |
+          aws iam simulate-principal-policy \
             --policy-source-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/jpeg-to-json-cicd-role \
             --action-names s3:PutObject \
-            --resource-arns arn:aws:s3:::${BUCKET_NAME}/test-image.jpg
+            --resource-arns arn:aws:s3:::${{ secrets.INPUT_BUCKET_NAME }}/test-image.jpg
 
       - name: Run E2E Tests
         run: docker compose exec -T frontend npm run test:e2e
@@ -109,7 +109,7 @@ jobs:
         run: |
           echo "--- Inspecting running processes and network ---"
           ls -l /proc/1/exe || echo "Process 1 not found"
-          
+
           docker compose logs backend
 
       - name: Debug Container Logs
