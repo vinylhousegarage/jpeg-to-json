@@ -8,12 +8,23 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 )
 
+type BedrockRuntimeClient interface {
+	InvokeModel(
+		ctx context.Context,
+		params *bedrockruntime.InvokeModelInput,
+		optFns ...func(*bedrockruntime.Options),
+	) (*bedrockruntime.InvokeModelOutput, error)
+}
+
 type BedrockClient struct {
-	sdkClient *bedrockruntime.Client
+	sdkClient BedrockRuntimeClient
 	modelID   string
 }
 
-func NewClient(ctx context.Context, modelID string) (*BedrockClient, error) {
+func NewClient(
+	ctx context.Context,
+	modelID string,
+) (*BedrockClient, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
@@ -25,6 +36,10 @@ func NewClient(ctx context.Context, modelID string) (*BedrockClient, error) {
 	}, nil
 }
 
-func (c *BedrockClient) Invoke(ctx context.Context, imgData []byte, prompt string) (*Result, error) {
+func (c *BedrockClient) Invoke(
+	ctx context.Context,
+	imgData []byte,
+	prompt string,
+) (*Result, error) {
 	return &Result{Data: map[string]string{}}, nil
 }
