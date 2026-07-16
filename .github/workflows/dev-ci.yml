@@ -5,7 +5,6 @@ on:
     branches:
       - dev
     paths: &dev-ci-paths
-      - 'backend/**'
       - 'infra/**'
       - '.github/workflows/dev-cd.yml'
       - '.github/workflows/dev-ci.yml'
