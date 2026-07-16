@@ -95,17 +95,6 @@ jobs:
           echo "--- Inspecting Backend Environment Variables ---"
           docker compose -f compose.yaml -f compose.prod.yaml exec -T backend env | grep AWS
 
-      - name: Verify Network Connectivity
-        run: |
-          echo "--- Checking connectivity to frontend:5173 ---"
-          docker compose exec -T frontend sh -c "curl -I http://localhost:5173" || echo "Localhost check failed"
-          
-          docker compose exec -T frontend sh -c "ping -c 1 frontend" || echo "Ping failed"
-          docker compose exec -T frontend sh -c "nc -zv frontend 5173" || echo "Port 5173 is not reachable via nc"
-          
-          echo "--- Checking if backend can reach frontend ---"
-          docker compose exec -T backend sh -c "curl -I http://frontend:5173" || echo "Backend to frontend check failed"
-
       - name: Run E2E Tests
         run: docker compose exec -T frontend npm run test:e2e
 
