@@ -95,6 +95,9 @@ jobs:
           echo "--- Inspecting Backend Environment Variables ---"
           docker compose -f compose.yaml -f compose.prod.yaml exec -T backend env | grep AWS
 
+      - name: Wait for Services
+        run: sleep 10
+
       - name: Run E2E Tests
         run: docker compose exec -T frontend npm run test:e2e
 
