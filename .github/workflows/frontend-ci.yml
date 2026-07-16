@@ -120,8 +120,5 @@ jobs:
           FRONTEND_CONTAINER=$(docker compose ps -q frontend)
           [ -n "$FRONTEND_CONTAINER" ] && docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $FRONTEND_CONTAINER
 
-          echo "--- 3. DNS Resolution Check (inside frontend) ---"
-          docker compose exec -T frontend nslookup backend || echo "nslookup backend failed"
-
-          echo "--- 4. Network Bridge Details ---"
+          echo "--- 3. Network Bridge Details ---"
           docker network inspect app-network
