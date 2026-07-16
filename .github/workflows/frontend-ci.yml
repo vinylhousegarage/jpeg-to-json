@@ -93,14 +93,6 @@ jobs:
           echo "--- 2. Checking AWS Identity ---"
           docker compose exec -T backend aws sts get-caller-identity
 
-          echo "--- 3. Debug IAM Policy Simulation ---"
-      - name: Debug IAM Policy Simulation
-        run: |
-          aws iam simulate-principal-policy \
-            --policy-source-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/jpeg-to-json-cicd-role \
-            --action-names s3:PutObject \
-            --resource-arns arn:aws:s3:::${{ secrets.INPUT_BUCKET_NAME }}/test-image.jpg
-
       - name: Run E2E Tests
         run: docker compose exec -T frontend npm run test:e2e
 
