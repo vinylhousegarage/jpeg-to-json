@@ -82,12 +82,6 @@ jobs:
           docker compose exec -T -u root frontend chmod -R 777 /workspace/frontend
           docker compose exec -T -u root frontend chown -R node:node /home/node/.npm
 
-      - name: Debug Environment Variables
-        if: failure()
-        run: |
-          echo "--- Inspecting Backend Environment Variables ---"
-          docker compose -f compose.yaml -f compose.prod.yaml exec -T backend env | grep AWS
-
       - name: Wait for Services
         run: sleep 10
 
