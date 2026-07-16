@@ -110,10 +110,6 @@ jobs:
         if: failure()
         run: docker compose logs frontend backend
 
-      - name: Check Open Ports
-        if: failure()
-        run: docker compose exec -T backend ss -tuln || docker compose exec -T backend netstat -tuln
-
       - name: Inspect Network Configuration
         if: failure()
         run: |
