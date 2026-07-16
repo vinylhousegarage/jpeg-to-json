@@ -10,4 +10,4 @@ services:
       - AWS_SDK_LOAD_CONFIG=1
 
   frontend:
-    command: ["sh", "-c", "npm run preview -- --host 0.0.0.0"]
+    command: ["sh", "-c", "npm run build && npx serve -s dist -l 5173"]
