@@ -48,16 +48,22 @@ func (s *Service) parseResponse(response []byte) (map[string]interface{}, error)
 		return nil, fmt.Errorf("no content in bedrock response")
 	}
 
-	// JSON文字列部分のクリーニング
 	text := resp.Content[0].Text
-	text = strings.ReplaceAll(text, "```json", "")
-	text = strings.ReplaceAll(text, "```", "")
-	text = strings.TrimSpace(text)
+
+	// JSONで抽出（{}内のみを抽出・Markdownや前後の説明文を無視 ）
+	start := strings.Index(text, "{")
+	end := strings.LastIndex(text, "}")
+
+	if start == -1 || end == -1 || start >= end {
+		return nil, fmt.Errorf("invalid json format: %s", text)
+	}
+
+	jsonPart := text[start : end+1]
 
 	// JSONをパースしてMapへ
 	var result map[string]interface{}
-	if err := json.Unmarshal([]byte(text), &result); err != nil {
-		return nil, fmt.Errorf("failed to parse JSON from bedrock output: %w, text: %s", err, text)
+	if err := json.Unmarshal([]byte(jsonPart), &result); err != nil {
+		return nil, fmt.Errorf("failed to parse JSON from bedrock output: %w, text: %s", err, jsonPart)
 	}
 
 	return result, nil
