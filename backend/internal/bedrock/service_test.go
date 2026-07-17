@@ -26,6 +26,12 @@ func TestParseResponse(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "JSON with explanatory text",
+			input:   `{"content": [{"text": "解析結果は以下の通りです。{\"key\": \"value\"} 以上です。"}]}`,
+			wantKey: "value",
+			wantErr: false,
+		},
+		{
 			name:    "Invalid JSON Format",
 			input:   `{"content": [{"text": "これはJSONではありません"}]}`,
 			wantKey: "",
@@ -37,6 +43,12 @@ func TestParseResponse(t *testing.T) {
 			wantKey: "",
 			wantErr: true,
 		},
+		{
+			name:    "Broken JSON inside braces",
+			input:   `{"content": [{"text": "{\"key\": \"value\""}]}`,
+			wantKey: "",
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -45,12 +57,19 @@ func TestParseResponse(t *testing.T) {
 			t.Parallel()
 
 			res, err := s.parseResponse([]byte(tt.input))
+			
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseResponse() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && res["key"] != tt.wantKey {
-				t.Errorf("got %v, want %v", res["key"], tt.wantKey)
+			
+			if !tt.wantErr {
+				val, ok := res["key"]
+				if !ok {
+					t.Errorf("expected key 'key' not found in result")
+				} else if val != tt.wantKey {
+					t.Errorf("got %v, want %v", val, tt.wantKey)
+				}
 			}
 		})
 	}
