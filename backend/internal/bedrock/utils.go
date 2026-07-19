@@ -11,7 +11,7 @@ import (
 var PromptFS embed.FS
 
 // 埋め込まれたプロンプトの読み込み
-func LoadPrompt(path string) (string, error) {
+func LoadPrompt() (string, error) {
 	data, err := PromptFS.ReadFile("prompts/extractor.txt")
 	if err != nil {
 		return "", fmt.Errorf("failed to read embedded prompt: %w", err)

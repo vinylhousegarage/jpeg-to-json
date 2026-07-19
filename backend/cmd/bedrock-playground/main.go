@@ -44,7 +44,7 @@ func main() {
 	}
 
 	// 5. プロンプトを取得
-	promptText, err := bedrock.LoadPrompt("prompts/extractor.txt")
+	promptText, err := bedrock.LoadPrompt()
 	if err != nil {
     l.Fatal("failed to load prompt", zap.Error(err))
 	}

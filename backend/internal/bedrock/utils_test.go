@@ -8,7 +8,7 @@ import (
 func TestLoadPrompt(t *testing.T) {
 	t.Parallel()
 
-	content, err := LoadPrompt("prompts/extractor.txt")
+	content, err := LoadPrompt()
 	if err != nil {
 		t.Fatalf("Failed to load prompt: %v", err)
 	}
