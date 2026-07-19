@@ -30,7 +30,9 @@ func main() {
 	if err != nil {
 		panic("failed to initialize logger: " + err.Error())
 	}
-	defer l.Sync()
+	defer func() {
+		_ = l.Sync()
+	}()
 
 	// 3. 結果ディレクトリの確保
 	if err := os.MkdirAll(resultsDir, 0755); err != nil {
