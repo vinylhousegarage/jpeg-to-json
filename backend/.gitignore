@@ -16,3 +16,5 @@ bin/
 Thumbs.db
 
 .env
+
+examples/bedrock-playground/results/*.json
