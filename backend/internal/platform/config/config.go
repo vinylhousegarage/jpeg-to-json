@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -17,10 +15,6 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		fmt.Println("Warning: .env file not found")
-	}
 
 	origins := os.Getenv("ALLOWED_ORIGINS")
 	if origins == "" {

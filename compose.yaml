@@ -35,8 +35,6 @@ services:
       - backend_bin:/go/bin
     ports:
       - "8080:8080"
-    env_file:
-      - .env
     environment:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       - APP_ENV=${APP_ENV}
