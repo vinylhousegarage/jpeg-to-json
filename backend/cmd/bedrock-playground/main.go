@@ -62,7 +62,10 @@ func main() {
 
 		// 画像をBase64に変換
 		b64Data, err := EncodeFileToBase64(imagePath)
-		if err != nil { /* ... */ }
+		if err != nil {
+			l.Error("failed to encode file to base64", "error", err, "path", imagePath)
+			return fmt.Errorf("encode error: %w", err) 
+		}
 
 		requestBody := bedrock.NewRequestBody(promptText, b64Data)
 
