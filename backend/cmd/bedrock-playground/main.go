@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -63,10 +62,9 @@ func main() {
 
 		// 画像をBase64に変換
 		b64Data, err := EncodeFileToBase64(imagePath)
-		if err != nil {
-			l.Error("failed to encode file to base64", "error", err, "path", imagePath)
-			return fmt.Errorf("encode error: %w", err) 
-		}
+    if err != nil {
+      l.Fatal("failed to encode file to base64", zap.Error(err), zap.String("path", imagePath))
+    }
 
 		requestBody := bedrock.NewRequestBody(promptText, b64Data)
 
