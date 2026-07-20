@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -19,6 +20,8 @@ const (
 )
 
 func main() {
+	ctx := context.Background()
+
 	// 1. 設定の初期化
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -34,25 +37,33 @@ func main() {
 		_ = l.Sync()
 	}()
 
-	// 3. 結果ディレクトリの確保
+	// 3. Bedrockクライアントの初期化
+	client, err := bedrock.NewClient(ctx, "anthropic.claude-3-5-sonnet-20241022-v2:0")
+	if err != nil {
+		l.Fatal("failed to initialize bedrock client", zap.Error(err))
+	}
+
+	// 4. 結果ディレクトリの確保
 	if err := os.MkdirAll(resultsDir, 0755); err != nil {
 		l.Fatal("failed to create results directory", zap.String("dir", resultsDir), zap.Error(err))
 	}
 
-	// 4. samples/の画像を列挙
+	// 5. samples/の画像を列挙
 	files, err := os.ReadDir(samplesDir)
 	if err != nil {
 		l.Fatal("failed to read samples directory", zap.String("dir", samplesDir), zap.Error(err))
 	}
 
-	// 5. プロンプトを取得
+	// 6. プロンプトを取得
 	promptText, err := bedrock.LoadPrompt()
 	if err != nil {
-    l.Fatal("failed to load prompt", zap.Error(err))
+		l.Fatal("failed to load prompt", zap.Error(err))
 	}
 
+	l.Info("Starting playground execution...")
+
 	for _, file := range files {
-		// JPEGのみを処理
+		// JPEGの確認
 		if filepath.Ext(file.Name()) != ".jpg" {
 			continue
 		}
@@ -60,42 +71,39 @@ func main() {
 		imagePath := filepath.Join(samplesDir, file.Name())
 		l.Info("Processing image", zap.String("path", imagePath))
 
-		// 画像をBase64に変換
-		b64Data, err := EncodeFileToBase64(imagePath)
-    if err != nil {
-      l.Fatal("failed to encode file to base64", zap.Error(err), zap.String("path", imagePath))
-    }
+		// 画像ファイルをバイナリとして読み込み
+		imgData, err := os.ReadFile(imagePath)
+		if err != nil {
+			l.Error("Failed to read image", zap.String("path", imagePath), zap.Error(err))
+			continue
+		}
 
-		requestBody := bedrock.NewRequestBody(promptText, b64Data)
+		// Bedrockの呼び出し
+		result, err := client.Invoke(ctx, imgData, promptText)
+		if err != nil {
+			l.Error("Bedrock invocation failed", zap.String("file", file.Name()), zap.Error(err))
+			continue
+		}
 
 		// 出力ファイル名の作成
 		name := file.Name()
 		baseName := name[:len(name)-len(filepath.Ext(name))]
 		outputPath := filepath.Join(resultsDir, baseName+".json")
 
-		// JSONに変換
-		jsonData, err := json.MarshalIndent(requestBody, "", "  ")
+		// 解析結果（map[string]string）を整形して保存
+		jsonData, err := json.MarshalIndent(result.Data, "", "  ")
 		if err != nil {
-			l.Error("Error marshaling JSON", zap.String("image", name), zap.Error(err))
+			l.Error("Error marshaling response JSON", zap.String("image", name), zap.Error(err))
 			continue
 		}
 
-		// ファイルに保存
 		if err := os.WriteFile(outputPath, jsonData, 0644); err != nil {
 			l.Error("Error saving file", zap.String("path", outputPath), zap.Error(err))
 			continue
 		}
 
-		// ログに出力
-		l.Info("Successfully saved request", zap.String("path", outputPath))
+		l.Info("Successfully analyzed and saved result", zap.String("path", outputPath))
 	}
-}
 
-// テスト用画像を取得
-func EncodeFileToBase64(path string) (string, error) {
-    data, err := os.ReadFile(path)
-    if err != nil {
-        return "", err
-    }
-    return bedrock.EncodeBase64(data), nil
+	l.Info("Playground analysis completed.")
 }
