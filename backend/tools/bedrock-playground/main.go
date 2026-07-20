@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/bedrock"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/bedrock/prompts"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/logger"
 )
@@ -55,7 +56,7 @@ func main() {
 	}
 
 	// 6. プロンプトを取得
-	promptText, err := bedrock.LoadPrompt()
+	promptText, err := prompts.LoadPrompt("extractor.txt")
 	if err != nil {
 		l.Fatal("failed to load prompt", zap.Error(err))
 	}
