@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
@@ -22,13 +24,21 @@ type BedrockRuntimeClient interface {
 type BedrockClient struct {
 	sdkClient BedrockRuntimeClient
 	modelID   string
+	prompt    string
+	logger    *zap.Logger
 }
 
 func NewClient(
 	ctx context.Context,
 	modelID string,
+	prompt string,
+	logger *zap.Logger,
 ) (*BedrockClient, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRetryMaxAttempts(5),
+		config.WithRetryMode(aws.RetryModeStandard),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK config: %w", err)
 	}
@@ -36,10 +46,12 @@ func NewClient(
 	return &BedrockClient{
 		sdkClient: bedrockruntime.NewFromConfig(cfg),
 		modelID:   modelID,
+		prompt:    prompt,
+		logger:    logger,
 	}, nil
 }
 
-func (c *BedrockClient) Invoke(ctx context.Context, imgData []byte, prompt string) (*Result, error) {
+func (c *BedrockClient) Analyze(ctx context.Context, imgData []byte) (*ResponseBody, error) {
 	imageBase64 := base64.StdEncoding.EncodeToString(imgData)
 
 	payload := RequestBody{
@@ -50,7 +62,7 @@ func (c *BedrockClient) Invoke(ctx context.Context, imgData []byte, prompt strin
 				Role: "user",
 				Content: []Content{
 					{Type: "image", Source: &ImageSource{Type: "base64", MediaType: "image/jpeg", Data: imageBase64}},
-					{Type: "text", Text: prompt},
+					{Type: "text", Text: c.prompt},
 				},
 			},
 		},
@@ -68,7 +80,7 @@ func (c *BedrockClient) Invoke(ctx context.Context, imgData []byte, prompt strin
 		return nil, err
 	}
 
-	// 1. レスポンス（output.Body）を ResponseBody 構造体でパース
+	// レスポンス（output.Body）を ResponseBody 構造体でパース
 	var resp ResponseBody
 	if err := json.Unmarshal(output.Body, &resp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal bedrock response: %w", err)
@@ -78,12 +90,11 @@ func (c *BedrockClient) Invoke(ctx context.Context, imgData []byte, prompt strin
 		return nil, fmt.Errorf("no content in bedrock response")
 	}
 
-	// 2. Claude が返した JSON 文字列（resp.Content[0].Text）をパース
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(resp.Content[0].Text), &data); err != nil {
-		return nil, fmt.Errorf("failed to parse JSON string: %w, text: %s", err, resp.Content[0].Text)
-	}
+	// ログ出力
+	c.logger.Info("bedrock inference success",
+		zap.Int("input_tokens", resp.Usage.InputTokens),
+		zap.Int("output_tokens", resp.Usage.OutputTokens),
+	)
 
-	// 3. Result 型に入れて返す
-	return &Result{Data: data}, nil
+	return &resp, nil
 }
