@@ -79,7 +79,7 @@ func (c *BedrockClient) Invoke(ctx context.Context, imgData []byte, prompt strin
 	}
 
 	// 2. Claude が返した JSON 文字列（resp.Content[0].Text）をパース
-	var data map[string]string
+	var data map[string]interface{}
 	if err := json.Unmarshal([]byte(resp.Content[0].Text), &data); err != nil {
 		return nil, fmt.Errorf("failed to parse JSON string: %w, text: %s", err, resp.Content[0].Text)
 	}
