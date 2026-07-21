@@ -30,5 +30,5 @@ type ResponseBody struct {
 }
 
 type Result struct {
-	Data map[string]string `json:"data"`
+	Data map[string]interface{} `json:"data"`
 }
