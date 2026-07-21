@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
+	"log"
 	"os"
-	"path/filepath"
 
 	"go.uber.org/zap"
 
@@ -14,97 +14,55 @@ import (
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/logger"
 )
 
-// ディレクトリパス
-const (
-	samplesDir = "cmd/bedrock-playground/samples"
-	resultsDir = "cmd/bedrock-playground/results"
-)
-
 func main() {
-	ctx := context.Background()
-
-	// 1. 設定の初期化
+	// 設定の初期化
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		panic("failed to load config: " + err.Error())
+		log.Fatalf("failed to load config: %v", err)
 	}
 
-	// 2. ロガーの初期化
+	// logger の初期化
 	l, err := logger.NewLogger(cfg)
 	if err != nil {
-		panic("failed to initialize logger: " + err.Error())
+		panic(fmt.Sprintf("failed to initialize logger: %v", err))
 	}
 	defer func() {
 		_ = l.Sync()
 	}()
 
-	// 3. Bedrockクライアントの初期化
-	client, err := bedrock.NewClient(ctx, "anthropic.claude-3-5-sonnet-20241022-v2:0")
-	if err != nil {
-		l.Fatal("failed to initialize bedrock client", zap.Error(err))
-	}
+	ctx := context.Background()
 
-	// 4. 結果ディレクトリの確保
-	if err := os.MkdirAll(resultsDir, 0755); err != nil {
-		l.Fatal("failed to create results directory", zap.String("dir", resultsDir), zap.Error(err))
-	}
-
-	// 5. samples/の画像を列挙
-	files, err := os.ReadDir(samplesDir)
-	if err != nil {
-		l.Fatal("failed to read samples directory", zap.String("dir", samplesDir), zap.Error(err))
-	}
-
-	// 6. プロンプトを取得
-	promptText, err := prompts.LoadPrompt("extractor.txt")
+	// プロンプトの読み込み
+	promptText, err := prompts.LoadPrompt(cfg.PromptFileName)
 	if err != nil {
 		l.Fatal("failed to load prompt", zap.Error(err))
 	}
 
-	l.Info("Starting playground execution...")
+	// Bedrock クライアントおよびサービスの初期化
+	bedrockClient, err := bedrock.NewClient(ctx, cfg.BedrockModelID, promptText, l)
+	if err != nil {
+		l.Fatal("failed to create bedrock client", zap.Error(err))
+	}
+	bedrockService := bedrock.NewService(bedrockClient)
 
-	for _, file := range files {
-		// JPEGの確認
-		if filepath.Ext(file.Name()) != ".jpg" {
-			continue
-		}
-
-		imagePath := filepath.Join(samplesDir, file.Name())
-		l.Info("Processing image", zap.String("path", imagePath))
-
-		// 画像ファイルをバイナリとして読み込み
-		imgData, err := os.ReadFile(imagePath)
-		if err != nil {
-			l.Error("Failed to read image", zap.String("path", imagePath), zap.Error(err))
-			continue
-		}
-
-		// Bedrockの呼び出し
-		result, err := client.Invoke(ctx, imgData, promptText)
-		if err != nil {
-			l.Error("Bedrock invocation failed", zap.String("file", file.Name()), zap.Error(err))
-			continue
-		}
-
-		// 出力ファイル名の作成
-		name := file.Name()
-		baseName := name[:len(name)-len(filepath.Ext(name))]
-		outputPath := filepath.Join(resultsDir, baseName+".json")
-
-		// 解析結果（map[string]string）を整形して保存
-		jsonData, err := json.MarshalIndent(result.Data, "", "  ")
-		if err != nil {
-			l.Error("Error marshaling response JSON", zap.String("image", name), zap.Error(err))
-			continue
-		}
-
-		if err := os.WriteFile(outputPath, jsonData, 0644); err != nil {
-			l.Error("Error saving file", zap.String("path", outputPath), zap.Error(err))
-			continue
-		}
-
-		l.Info("Successfully analyzed and saved result", zap.String("path", outputPath))
+	// テスト用画像の読み込み
+	imagePath := "sample.jpg"
+	l.Info("Reading test image...", zap.String("path", imagePath))
+	imgData, err := os.ReadFile(imagePath)
+	if err != nil {
+		l.Fatal("failed to read test image (make sure sample.jpg exists)", zap.Error(err))
 	}
 
-	l.Info("Playground analysis completed.")
+	// 解析
+	l.Info("Starting Bedrock inference...")
+	result, err := bedrockService.ProcessImage(ctx, imgData)
+	if err != nil {
+		l.Fatal("ProcessImage failed", zap.Error(err))
+	}
+
+	// 結果をターミナルに出力
+	fmt.Println("Bedrock Analysis Success!")
+	for k, v := range result {
+		fmt.Printf("  %s: %+v\n", k, v)
+	}
 }
