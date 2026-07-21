@@ -46,23 +46,41 @@ func main() {
 	bedrockService := bedrock.NewService(bedrockClient)
 
 	// テスト用画像の読み込み
-	imagePath := "sample.jpg"
-	l.Info("Reading test image...", zap.String("path", imagePath))
-	imgData, err := os.ReadFile(imagePath)
+	samplesDir := "tools/bedrock-playground/samples"
+	
+	l.Info("Reading test images from directory...", zap.String("dir", samplesDir))
+	files, err := os.ReadDir(samplesDir)
 	if err != nil {
-		l.Fatal("failed to read test image (make sure sample.jpg exists)", zap.Error(err))
+		l.Fatal("failed to read samples directory", zap.Error(err))
 	}
 
-	// 解析
-	l.Info("Starting Bedrock inference...")
-	result, err := bedrockService.ProcessImage(ctx, imgData)
-	if err != nil {
-		l.Fatal("ProcessImage failed", zap.Error(err))
-	}
+	for _, file := range files {
+		// ディレクトリや隠しファイルはスキップ
+		if file.IsDir() {
+			continue
+		}
 
-	// 結果をターミナルに出力
-	fmt.Println("Bedrock Analysis Success!")
-	for k, v := range result {
-		fmt.Printf("  %s: %+v\n", k, v)
+		imagePath := fmt.Sprintf("%s/%s", samplesDir, file.Name())
+		l.Info("Processing image...", zap.String("path", imagePath))
+
+		imgData, err := os.ReadFile(imagePath)
+		if err != nil {
+			l.Error("failed to read image file", zap.String("path", imagePath), zap.Error(err))
+			continue
+		}
+
+		// 解析
+		result, err := bedrockService.ProcessImage(ctx, imgData)
+		if err != nil {
+			l.Error("ProcessImage failed", zap.String("path", imagePath), zap.Error(err))
+			continue
+		}
+
+		// 結果をターミナルに出力
+		fmt.Printf("=== Success: %s ===\n", file.Name())
+		for k, v := range result {
+			fmt.Printf("  %s: %+v\n", k, v)
+		}
+		fmt.Println()
 	}
 }
