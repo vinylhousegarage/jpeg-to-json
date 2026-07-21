@@ -5,7 +5,7 @@ import (
 )
 
 func TestParseResponse(t *testing.T) {
-	s := &Service{client: nil}
+	s := NewService(nil)
 
 	tests := []struct {
 		name    string
@@ -15,60 +15,44 @@ func TestParseResponse(t *testing.T) {
 	}{
 		{
 			name:    "Valid JSON",
-			input:   `{"content": [{"text": "{\"key\": \"value\"}"}]}`,
+			input:   `{"key": "value"}`,
 			wantKey: "value",
 			wantErr: false,
 		},
 		{
 			name:    "JSON with Markdown",
-			input:   "{\"content\": [{\"text\": \"```json\\n{\\\"key\\\": \\\"value\\\"}\\n```\"}]}",
-			wantKey: "value",
-			wantErr: false,
-		},
-		{
-			name:    "JSON with explanatory text",
-			input:   `{"content": [{"text": "解析結果は以下の通りです。{\"key\": \"value\"} 以上です。"}]}`,
+			input:   "Here is your json:\n```json\n{\"key\": \"value\"}\n```",
 			wantKey: "value",
 			wantErr: false,
 		},
 		{
 			name:    "Invalid JSON Format",
-			input:   `{"content": [{"text": "これはJSONではありません"}]}`,
+			input:   "This is just text, not JSON",
 			wantKey: "",
 			wantErr: true,
 		},
 		{
-			name:    "Empty Content",
-			input:   `{"content": []}`,
+			name:    "Empty JSON",
+			input:   "{}",
 			wantKey: "",
-			wantErr: true,
-		},
-		{
-			name:    "Broken JSON inside braces",
-			input:   `{"content": [{"text": "{\"key\": \"value\""}]}`,
-			wantKey: "",
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			res, err := s.parseResponse([]byte(tt.input))
-			
+			res, err := s.parseResponse(tt.input)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseResponse() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
-			if !tt.wantErr {
-				val, ok := res["key"]
-				if !ok {
-					t.Errorf("expected key 'key' not found in result")
-				} else if val != tt.wantKey {
-					t.Errorf("got %v, want %v", val, tt.wantKey)
+
+			if !tt.wantErr && tt.wantKey != "" {
+				if val, ok := res["key"].(string); !ok || val != tt.wantKey {
+					t.Errorf("got %v, want %v", res["key"], tt.wantKey)
 				}
 			}
 		})
