@@ -39,7 +39,7 @@ func TestAnalyze(t *testing.T) {
 			optFns ...func(*bedrockruntime.Options),
 		) (*bedrockruntime.ConverseOutput, error) {
 			return &bedrockruntime.ConverseOutput{
-				Output: &types.OutputMemberMessage{
+				Output: &types.ConverseOutputMemberMessage{
 					Value: types.Message{
 						Role: types.ConversationRoleAssistant,
 						Content: []types.ContentBlock{

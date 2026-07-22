@@ -81,7 +81,7 @@ func (c *BedrockClient) Analyze(ctx context.Context, imgData []byte) (string, er
 		return "", fmt.Errorf("failed to invoke bedrock converse: %w", err)
 	}
 
-	message, ok := output.Output.(*types.OutputMemberMessage)
+	message, ok := output.Output.(*types.ConverseOutputMemberMessage)
 	if !ok || len(message.Value.Content) == 0 {
 		return "", fmt.Errorf("no content in bedrock response")
 	}
