@@ -6,10 +6,7 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	t.Parallel()
-
 	t.Run("Success: All required variables set (Local environment)", func(t *testing.T) {
-		t.Parallel()
 
 		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000, https://example.com")
 		t.Setenv("INPUT_BUCKET_NAME", "my-test-bucket")
@@ -39,7 +36,6 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Success: Lambda environment", func(t *testing.T) {
-		t.Parallel()
 
 		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000")
 		t.Setenv("INPUT_BUCKET_NAME", "my-test-bucket")
@@ -57,7 +53,6 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing ALLOWED_ORIGINS", func(t *testing.T) {
-		t.Parallel()
 
 		t.Setenv("INPUT_BUCKET_NAME", "test")
 		t.Setenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet")
@@ -69,7 +64,6 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing INPUT_BUCKET_NAME", func(t *testing.T) {
-		t.Parallel()
 
 		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000")
 		t.Setenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet")
@@ -81,7 +75,6 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing BEDROCK_MODEL_ID", func(t *testing.T) {
-		t.Parallel()
 
 		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000")
 		t.Setenv("INPUT_BUCKET_NAME", "test")
