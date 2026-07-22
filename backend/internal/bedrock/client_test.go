@@ -6,44 +6,53 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
 )
 
 type MockBedrockRuntimeClient struct {
-	InvokeModelFunc func(
+	ConverseFunc func(
 		ctx context.Context,
-		params *bedrockruntime.InvokeModelInput,
+		params *bedrockruntime.ConverseInput,
 		optFns ...func(*bedrockruntime.Options),
-	) (*bedrockruntime.InvokeModelOutput, error)
+	) (*bedrockruntime.ConverseOutput, error)
 }
 
-func (m *MockBedrockRuntimeClient) InvokeModel(
+func (m *MockBedrockRuntimeClient) Converse(
 	ctx context.Context,
-	params *bedrockruntime.InvokeModelInput,
+	params *bedrockruntime.ConverseInput,
 	optFns ...func(*bedrockruntime.Options),
-) (*bedrockruntime.InvokeModelOutput, error) {
-	return m.InvokeModelFunc(ctx, params, optFns...)
+) (*bedrockruntime.ConverseOutput, error) {
+	return m.ConverseFunc(ctx, params, optFns...)
 }
 
 func TestAnalyze(t *testing.T) {
 	t.Parallel()
 
-	mockClient := &MockBedrockRuntimeClient{
-		InvokeModelFunc: func(
-			ctx context.Context,
-			params *bedrockruntime.InvokeModelInput,
-			optFns ...func(*bedrockruntime.Options),
-		) (*bedrockruntime.InvokeModelOutput, error) {
-			responseJSON := `{
-				"content": [{"text": "{\"key\": \"value\"}"}],
-				"usage": {
-					"input_tokens": 100,
-					"output_tokens": 50
-				}
-			}`
+	expectedText := `{"key": "value"}`
 
-			return &bedrockruntime.InvokeModelOutput{
-				Body: []byte(responseJSON),
+	mockClient := &MockBedrockRuntimeClient{
+		ConverseFunc: func(
+			ctx context.Context,
+			params *bedrockruntime.ConverseInput,
+			optFns ...func(*bedrockruntime.Options),
+		) (*bedrockruntime.ConverseOutput, error) {
+			return &bedrockruntime.ConverseOutput{
+				Output: &types.OutputMemberMessage{
+					Value: types.Message{
+						Role: types.ConversationRoleAssistant,
+						Content: []types.ContentBlock{
+							&types.ContentBlockMemberText{
+								Value: expectedText,
+							},
+						},
+					},
+				},
+				Usage: &types.TokenUsage{
+					InputTokens:  aws.Int32(100),
+					OutputTokens: aws.Int32(50),
+				},
 			}, nil
 		},
 	}
@@ -61,11 +70,7 @@ func TestAnalyze(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	expectedContent := "{\"key\": \"value\"}"
-	if len(result.Content) == 0 {
-		t.Fatalf("expected content to have at least one element")
-	}
-	if result.Content[0].Text != expectedContent {
-		t.Errorf("expected content text to be %s, got %s", expectedContent, result.Content[0].Text)
+	if result != expectedText {
+		t.Errorf("expected content text to be %s, got %s", expectedText, result)
 	}
 }
