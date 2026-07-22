@@ -2,8 +2,6 @@ package bedrock
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -11,14 +9,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
 )
 
 type BedrockRuntimeClient interface {
-	InvokeModel(
+	Converse(
 		ctx context.Context,
-		params *bedrockruntime.InvokeModelInput,
+		params *bedrockruntime.ConverseInput,
 		optFns ...func(*bedrockruntime.Options),
-	) (*bedrockruntime.InvokeModelOutput, error)
+	) (*bedrockruntime.ConverseOutput, error)
 }
 
 type BedrockClient struct {
@@ -51,50 +50,53 @@ func NewClient(
 	}, nil
 }
 
-func (c *BedrockClient) Analyze(ctx context.Context, imgData []byte) (*ResponseBody, error) {
-	imageBase64 := base64.StdEncoding.EncodeToString(imgData)
-
-	payload := RequestBody{
-		AnthropicVersion: "bedrock-2023-05-31",
-		MaxTokens:        2000,
-		Messages: []Message{
+func (c *BedrockClient) Analyze(ctx context.Context, imgData []byte) (string, error) {
+	input := &bedrockruntime.ConverseInput{
+		ModelId: &c.modelID,
+		Messages: []types.Message{
 			{
-				Role: "user",
-				Content: []Content{
-					{Type: "image", Source: &ImageSource{Type: "base64", MediaType: "image/jpeg", Data: imageBase64}},
-					{Type: "text", Text: c.prompt},
+				Role: types.ConversationRoleUser,
+				Content: []types.ContentBlock{
+					&types.ContentBlockMemberImage{
+						Value: types.ImageBlock{
+							Format: types.ImageFormatJpeg,
+							Source: &types.ImageSourceMemberBytes{
+								Value: imgData,
+							},
+						},
+					},
+					&types.ContentBlockMemberText{
+						Value: c.prompt,
+					},
 				},
 			},
 		},
+		InferenceConfig: &types.InferenceConfiguration{
+			MaxTokens: aws.Int32(2000),
+		},
 	}
 
-	body, _ := json.Marshal(payload)
-	input := &bedrockruntime.InvokeModelInput{
-		ModelId:     &c.modelID,
-		ContentType: aws.String("application/json"),
-		Body:        body,
-	}
-
-	output, err := c.sdkClient.InvokeModel(ctx, input)
+	output, err := c.sdkClient.Converse(ctx, input)
 	if err != nil {
-		return nil, err
+		return "", fmt.Errorf("failed to invoke bedrock converse: %w", err)
 	}
 
-	// レスポンス（output.Body）を ResponseBody 構造体でパース
-	var resp ResponseBody
-	if err := json.Unmarshal(output.Body, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal bedrock response: %w", err)
+	message, ok := output.Output.(*types.OutputMemberMessage)
+	if !ok || len(message.Value.Content) == 0 {
+		return "", fmt.Errorf("no content in bedrock response")
 	}
 
-	if len(resp.Content) == 0 {
-		return nil, fmt.Errorf("no content in bedrock response")
+	textBlock, ok := message.Value.Content[0].(*types.ContentBlockMemberText)
+	if !ok {
+		return "", fmt.Errorf("response content is not text")
 	}
 
-	// ログ出力
-	c.logger.Info("bedrock inference success",
-		zap.Int("input_tokens", resp.Usage.InputTokens),
-		zap.Int("output_tokens", resp.Usage.OutputTokens),
-	)
+	if output.Usage != nil {
+		c.logger.Info("bedrock inference success",
+			zap.Int32("input_tokens", aws.ToInt32(output.Usage.InputTokens)),
+			zap.Int32("output_tokens", aws.ToInt32(output.Usage.OutputTokens)),
+		)
+	}
 
-	return &resp, nil
+	return textBlock.Value, nil
 }
