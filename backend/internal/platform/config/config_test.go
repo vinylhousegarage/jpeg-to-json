@@ -53,9 +53,9 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing ALLOWED_ORIGINS", func(t *testing.T) {
-
 		t.Setenv("INPUT_BUCKET_NAME", "test")
 		t.Setenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet")
+		t.Setenv("ALLOWED_ORIGINS", "")
 
 		_, err := LoadConfig()
 		if err == nil {
@@ -64,9 +64,9 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing INPUT_BUCKET_NAME", func(t *testing.T) {
-
 		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000")
 		t.Setenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet")
+		t.Setenv("INPUT_BUCKET_NAME", "")
 
 		_, err := LoadConfig()
 		if err == nil {
@@ -75,9 +75,9 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing BEDROCK_MODEL_ID", func(t *testing.T) {
-
 		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000")
 		t.Setenv("INPUT_BUCKET_NAME", "test")
+		t.Setenv("BEDROCK_MODEL_ID", "")
 
 		_, err := LoadConfig()
 		if err == nil {
