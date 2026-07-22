@@ -5,52 +5,47 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 )
 
-// BedrockClient のインターフェース定義
-type Client interface {
-	Invoke(ctx context.Context, input []byte) ([]byte, error)
+// インターフェースを定義
+type ImageAnalyzer interface {
+	Analyze(ctx context.Context, imgData []byte) (*ResponseBody, error)
 }
 
+// 構造体を定義
 type Service struct {
-	client Client
+	analyzer ImageAnalyzer
 }
 
-func NewService(client Client) *Service {
-	return &Service{client: client}
+// 構造体を初期化
+func NewService(analyzer ImageAnalyzer) *Service {
+	return &Service{analyzer: analyzer}
 }
 
-// ProcessImage は画像データを受け取り、Bedrock経由で構造化データを返す
+// メソッドを定義
 func (s *Service) ProcessImage(ctx context.Context, rawImage []byte) (map[string]interface{}, error) {
-	// 1. Bedrockへ送信 (入力は圧縮済みJPEGバイト)
-	response, err := s.client.Invoke(ctx, rawImage)
+	// タイムアウトを付与
+	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	// タイムアウト付きのコンテキストを client に渡す
+	resp, err := s.analyzer.Analyze(timeoutCtx, rawImage)
 	if err != nil {
-		return nil, fmt.Errorf("bedrock invoke error: %w", err)
+		return nil, fmt.Errorf("analyze error: %w", err)
 	}
 
-	// 2. レスポンスをパース
-	return s.parseResponse(response)
+	// Contentの空チェック
+	if len(resp.Content) == 0 {
+		return nil, fmt.Errorf("no content in response body")
+	}
+
+	// パース
+	return s.parseResponse(resp.Content[0].Text)
 }
 
-func (s *Service) parseResponse(response []byte) (map[string]interface{}, error) {
-	// Claude/Bedrockの標準的なレスポンス構造
-	var resp struct {
-		Content []struct {
-			Text string `json:"text"`
-		} `json:"content"`
-	}
-
-	if err := json.Unmarshal(response, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal bedrock response: %w", err)
-	}
-
-	if len(resp.Content) == 0 {
-		return nil, fmt.Errorf("no content in bedrock response")
-	}
-
-	text := resp.Content[0].Text
-
-	// JSONで抽出（{}内のみを抽出・Markdownや前後の説明文を無視 ）
+// テキストを受け取り、JSONを抽出してパース
+func (s *Service) parseResponse(text string) (map[string]any, error) {
 	start := strings.Index(text, "{")
 	end := strings.LastIndex(text, "}")
 
@@ -58,12 +53,9 @@ func (s *Service) parseResponse(response []byte) (map[string]interface{}, error)
 		return nil, fmt.Errorf("invalid json format: %s", text)
 	}
 
-	jsonPart := text[start : end+1]
-
-	// JSONをパースしてMapへ
-	var result map[string]interface{}
-	if err := json.Unmarshal([]byte(jsonPart), &result); err != nil {
-		return nil, fmt.Errorf("failed to parse JSON from bedrock output: %w, text: %s", err, jsonPart)
+	var result map[string]any
+	if err := json.Unmarshal([]byte(text[start:end+1]), &result); err != nil {
+		return nil, fmt.Errorf("failed to parse JSON: %w", err)
 	}
 
 	return result, nil
