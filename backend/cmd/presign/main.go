@@ -13,7 +13,7 @@ import (
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/logger"
-	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/presign"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 	// 署名専用クライアントに変換
 	s3PresignClient := s3.NewPresignClient(baseS3Client)
 	// 依存を注入
-  presignClient := presign.NewPresignClient(s3PresignClient, cfg.InputBucketName)
+  presignClient := storage.NewPresignClient(s3PresignClient, cfg.InputBucketName)
 
   // logger の初期化
   l, err := logger.NewLogger(cfg)
@@ -45,7 +45,7 @@ func main() {
   l.Info("Application successfully initialized")
 
   // ハンドラーの初期化
-  presignHandler := presign.NewPresignHandler(cfg.AllowedOrigins, presignClient, l)
+  presignHandler := storage.NewPresignHandler(cfg.AllowedOrigins, presignClient, l)
 
   // サーバーの初期化
   mux := http.NewServeMux()
