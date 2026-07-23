@@ -10,7 +10,7 @@ import (
 
 // インターフェースを定義
 type ImageAnalyzer interface {
-	Analyze(ctx context.Context, imgData []byte) (*ResponseBody, error)
+	Analyze(ctx context.Context, imgData []byte) (string, error)
 }
 
 // 構造体を定義
@@ -30,18 +30,13 @@ func (s *Service) ProcessImage(ctx context.Context, rawImage []byte) (map[string
 	defer cancel()
 
 	// タイムアウト付きのコンテキストを client に渡す
-	resp, err := s.analyzer.Analyze(timeoutCtx, rawImage)
+	text, err := s.analyzer.Analyze(timeoutCtx, rawImage)
 	if err != nil {
 		return nil, fmt.Errorf("analyze error: %w", err)
 	}
 
-	// Contentの空チェック
-	if len(resp.Content) == 0 {
-		return nil, fmt.Errorf("no content in response body")
-	}
-
 	// パース
-	return s.parseResponse(resp.Content[0].Text)
+	return s.parseResponse(text)
 }
 
 // テキストを受け取り、JSONを抽出してパース
