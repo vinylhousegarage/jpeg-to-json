@@ -1,13 +1,11 @@
 package storage
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewPresignClient(t *testing.T) {
 	t.Parallel()
 
-	mock := &mockPresigner{}
+	mock := &MockPresigner{}
 	bucket := "my-test-bucket"
 
 	client := NewPresignClient(mock, bucket)

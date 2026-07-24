@@ -14,6 +14,7 @@ import (
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/logger"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage/put"
 )
 
 func main() {
@@ -45,7 +46,7 @@ func main() {
 	l.Info("Application successfully initialized")
 
 	// ハンドラーの初期化
-	presignHandler := storage.NewPresignHandler(presignClient, l)
+	presignHandler := put.NewPresignHandler(presignClient, l)
 
 	// サーバーの初期化
 	mux := http.NewServeMux()

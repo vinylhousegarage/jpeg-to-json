@@ -1,4 +1,4 @@
-package storage
+package put
 
 import (
 	"bytes"
@@ -9,10 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
-
-	"go.uber.org/zap"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage"
 )
 
 // テスト用ハンドラー
@@ -21,7 +22,7 @@ func setupTestHandler() *PresignHandler {
 		InputBucketName: "test-bucket",
 	}
 
-	client := NewPresignClient(&mockPresigner{}, cfg.InputBucketName)
+	client := storage.NewPresignClient(&storage.MockPresigner{}, cfg.InputBucketName)
 
 	return NewPresignHandler(
 		client,
@@ -159,7 +160,7 @@ func TestWriteJSON(t *testing.T) {
 	}
 
 	// JSONのデコードと検証
-	var got PutPresignResponse
+	var got storage.PutPresignResponse
 	if err := json.NewDecoder(resp.Body).Decode(&got); err != nil {
 		t.Fatalf("failed to decode response: %v", err)
 	}

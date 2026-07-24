@@ -1,21 +1,22 @@
-package storage
+package put
 
 import (
 	"net/http"
 
-	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
-
 	"go.uber.org/zap"
+
+	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage"
 )
 
 // ハンドラー構造体
 type PresignHandler struct {
-	client *PresignClient
+	client *storage.PresignClient
 	logger *zap.Logger
 }
 
 // コンストラクタ
-func NewPresignHandler(client *PresignClient, logger *zap.Logger) *PresignHandler {
+func NewPresignHandler(client *storage.PresignClient, logger *zap.Logger) *PresignHandler {
 	return &PresignHandler{
 		client: client,
 		logger: logger,

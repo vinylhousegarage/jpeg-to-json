@@ -21,6 +21,6 @@ type GetPresignRequest struct {
 
 // Get用レスポンス構造体
 type GetPresignResponse struct {
-	ExpiresAt  time.Time `json:"expiresAt"`
-	DownloadURL string   `json:"downloadURL"`
+	ExpiresAt   time.Time `json:"expiresAt"`
+	DownloadURL string    `json:"downloadURL"`
 }

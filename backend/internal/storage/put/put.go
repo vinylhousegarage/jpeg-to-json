@@ -1,4 +1,4 @@
-package storage
+package put
 
 import (
 	"context"
@@ -13,15 +13,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage"
 )
 
 // リクエスト検証
-func (h *PresignHandler) validatePutPresignRequest(r *http.Request) (*PutPresignRequest, error) {
+func (h *PresignHandler) validatePutPresignRequest(r *http.Request) (*storage.PutPresignRequest, error) {
 	if r.Method != http.MethodPost {
 		return nil, apierror.New(apierror.ErrorCodeInvalidMethod, http.StatusMethodNotAllowed, nil)
 	}
 
-	var req PutPresignRequest
+	var req storage.PutPresignRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, apierror.New(apierror.ErrorCodeInvalidJSON, http.StatusBadRequest, err)
 	}
@@ -38,8 +39,8 @@ func (h *PresignHandler) generatePutPresignURL(ctx context.Context, filename str
 	now := time.Now()
 	duration := 15 * time.Minute
 
-	request, err := h.client.s3Presigner.PresignPutObject(ctx, &s3.PutObjectInput{
-		Bucket: aws.String(h.client.bucketName),
+	request, err := h.client.S3Presigner().PresignPutObject(ctx, &s3.PutObjectInput{
+		Bucket: aws.String(h.client.BucketName()),
 		Key:    aws.String(filename),
 	}, s3.WithPresignExpires(duration))
 
@@ -55,7 +56,7 @@ func (h *PresignHandler) writeUploadResponse(w http.ResponseWriter, url string, 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	resp := PutPresignResponse{
+	resp := storage.PutPresignResponse{
 		ExpiresAt: expiresAt,
 		UploadURL: url,
 	}

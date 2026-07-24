@@ -1,4 +1,4 @@
-package storage
+package put
 
 import (
 	"bytes"
@@ -7,12 +7,14 @@ import (
 	"testing"
 
 	"go.uber.org/zap"
+
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage"
 )
 
 func TestPresignHandler_ServeHTTP_Integration(t *testing.T) {
 	t.Parallel()
 
-	client := NewPresignClient(&mockPresigner{}, "test-bucket")
+	client := storage.NewPresignClient(&storage.MockPresigner{}, "test-bucket")
 	h := NewPresignHandler(
 		client,
 		zap.NewNop(),

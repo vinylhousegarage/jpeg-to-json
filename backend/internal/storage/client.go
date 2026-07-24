@@ -16,16 +16,26 @@ type S3Presigner interface {
 	) (*v4.PresignedHTTPRequest, error)
 }
 
-// PresignClient 構造体
+// 構造体を定義
 type PresignClient struct {
 	bucketName  string
 	s3Presigner S3Presigner
 }
 
-// コンストラクタ
+// 構造体を初期化
 func NewPresignClient(s3Presigner S3Presigner, bucketName string) *PresignClient {
 	return &PresignClient{
 		bucketName:  bucketName,
 		s3Presigner: s3Presigner,
 	}
+}
+
+// BucketName Getter
+func (c *PresignClient) BucketName() string {
+	return c.bucketName
+}
+
+// S3Presigner Getter
+func (c *PresignClient) S3Presigner() S3Presigner {
+	return c.s3Presigner
 }
