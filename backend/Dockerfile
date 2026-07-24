@@ -52,7 +52,7 @@ ENV PATH=$PATH:/go/bin
 # Air + golangci-lint インストール
 RUN --mount=type=cache,target=/go/pkg/mod,uid=${UID},gid=${GID} \
     go install github.com/air-verse/air@v1.65.3 && \
-    go install golang.org/x/tools/cmd/goimports@latest && \
+    go install golang.org/x/tools/cmd/goimports@v0.48.0 && \
     go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2
 
 # モジュールダウンロード
