@@ -2,14 +2,14 @@ package storage
 
 import "time"
 
-// リクエスト構造体
-type PresignRequest struct {
+// Put用リクエスト構造体
+type PutPresignRequest struct {
 	Filename string `json:"filename"`
-	FileType string `json:"filetype"`
+	ContentType string `json:"contentType"`
 }
 
-// レスポンス構造体
-type PresignResponse struct {
+// Put用レスポンス構造体
+type PutPresignResponse struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 	UploadURL string    `json:"uploadURL"`
 }

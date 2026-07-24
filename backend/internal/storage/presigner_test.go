@@ -159,7 +159,7 @@ func TestWriteJSON(t *testing.T) {
 	}
 
 	// JSONのデコードと検証
-	var got PresignResponse
+	var got PutPresignResponse
 	if err := json.NewDecoder(resp.Body).Decode(&got); err != nil {
 		t.Fatalf("failed to decode response: %v", err)
 	}

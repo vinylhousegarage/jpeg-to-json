@@ -16,12 +16,12 @@ import (
 )
 
 // リクエスト検証
-func (h *PresignHandler) validateRequest(r *http.Request) (*PresignRequest, error) {
+func (h *PresignHandler) validateRequest(r *http.Request) (*PutPresignRequest, error) {
 	if r.Method != http.MethodPost {
 		return nil, apierror.New(apierror.ErrorCodeInvalidMethod, http.StatusMethodNotAllowed, nil)
 	}
 
-	var req PresignRequest
+	var req PutPresignRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, apierror.New(apierror.ErrorCodeInvalidJSON, http.StatusBadRequest, err)
 	}
@@ -55,7 +55,7 @@ func (h *PresignHandler) writeJSON(w http.ResponseWriter, url string, expiresAt 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	resp := PresignResponse{
+	resp := PutPresignResponse{
 		ExpiresAt: expiresAt,
 		UploadURL: url,
 	}
