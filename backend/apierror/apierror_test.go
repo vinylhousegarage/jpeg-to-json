@@ -44,8 +44,8 @@ func TestNew(t *testing.T) {
 			got := New(tt.code, tt.status, tt.err, tt.internalArgs...)
 
 			if got.Code != tt.code || got.HTTPStatus != tt.status || got.Err != tt.err || got.Internal != tt.wantInternal {
-				t.Errorf("New() = %+v, want code=%v, status=%v, err=%v, internal=%v", 
-                    got, tt.code, tt.status, tt.err, tt.wantInternal)
+				t.Errorf("New() = %+v, want code=%v, status=%v, err=%v, internal=%v",
+					got, tt.code, tt.status, tt.err, tt.wantInternal)
 			}
 		})
 	}

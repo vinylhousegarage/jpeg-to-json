@@ -12,7 +12,7 @@ import (
 
 func TestWriteError(t *testing.T) {
 	t.Parallel()
-	
+
 	logger := zap.NewNop()
 	t.Run("should return the specified status and code when APIError is provided", func(t *testing.T) {
 		t.Parallel()

@@ -18,54 +18,15 @@ import (
 // テスト用ハンドラー
 func setupTestHandler() *PresignHandler {
 	cfg := &config.Config{
-			AllowedOrigins: []string{"http://localhost:3000"},
-			InputBucketName:     "test-bucket",
+		InputBucketName: "test-bucket",
 	}
-	
+
 	client := NewPresignClient(&mockPresigner{}, cfg.InputBucketName)
 
 	return NewPresignHandler(
-			cfg.AllowedOrigins, 
-			client,
-			zap.NewNop(),
+		client,
+		zap.NewNop(),
 	)
-}
-
-func TestSetCORSHeaders(t *testing.T) {
-	t.Parallel()
-
-	// 許可リストを定義
-	allowed := []string{"http://localhost:3000"}
-	
-	// 許可リストを渡す
-	h := &PresignHandler{
-		allowedOrigins: allowed,
-		logger:         zap.NewNop(),
-	}
-
-	tests := []struct {
-		name          string
-		origin        string
-		wantHeaderSet bool
-	}{
-		{"Allowed", "http://localhost:3000", true},
-		{"Denied", "http://malicious.com", false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			h.setCORSHeaders(w, tt.origin)
-
-			got := w.Header().Get("Access-Control-Allow-Origin")
-			if tt.wantHeaderSet && got != tt.origin {
-				t.Errorf("expected header %s, got %s", tt.origin, got)
-			}
-			if !tt.wantHeaderSet && got != "" {
-				t.Errorf("expected no header, got %s", got)
-			}
-		})
-	}
 }
 
 const StatusCodeIgnore = 0
@@ -184,7 +145,7 @@ func TestWriteJSON(t *testing.T) {
 	// 検証
 	resp := w.Result()
 	defer func() {
-			_ = resp.Body.Close()
+		_ = resp.Body.Close()
 	}()
 
 	// ステータスコードのチェック
@@ -208,6 +169,6 @@ func TestWriteJSON(t *testing.T) {
 	}
 
 	if got.ExpiresAt.Sub(expiresAt).Abs() > time.Second {
-    t.Errorf("expected time near %v, got %v", expiresAt, got.ExpiresAt)
+		t.Errorf("expected time near %v, got %v", expiresAt, got.ExpiresAt)
 	}
 }

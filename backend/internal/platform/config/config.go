@@ -3,11 +3,9 @@ package config
 import (
 	"fmt"
 	"os"
-	"strings"
 )
 
 type Config struct {
-	AllowedOrigins  []string
 	AppEnv          string
 	BedrockModelID  string
 	InputBucketName string
@@ -17,20 +15,6 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
-
-	origins := os.Getenv("ALLOWED_ORIGINS")
-	if origins == "" {
-		return nil, fmt.Errorf("ALLOWED_ORIGINS is required")
-	}
-
-	var allowed []string
-	for _, s := range strings.Split(origins, ",") {
-		trimmed := strings.TrimSpace(s)
-		if trimmed != "" {
-			allowed = append(allowed, trimmed)
-		}
-	}
-
 	env := os.Getenv("APP_ENV")
 	if env == "" {
 		env = "development"
@@ -59,7 +43,6 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		AllowedOrigins:  allowed,
 		AppEnv:          env,
 		BedrockModelID:  modelID,
 		InputBucketName: inputBucket,

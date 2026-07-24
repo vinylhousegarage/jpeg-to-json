@@ -10,6 +10,6 @@ type PresignRequest struct {
 
 // レスポンス構造体
 type PresignResponse struct {
-  ExpiresAt time.Time `json:"expiresAt"`
+	ExpiresAt time.Time `json:"expiresAt"`
 	UploadURL string    `json:"uploadURL"`
 }

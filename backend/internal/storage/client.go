@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -24,8 +24,8 @@ type PresignClient struct {
 
 // コンストラクタ
 func NewPresignClient(s3Presigner S3Presigner, bucketName string) *PresignClient {
-  return &PresignClient{
-    bucketName:  bucketName,
-    s3Presigner: s3Presigner,
-  }
+	return &PresignClient{
+		bucketName:  bucketName,
+		s3Presigner: s3Presigner,
+	}
 }

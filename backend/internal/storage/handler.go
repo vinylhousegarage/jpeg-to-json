@@ -10,31 +10,19 @@ import (
 
 // ハンドラー構造体
 type PresignHandler struct {
-	allowedOrigins []string
 	client *PresignClient
 	logger *zap.Logger
 }
 
 // コンストラクタ
-func NewPresignHandler(origins []string, client *PresignClient, logger *zap.Logger) *PresignHandler {
-  return &PresignHandler{
-    allowedOrigins: origins,
-    client:         client,
-    logger:         logger,
-  }
+func NewPresignHandler(client *PresignClient, logger *zap.Logger) *PresignHandler {
+	return &PresignHandler{
+		client: client,
+		logger: logger,
+	}
 }
 
 func (h *PresignHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// CORSヘッダーの設定
-	origin := r.Header.Get("Origin")
-	h.setCORSHeaders(w, origin)
-
-	// OPTIONSメソッド判定
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
 	// リクエストの検証
 	req, err := h.validateRequest(r)
 	if err != nil {

@@ -47,7 +47,7 @@ func main() {
 
 	// テスト用画像の読み込み
 	samplesDir := "tools/bedrock-playground/samples"
-	
+
 	l.Info("Reading test images from directory...", zap.String("dir", samplesDir))
 	files, err := os.ReadDir(samplesDir)
 	if err != nil {
