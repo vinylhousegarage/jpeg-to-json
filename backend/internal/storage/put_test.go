@@ -76,7 +76,7 @@ func TestValidateRequest(t *testing.T) {
 			t.Parallel()
 
 			req := httptest.NewRequest(tt.method, "/presign", bytes.NewBufferString(tt.body))
-			got, err := h.validateRequest(req)
+			got, err := h.validatePutPresignRequest(req)
 
 			if tt.wantErrCode != "" {
 				// 異常系
@@ -115,7 +115,7 @@ func TestGeneratePresignURL(t *testing.T) {
 
 	h := setupTestHandler()
 
-	url, expiresAt, err := h.generatePresignURL(context.Background(), "test.jpg") // メソッド呼び出しに変更
+	url, expiresAt, err := h.generatePutPresignURL(context.Background(), "test.jpg") // メソッド呼び出しに変更
 
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -140,7 +140,7 @@ func TestWriteJSON(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	h.writeJSON(w, url, expiresAt)
+	h.writeUploadResponse(w, url, expiresAt)
 
 	// 検証
 	resp := w.Result()

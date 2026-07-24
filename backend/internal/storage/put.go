@@ -7,16 +7,16 @@ import (
 	"net/http"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/apierror"
-
-	"go.uber.org/zap"
 )
 
 // リクエスト検証
-func (h *PresignHandler) validateRequest(r *http.Request) (*PutPresignRequest, error) {
+func (h *PresignHandler) validatePutPresignRequest(r *http.Request) (*PutPresignRequest, error) {
 	if r.Method != http.MethodPost {
 		return nil, apierror.New(apierror.ErrorCodeInvalidMethod, http.StatusMethodNotAllowed, nil)
 	}
@@ -33,8 +33,8 @@ func (h *PresignHandler) validateRequest(r *http.Request) (*PutPresignRequest, e
 	return &req, nil
 }
 
-// PresignURL 生成
-func (h *PresignHandler) generatePresignURL(ctx context.Context, filename string) (string, time.Time, error) {
+// PutPresignURL 生成
+func (h *PresignHandler) generatePutPresignURL(ctx context.Context, filename string) (string, time.Time, error) {
 	now := time.Now()
 	duration := 15 * time.Minute
 
@@ -51,7 +51,7 @@ func (h *PresignHandler) generatePresignURL(ctx context.Context, filename string
 }
 
 // JSONレスポンス書き込み
-func (h *PresignHandler) writeJSON(w http.ResponseWriter, url string, expiresAt time.Time) {
+func (h *PresignHandler) writeUploadResponse(w http.ResponseWriter, url string, expiresAt time.Time) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
