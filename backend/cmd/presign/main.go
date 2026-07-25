@@ -31,10 +31,8 @@ func main() {
 	}
 	// S3 クライアント
 	baseS3Client := s3.NewFromConfig(awsCfg)
-	// 署名専用クライアントに変換
-	s3PresignClient := s3.NewPresignClient(baseS3Client)
 	// 依存を注入
-	presignClient := storage.NewPresignClient(s3PresignClient, cfg.InputBucketName)
+	presignClient := storage.NewS3Client(cfg.InputBucketName, baseS3Client)
 
 	// logger の初期化
 	l, err := logger.NewLogger(cfg)
@@ -45,8 +43,10 @@ func main() {
 	// ログに出力
 	l.Info("Application successfully initialized")
 
+	// Put用Serviceの初期化
+	putService := put.NewService(presignClient)
 	// ハンドラーの初期化
-	presignHandler := put.NewPresignHandler(presignClient, l)
+	presignHandler := put.NewHandler(putService, l)
 
 	// サーバーの初期化
 	mux := http.NewServeMux()
