@@ -1,25 +1,16 @@
 package config
 
-import (
-	"reflect"
-	"testing"
-)
+import "testing"
 
 func TestLoadConfig(t *testing.T) {
 	t.Run("Success: All required variables set (Local environment)", func(t *testing.T) {
 
-		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000, https://example.com")
 		t.Setenv("INPUT_BUCKET_NAME", "my-test-bucket")
-		t.Setenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet")
+		t.Setenv("BEDROCK_MODEL_ID", "jp.anthropic.claude-sonnet-4-6")
 
 		cfg, err := LoadConfig()
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
-		}
-
-		wantOrigins := []string{"http://localhost:3000", "https://example.com"}
-		if !reflect.DeepEqual(cfg.AllowedOrigins, wantOrigins) {
-			t.Errorf("expected origins %v, got %v", wantOrigins, cfg.AllowedOrigins)
 		}
 		if cfg.AppEnv != "development" {
 			t.Errorf("expected AppEnv 'development', got %s", cfg.AppEnv)
@@ -37,9 +28,8 @@ func TestLoadConfig(t *testing.T) {
 
 	t.Run("Success: Lambda environment", func(t *testing.T) {
 
-		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000")
 		t.Setenv("INPUT_BUCKET_NAME", "my-test-bucket")
-		t.Setenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet")
+		t.Setenv("BEDROCK_MODEL_ID", "jp.anthropic.claude-sonnet-4-6")
 		t.Setenv("AWS_LAMBDA_FUNCTION_NAME", "my-lambda-function")
 
 		cfg, err := LoadConfig()
@@ -52,20 +42,8 @@ func TestLoadConfig(t *testing.T) {
 		}
 	})
 
-	t.Run("Error: Missing ALLOWED_ORIGINS", func(t *testing.T) {
-		t.Setenv("INPUT_BUCKET_NAME", "test")
-		t.Setenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet")
-		t.Setenv("ALLOWED_ORIGINS", "")
-
-		_, err := LoadConfig()
-		if err == nil {
-			t.Error("expected error when ALLOWED_ORIGINS is missing, but got nil")
-		}
-	})
-
 	t.Run("Error: Missing INPUT_BUCKET_NAME", func(t *testing.T) {
-		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000")
-		t.Setenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet")
+		t.Setenv("BEDROCK_MODEL_ID", "jp.anthropic.claude-sonnet-4-6")
 		t.Setenv("INPUT_BUCKET_NAME", "")
 
 		_, err := LoadConfig()
@@ -75,7 +53,6 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing BEDROCK_MODEL_ID", func(t *testing.T) {
-		t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000")
 		t.Setenv("INPUT_BUCKET_NAME", "test")
 		t.Setenv("BEDROCK_MODEL_ID", "")
 

@@ -1,15 +1,15 @@
-package presign
+package storage
 
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-type mockPresigner struct{}
+type MockPresigner struct{}
 
-func (m *mockPresigner) PresignPutObject(
+func (m *MockPresigner) PresignPutObject(
 	ctx context.Context,
 	params *s3.PutObjectInput,
 	optFns ...func(*s3.PresignOptions),
