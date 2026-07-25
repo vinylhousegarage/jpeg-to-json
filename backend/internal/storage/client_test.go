@@ -1,22 +1,26 @@
 package storage
 
-import "testing"
+import (
+	"testing"
 
-func TestNewPresignClient(t *testing.T) {
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+)
+
+func TestNewS3Client(t *testing.T) {
 	t.Parallel()
 
-	mock := &MockPresigner{}
+	rawClient := &s3.Client{}
 	bucket := "my-test-bucket"
 
-	client := NewPresignClient(mock, bucket)
+	client := NewS3Client(bucket, rawClient)
 
 	if client == nil {
 		t.Fatal("expected client to be initialized, got nil")
 	}
-	if client.s3Presigner != mock {
-		t.Error("expected s3Presigner to be the provided mock")
-	}
 	if client.bucketName != bucket {
 		t.Errorf("expected bucket name %s, got %s", bucket, client.bucketName)
+	}
+	if client.presignClient == nil {
+		t.Error("expected presignClient to be initialized, got nil")
 	}
 }
