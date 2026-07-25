@@ -20,7 +20,7 @@ type S3Presigner interface {
 }
 
 // 構造体を定義
-type Service struct {s3Presigner S3Presigner}
+type Service struct{ s3Presigner S3Presigner }
 
 // 構造体を初期化
 func NewService(s3Presigner S3Presigner) *Service {

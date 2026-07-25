@@ -43,10 +43,10 @@ func TestHandler_ServeHTTP(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name:        "Success: returns presigned URL with valid request",
-			method:      http.MethodPost,
+			name:   "Success: returns presigned URL with valid request",
+			method: http.MethodPost,
 			requestBody: storage.PutPresignRequest{
-			Filename:    "test.jpg",
+				Filename: "test.jpg",
 			},
 			mockResult: &v4.PresignedHTTPRequest{
 				URL: "https://example.com/presigned-put-url",
@@ -67,18 +67,18 @@ func TestHandler_ServeHTTP(t *testing.T) {
 			expectedStatus: http.StatusBadRequest,
 		},
 		{
-			name:        "Error: returns bad request when filename is empty",
-			method:      http.MethodPost,
+			name:   "Error: returns bad request when filename is empty",
+			method: http.MethodPost,
 			requestBody: storage.PutPresignRequest{
-			Filename:    "",
+				Filename: "",
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
 		{
-			name:        "Error: returns internal server error when AWS service fails",
-			method:      http.MethodPost,
+			name:   "Error: returns internal server error when AWS service fails",
+			method: http.MethodPost,
 			requestBody: storage.PutPresignRequest{
-			Filename:    "test.jpg",
+				Filename: "test.jpg",
 			},
 			mockResult:     nil,
 			mockErr:        errors.New("aws internal error"),

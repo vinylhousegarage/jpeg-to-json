@@ -10,14 +10,14 @@ import (
 
 // 構造体を定義
 type S3Client struct {
-	bucketName  string
+	bucketName    string
 	presignClient *s3.PresignClient
 }
 
 // 構造体を初期化
 func NewS3Client(bucketName string, client *s3.Client) *S3Client {
 	return &S3Client{
-		bucketName:  bucketName,
+		bucketName:    bucketName,
 		presignClient: s3.NewPresignClient(client),
 	}
 }
