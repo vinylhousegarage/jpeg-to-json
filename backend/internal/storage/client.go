@@ -3,39 +3,33 @@ package storage
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-// 署名付き PutObject リクエスト生成用インターフェース
-type S3Presigner interface {
-	PresignPutObject(
-		ctx context.Context,
-		params *s3.PutObjectInput,
-		optFns ...func(*s3.PresignOptions),
-	) (*v4.PresignedHTTPRequest, error)
-}
-
 // 構造体を定義
-type PresignClient struct {
+type S3Client struct {
 	bucketName  string
-	s3Presigner S3Presigner
+	presignClient *s3.PresignClient
 }
 
 // 構造体を初期化
-func NewPresignClient(s3Presigner S3Presigner, bucketName string) *PresignClient {
-	return &PresignClient{
+func NewS3Client(bucketName string, client *s3.Client) *S3Client {
+	return &S3Client{
 		bucketName:  bucketName,
-		s3Presigner: s3Presigner,
+		presignClient: s3.NewPresignClient(client),
 	}
 }
 
-// BucketName Getter
-func (c *PresignClient) BucketName() string {
-	return c.bucketName
-}
-
-// S3Presigner Getter
-func (c *PresignClient) S3Presigner() S3Presigner {
-	return c.s3Presigner
+// Putメソッド
+func (c *S3Client) PresignPutObject(
+	ctx context.Context,
+	params *s3.PutObjectInput,
+	optFns ...func(*s3.PresignOptions),
+) (*v4.PresignedHTTPRequest, error) {
+	if params.Bucket == nil || *params.Bucket == "" {
+		params.Bucket = aws.String(c.bucketName)
+	}
+	return c.presignClient.PresignPutObject(ctx, params, optFns...)
 }
