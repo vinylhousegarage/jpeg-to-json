@@ -1,12 +1,13 @@
-# ------------------------------
+# -----------------------------------
 # 共通設定 (Target: base)
-# ------------------------------
+# -----------------------------------
 FROM node:24-trixie-slim AS base
 
 # パッケージリストの更新とツールのインストール
 RUN apt-get update && apt-get install -y \
     git \
     zsh \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
 # UID/GIDの受け取り
@@ -26,9 +27,9 @@ RUN git clone https://github.com/zsh-users/zsh-autosuggestions /home/node/.oh-my
 # 所有者をユーザーに変更
 RUN chown -R node:node /workspace/frontend
 
-# ------------------------------------
+# -----------------------------------------
 # --- 開発用 (Target: dev) ---
-# ------------------------------------
+# -----------------------------------------
 FROM base AS dev
 
 # root を明示
@@ -87,24 +88,17 @@ COPY --chown=node:node . .
 # Vite 開発サーバーのポートを開放
 EXPOSE 5173
 
-# ------------------------------------
-# --- ビルド用 (Target: builder) ---
-# ------------------------------------
+# -----------------------------------------
+# --- ビルド＆ZIP用 (Target: builder) ---
+# -----------------------------------------
 FROM base AS builder
 USER node
 COPY --chown=node:node package*.json package-lock.json ./
-RUN npm install
+RUN npm ci
 COPY --chown=node:node . .
+
 # Vite でビルドして dist フォルダを作成
 RUN npm run build
 
-# ------------------------------------
-# --- 本番用 (Target: runner) ---
-# ------------------------------------
-FROM nginx:alpine AS runner
-# ビルド成果物を Nginx の公開ディリレクトリにコピー
-COPY --from=builder /workspace/frontend/dist /usr/share/nginx/html
-# Nginx ポート
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# ビルド成果物（dist）をZIPに固める
+RUN cd dist && zip -r ../frontend-dist.zip .
