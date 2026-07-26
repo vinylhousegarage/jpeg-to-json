@@ -62,7 +62,6 @@ jobs:
         shell: bash
         run: |
           cat <<EOF > .env
-          ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
           APP_ENV=${{ secrets.APP_ENV }}
           AWS_LAMBDA_FUNCTION_NAME=
           AWS_PROFILE=
