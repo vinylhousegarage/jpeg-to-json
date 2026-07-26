@@ -76,9 +76,11 @@ jobs:
 
       - name: Start Services
         run: |
+          mkdir -p backend/tmp
+          chmod 777 backend/tmp
+
           docker compose up -d
 
-          docker compose exec -T -u root backend mkdir -p /workspace/backend/tmp
           docker compose exec -T -u root backend chmod -R 777 /workspace/backend/tmp
           docker compose exec -T -u root backend chown -R appuser:appgroup /workspace/backend
 
