@@ -32,7 +32,7 @@ func main() {
 	// S3 クライアント
 	baseS3Client := s3.NewFromConfig(awsCfg)
 	// 依存を注入
-	presignClient := storage.NewS3Client(cfg.InputBucketName, baseS3Client)
+	presignClient := storage.NewS3PresignClient(cfg.InputBucketName, baseS3Client)
 
 	// logger の初期化
 	l, err := logger.NewLogger(cfg)

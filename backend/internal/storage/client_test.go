@@ -12,7 +12,7 @@ func TestNewS3Client(t *testing.T) {
 	rawClient := &s3.Client{}
 	bucket := "my-test-bucket"
 
-	client := NewS3Client(bucket, rawClient)
+	client := NewS3PresignClient(bucket, rawClient)
 
 	if client == nil {
 		t.Fatal("expected client to be initialized, got nil")

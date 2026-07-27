@@ -9,21 +9,21 @@ import (
 )
 
 // 構造体を定義
-type S3Client struct {
+type S3PresignClient struct {
 	bucketName    string
 	presignClient *s3.PresignClient
 }
 
 // 構造体を初期化
-func NewS3Client(bucketName string, client *s3.Client) *S3Client {
-	return &S3Client{
+func NewS3PresignClient(bucketName string, client *s3.Client) *S3PresignClient {
+	return &S3PresignClient{
 		bucketName:    bucketName,
 		presignClient: s3.NewPresignClient(client),
 	}
 }
 
 // Putメソッド
-func (c *S3Client) PresignPutObject(
+func (c *S3PresignClient) PresignPutObject(
 	ctx context.Context,
 	params *s3.PutObjectInput,
 	optFns ...func(*s3.PresignOptions),
