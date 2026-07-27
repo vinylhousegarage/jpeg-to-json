@@ -8,13 +8,27 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-// 構造体を定義
+// S3用構造体を定義
+type S3Client struct {
+	bucketName string
+	client     *s3.Client
+}
+
+// 署名付きURL用構造体を定義
 type S3PresignClient struct {
 	bucketName    string
 	presignClient *s3.PresignClient
 }
 
-// 構造体を初期化
+// S3用構造体を初期化
+func NewS3Client(bucketName string, client *s3.Client) *S3Client {
+	return &S3Client{
+		bucketName: bucketName,
+		client:     client,
+	}
+}
+
+// 署名付きURL用構造体を初期化
 func NewS3PresignClient(bucketName string, client *s3.Client) *S3PresignClient {
 	return &S3PresignClient{
 		bucketName:    bucketName,
