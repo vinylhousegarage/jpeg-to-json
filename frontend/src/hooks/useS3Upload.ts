@@ -1,15 +1,21 @@
 import { Dispatch } from 'react';
 import { AppAction } from '../types';
+import { useAppState } from '../state/AppContext';
 
 export const useS3Upload = (dispatch: Dispatch<AppAction>) => {
-  const upload = async (blob: Blob, url: string) => {
+  const { state } = useAppState();
+
+  const upload = async (blob: Blob, presignUrl: string) => {
+    const slackUrl = state.slackUrl;
+
     dispatch({ type: 'START_UPLOAD' });
     try {
-      const response = await fetch(url, {
+      const response = await fetch(presignUrl, {
         method: 'PUT',
         body: blob,
         headers: {
           'Content-Type': 'image/jpeg',
+          'x-amz-meta-slack-url': encodeURIComponent(slackUrl ?? ''),
         },
       });
 
