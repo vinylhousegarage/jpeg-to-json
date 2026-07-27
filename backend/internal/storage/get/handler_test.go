@@ -35,12 +35,12 @@ func TestHandler_ServeHTTP(t *testing.T) {
 	logger := zap.NewNop()
 
 	tests := []struct {
-		name             string
-		method           string
-		requestBody      any
-		mockResult       *v4.PresignedHTTPRequest
-		mockErr          error
-		expectedStatus   int
+		name           string
+		method         string
+		requestBody    any
+		mockResult     *v4.PresignedHTTPRequest
+		mockErr        error
+		expectedStatus int
 	}{
 		{
 			name:   "Success: returns presigned URL with valid request",

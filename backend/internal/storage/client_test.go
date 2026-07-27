@@ -62,8 +62,7 @@ func TestPresignClient_BucketFallback(t *testing.T) {
 	}
 
 	t.Run("PresignPutObject fallback", func(t *testing.T) {
-		params := &s3.PutObjectInput{
-		}
+		params := &s3.PutObjectInput{}
 		if params.Bucket == nil || *params.Bucket == "" {
 			params.Bucket = aws.String(client.bucketName)
 		}
@@ -73,8 +72,7 @@ func TestPresignClient_BucketFallback(t *testing.T) {
 	})
 
 	t.Run("PresignGetObject fallback", func(t *testing.T) {
-		params := &s3.GetObjectInput{
-		}
+		params := &s3.GetObjectInput{}
 		if params.Bucket == nil || *params.Bucket == "" {
 			params.Bucket = aws.String(client.bucketName)
 		}
