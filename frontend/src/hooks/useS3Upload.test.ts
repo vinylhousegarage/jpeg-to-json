@@ -20,6 +20,7 @@ describe('useS3Upload', () => {
     state: {
       type: 'preview',
       slackUrl: 'https://hooks.slack.com/services/test',
+      shotNumber: 'SHOT-001',
       file: new Blob(['test'], { type: 'image/jpeg' }),
       previewUrl: 'blob:http://localhost/test',
     },
