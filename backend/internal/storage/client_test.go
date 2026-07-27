@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func TestNewS3Client(t *testing.T) {
+func TestNewS3PresignClient(t *testing.T) {
 	t.Parallel()
 
 	rawClient := &s3.Client{}
