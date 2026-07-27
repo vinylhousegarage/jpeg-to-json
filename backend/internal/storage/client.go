@@ -36,7 +36,7 @@ func NewS3PresignClient(bucketName string, client *s3.Client) *S3PresignClient {
 	}
 }
 
-// Putメソッド
+// PresignPutメソッド
 func (c *S3PresignClient) PresignPutObject(
 	ctx context.Context,
 	params *s3.PutObjectInput,
@@ -46,4 +46,16 @@ func (c *S3PresignClient) PresignPutObject(
 		params.Bucket = aws.String(c.bucketName)
 	}
 	return c.presignClient.PresignPutObject(ctx, params, optFns...)
+}
+
+// PresignGetメソッド
+func (c *S3PresignClient) PresignGetObject(
+	ctx context.Context,
+	params *s3.GetObjectInput,
+	optFns ...func(*s3.PresignOptions),
+) (*v4.PresignedHTTPRequest, error) {
+	if params.Bucket == nil || *params.Bucket == "" {
+		params.Bucket = aws.String(c.bucketName)
+	}
+	return c.presignClient.PresignGetObject(ctx, params, optFns...)
 }
