@@ -71,7 +71,7 @@ services:
       - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
     networks:
       - app-network
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    command: sh -c "npm run dev -- --host 0.0.0.0"
 
 networks:
   app-network:

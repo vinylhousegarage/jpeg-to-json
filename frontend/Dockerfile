@@ -67,6 +67,12 @@ RUN apt-get update && apt-get install -y \
     libxss1 \
     && rm -rf /var/lib/apt/lists/*
 
+# 設定ファイルをコピー
+COPY --chown=node:node package*.json ./
+
+# npm をインストール
+RUN npm ci
+
 # ChromiumブラウザとOS依存ライブラリをインストール
 RUN npx playwright install chromium
 
@@ -75,12 +81,6 @@ USER node
 
 # Git 所有権エラー回避
 RUN git config --global --add safe.directory '*'
-
-# 設定ファイルをコピー
-COPY --chown=node:node package*.json ./
-
-# npm をインストール
-RUN npm ci
 
 # ソースコードをコピー
 COPY --chown=node:node . .
