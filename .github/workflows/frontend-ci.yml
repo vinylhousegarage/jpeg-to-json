@@ -78,8 +78,8 @@ jobs:
 
       - name: Start Services
         run: |
-          mkdir -p backend/tmp
-          chmod 777 backend/tmp
+          mkdir -p backend/tmp frontend
+          chmod 777 backend/tmp frontend
 
           docker compose up -d
 
