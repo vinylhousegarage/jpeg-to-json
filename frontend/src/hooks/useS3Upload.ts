@@ -5,7 +5,7 @@ import { useAppState } from '../state/AppContext';
 export const useS3Upload = (dispatch: Dispatch<AppAction>) => {
   const { state } = useAppState();
 
-  const upload = async (blob: Blob, presignUrl: string) => {
+  const upload = async (blob: Blob, presignUrl: string, shotNumber: string) => {
     const slackUrl = state.slackUrl;
 
     dispatch({ type: 'START_UPLOAD' });
@@ -16,6 +16,7 @@ export const useS3Upload = (dispatch: Dispatch<AppAction>) => {
         headers: {
           'Content-Type': 'image/jpeg',
           'x-amz-meta-slack-url': encodeURIComponent(slackUrl ?? ''),
+          'x-amz-meta-shot-number': encodeURIComponent(shotNumber),
         },
       });
 
