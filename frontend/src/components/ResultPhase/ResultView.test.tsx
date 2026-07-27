@@ -10,6 +10,7 @@ describe('ResultView', () => {
     const state: ResultPhase = {
       type: 'result',
       slackUrl: 'test-url',
+      shotNumber: 'SHOT-001',
       status: 'success'
     };
 
@@ -23,6 +24,7 @@ describe('ResultView', () => {
     const state: ResultPhase = {
       type: 'result',
       slackUrl: 'test-url',
+      shotNumber: 'SHOT-001',
       status: 'error',
       error: new Error('Network Error')
     };

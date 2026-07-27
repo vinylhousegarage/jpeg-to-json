@@ -16,15 +16,16 @@ describe('useS3Upload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-  vi.spyOn(AppContextModule, 'useAppState').mockReturnValue({
-    state: {
-      type: 'preview',
-      slackUrl: 'https://hooks.slack.com/services/test',
-      file: new Blob(['test'], { type: 'image/jpeg' }),
-      previewUrl: 'blob:http://localhost/test',
-    },
-    dispatch: mockDispatch,
-  });
+    vi.spyOn(AppContextModule, 'useAppState').mockReturnValue({
+      state: {
+        type: 'preview',
+        slackUrl: 'https://hooks.slack.com/services/test',
+        file: new Blob(['test'], { type: 'image/jpeg' }),
+        previewUrl: 'blob:http://localhost/test',
+        shotNumber: '1',
+      },
+      dispatch: mockDispatch,
+    });
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
@@ -34,8 +35,9 @@ describe('useS3Upload', () => {
   it('dispatches correctly on successful completion and sends metadata', async () => {
     const { upload } = useS3Upload(mockDispatch);
     const mockBlob = new Blob(['test-image'], { type: 'image/jpeg' });
+    const shotNumber = '1';
 
-    await upload(mockBlob, 'https://test-s3-presign.url');
+    await upload(mockBlob, 'https://test-s3-presign.url', shotNumber);
 
     expect(fetch).toHaveBeenCalledWith(
       'https://test-s3-presign.url',
@@ -43,6 +45,7 @@ describe('useS3Upload', () => {
         method: 'PUT',
         headers: expect.objectContaining({
           'x-amz-meta-slack-url': encodeURIComponent('https://hooks.slack.com/services/test'),
+          'x-amz-meta-shot-number': encodeURIComponent('1'),
         }),
       })
     );

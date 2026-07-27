@@ -10,6 +10,7 @@ describe('useResultView', () => {
     const state: ResultPhase = { 
       type: 'result', 
       slackUrl: 'https://hooks.slack.com/test',
+      shotNumber: 'SHOT-001',
       status: 'success'
     };
     
@@ -25,6 +26,7 @@ describe('useResultView', () => {
     const state: ResultPhase = { 
       type: 'result', 
       slackUrl: 'https://hooks.slack.com/test',
+      shotNumber: 'SHOT-001',
       status: 'error',
       error: new Error('Upload failed')
     };

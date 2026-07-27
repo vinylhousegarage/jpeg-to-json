@@ -1,13 +1,12 @@
 import { renderHook, act } from '@testing-library/react';
 import { useImageProcessor } from './useImageProcessor';
-import { vi } from 'vitest';
+import { vi, expect } from 'vitest';
 import * as imageUtils from '../components/PreviewPhase/utils/compressImage';
 
-// モック定義
 vi.spyOn(imageUtils, 'compressImage').mockResolvedValue(new Blob());
 
 describe('useImageProcessor', () => {
-  it('compresses image successfully', async () => {
+  it('compresses image successfully and passes shotNumber', async () => {
     const onCapture = vi.fn();
     const onClearPreview = vi.fn();
     
@@ -19,6 +18,10 @@ describe('useImageProcessor', () => {
 
     expect(result.current.isCompressing).toBe(false);
     expect(onClearPreview).toHaveBeenCalled();
-    expect(onCapture).toHaveBeenCalled();
+    
+    expect(onCapture).toHaveBeenCalledWith(
+      expect.any(Blob),
+      expect.stringMatching(/^SHOT-\d{3}$/)
+    );
   });
 });

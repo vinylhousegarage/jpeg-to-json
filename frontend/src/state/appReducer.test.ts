@@ -20,13 +20,15 @@ describe('appReducer', () => {
     const action: AppAction = { 
       type: 'SET_PREVIEW', 
       file,
-      previewUrl: 'blob:...' 
+      previewUrl: 'blob:...',
+      shotNumber: 'SHOT-001'
     };
     const state = appReducer(initialState, action);
 
     if (state.type === 'preview') {
       expect(state.previewUrl).toBe('blob:...');
       expect(state.file).toBe(file);
+      expect(state.shotNumber).toBe('SHOT-001');
     } else {
       throw new Error('State should be preview phase');
     }
@@ -38,10 +40,19 @@ describe('appReducer', () => {
       status: 'success', 
       error: undefined 
     };
-    const state = appReducer(initialState, action);
+    const previewState: AppPhase = {
+      type: 'preview',
+      slackUrl: 'https://example.com',
+      shotNumber: 'SHOT-001',
+      file: new File([''], 'test.png'),
+      previewUrl: 'blob:...'
+    };
+    
+    const state = appReducer(previewState, action);
     expect(state).toEqual({
       type: 'result',
       slackUrl: 'https://example.com',
+      shotNumber: 'SHOT-001',
       status: 'success',
       error: undefined,
     });
@@ -53,6 +64,7 @@ describe('appReducer', () => {
     const previewState: AppPhase = { 
       type: 'preview', 
       slackUrl: 'https://example.com',
+      shotNumber: 'SHOT-001',
       file: new File([''], 'test.png'),
       previewUrl: 'blob:test'
     };

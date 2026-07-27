@@ -14,6 +14,7 @@ export const appReducer = (state: AppPhase, action: AppAction): AppPhase => {
         slackUrl: state.slackUrl ?? '',
         file: action.file,
         previewUrl: action.previewUrl,
+        shotNumber: action.shotNumber,
       };
 
     case 'RETAKE':
@@ -27,6 +28,7 @@ export const appReducer = (state: AppPhase, action: AppAction): AppPhase => {
         return {
           type: 'upload',
           slackUrl: state.slackUrl,
+          shotNumber: state.shotNumber,
         };
       }
       return state;
@@ -38,12 +40,14 @@ export const appReducer = (state: AppPhase, action: AppAction): AppPhase => {
       return {
         type: 'upload',
         slackUrl: state.slackUrl ?? '',
+        shotNumber: 'shotNumber' in state ? state.shotNumber : '',
       };
 
     case 'UPLOAD_COMPLETE':
       return {
         type: 'result',
         slackUrl: state.slackUrl ?? '',
+        shotNumber: 'shotNumber' in state ? state.shotNumber : '',
         status: action.status,
         error: action.error
       };
