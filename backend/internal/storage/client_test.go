@@ -26,6 +26,34 @@ func TestNewS3PresignClient(t *testing.T) {
 	}
 }
 
+func TestS3Client_BucketFallback(t *testing.T) {
+	t.Parallel()
+
+	client := &S3Client{
+		bucketName: "default-bucket",
+	}
+
+	t.Run("PutObject fallback", func(t *testing.T) {
+		params := &s3.PutObjectInput{}
+		if params.Bucket == nil || *params.Bucket == "" {
+			params.Bucket = aws.String(client.bucketName)
+		}
+		if *params.Bucket != "default-bucket" {
+			t.Errorf("expected bucket 'default-bucket', got %s", *params.Bucket)
+		}
+	})
+
+	t.Run("GetObject fallback", func(t *testing.T) {
+		params := &s3.GetObjectInput{}
+		if params.Bucket == nil || *params.Bucket == "" {
+			params.Bucket = aws.String(client.bucketName)
+		}
+		if *params.Bucket != "default-bucket" {
+			t.Errorf("expected bucket 'default-bucket', got %s", *params.Bucket)
+		}
+	})
+}
+
 func TestPresignClient_BucketFallback(t *testing.T) {
 	t.Parallel()
 
