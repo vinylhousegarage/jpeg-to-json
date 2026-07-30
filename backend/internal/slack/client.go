@@ -11,13 +11,15 @@ import (
 
 // 構造体を定義
 type Client struct {
+	shotNumber string
 	webhookURL string
 	httpClient *http.Client
 }
 
 // 構造体を初期化
-func NewClient(webhookURL string) *Client {
+func NewClient(shotNumber, webhookURL string) *Client {
 	return &Client{
+		shotNumber: shotNumber,
 		webhookURL: webhookURL,
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
@@ -31,8 +33,8 @@ type SlackPayload struct {
 }
 
 // 撮影番号・ダウンロードURLをSlackに通知
-func (c *Client) SendNotification(ctx context.Context, shotNumber, downloadURL string) error {
-	message := fmt.Sprintf("撮影番号: %s\n%s", shotNumber, downloadURL)
+func (c *Client) SendNotification(ctx context.Context, downloadURL string) error {
+	message := fmt.Sprintf("撮影番号: %s\n%s", c.shotNumber, downloadURL)
 	payload := SlackPayload{
 		Text: message,
 	}
