@@ -3,6 +3,7 @@ package slack
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +11,13 @@ import (
 
 func TestClient_SendNotification(t *testing.T) {
 	t.Parallel()
+
+	const (
+		testShotNumber  = "1"
+		testDownloadURL = "https://example.com/download"
+	)
+
+	expectedText := fmt.Sprintf("撮影番号: %s\n%s", testShotNumber, testDownloadURL)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -21,7 +29,6 @@ func TestClient_SendNotification(t *testing.T) {
 			t.Fatalf("failed to decode request body: %v", err)
 		}
 
-		expectedText := "撮影番号: 1\nhttps://example.com/download"
 		if payload.Text != expectedText {
 			t.Errorf("expected text %q, got %q", expectedText, payload.Text)
 		}
@@ -30,9 +37,9 @@ func TestClient_SendNotification(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL)
+	client := NewClient(testShotNumber, server.URL)
 
-	err := client.SendNotification(context.Background(), "1", "https://example.com/download")
+	err := client.SendNotification(context.Background(), testDownloadURL)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
