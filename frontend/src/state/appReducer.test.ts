@@ -2,17 +2,17 @@ import { appReducer } from './appReducer';
 import { AppPhase, AppAction } from '../types';
 
 describe('appReducer', () => {
-  const initialState: AppPhase = { type: 'input', slackUrl: 'https://example.com' };
+  const initialState: AppPhase = { type: 'input', isLinked: false };
 
   it('should return the initial state when action is unknown', () => {
     const action = { type: 'INVALID_TYPE' } as unknown as AppAction;
     expect(appReducer(initialState, action)).toEqual(initialState);
   });
 
-  it('should handle SUBMIT', () => {
-    const action: AppAction = { type: 'SUBMIT', slackUrl: 'https://new.com' };
+  it('should handle SET_LINKED', () => {
+    const action: AppAction = { type: 'SET_LINKED', isLinked: true };
     const state = appReducer(initialState, action);
-    expect(state).toEqual({ type: 'input', slackUrl: 'https://new.com' });
+    expect(state).toEqual({ type: 'input', isLinked: true });
   });
 
   it('should handle SET_PREVIEW', () => {
@@ -42,7 +42,6 @@ describe('appReducer', () => {
     };
     const previewState: AppPhase = {
       type: 'preview',
-      slackUrl: 'https://example.com',
       shotNumber: 'SHOT-001',
       file: new File([''], 'test.png'),
       previewUrl: 'blob:...'
@@ -51,7 +50,6 @@ describe('appReducer', () => {
     const state = appReducer(previewState, action);
     expect(state).toEqual({
       type: 'result',
-      slackUrl: 'https://example.com',
       shotNumber: 'SHOT-001',
       status: 'success',
       error: undefined,
@@ -63,7 +61,6 @@ describe('appReducer', () => {
     
     const previewState: AppPhase = { 
       type: 'preview', 
-      slackUrl: 'https://example.com',
       shotNumber: 'SHOT-001',
       file: new File([''], 'test.png'),
       previewUrl: 'blob:test'
@@ -71,6 +68,6 @@ describe('appReducer', () => {
     
     const state = appReducer(previewState, action);
     
-    expect(state).toEqual({ type: 'input' });
+    expect(state).toEqual({ type: 'input', isLinked: false });
   });
 });
