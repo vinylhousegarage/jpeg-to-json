@@ -9,7 +9,6 @@ describe('ResultView', () => {
   test('display SuccessDisplay when the status is success', () => {
     const state: ResultPhase = {
       type: 'result',
-      slackUrl: 'test-url',
       shotNumber: 'SHOT-001',
       status: 'success'
     };
@@ -23,7 +22,6 @@ describe('ResultView', () => {
   test('display ErrorDisplay when the status is error', () => {
     const state: ResultPhase = {
       type: 'result',
-      slackUrl: 'test-url',
       shotNumber: 'SHOT-001',
       status: 'error',
       error: new Error('Network Error')
@@ -31,7 +29,7 @@ describe('ResultView', () => {
 
     render(<ResultView state={state} dispatch={mockDispatch} />);
     
-    // 以上系
+    // 異常系
     expect(screen.getByText('送信失敗')).toBeDefined();
     expect(screen.getByText(/Network Error/)).toBeDefined();
   });

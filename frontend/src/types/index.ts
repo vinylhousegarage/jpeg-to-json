@@ -1,11 +1,10 @@
 export type InputPhase = {
   type: 'input';
-  slackUrl?: string;
+  isLinked: boolean;
 };
 
 export type PreviewPhase = {
   type: 'preview';
-  slackUrl: string;
   shotNumber: string;
   file: Blob;
   previewUrl: string;
@@ -13,22 +12,20 @@ export type PreviewPhase = {
 
 export type UploadPhase = {
   type: 'upload';
-  slackUrl: string;
   shotNumber: string;
 };
 
 export type ResultPhase = {
   type: 'result';
-  slackUrl: string;
   shotNumber: string;
   status: 'success' | 'error';
   error?: Error;
-}
+};
 
 export type AppPhase = InputPhase | PreviewPhase | UploadPhase | ResultPhase;
 
-export type AppAction =
-  | { type: 'SUBMIT'; slackUrl: string }
+  export type AppAction =
+  | { type: 'SET_LINKED'; isLinked: boolean }
   | { type: 'SET_PREVIEW'; file: Blob; previewUrl: string; shotNumber: string }
   | { type: 'RETAKE' }
   | { type: 'SEND' }

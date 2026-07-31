@@ -19,7 +19,6 @@ describe('useS3Upload', () => {
     vi.spyOn(AppContextModule, 'useAppState').mockReturnValue({
       state: {
         type: 'preview',
-        slackUrl: 'https://hooks.slack.com/services/test',
         file: new Blob(['test'], { type: 'image/jpeg' }),
         previewUrl: 'blob:http://localhost/test',
         shotNumber: '1',
@@ -44,7 +43,6 @@ describe('useS3Upload', () => {
       expect.objectContaining({
         method: 'PUT',
         headers: expect.objectContaining({
-          'x-amz-meta-slack-url': encodeURIComponent('https://hooks.slack.com/services/test'),
           'x-amz-meta-shot-number': encodeURIComponent('1'),
         }),
       })

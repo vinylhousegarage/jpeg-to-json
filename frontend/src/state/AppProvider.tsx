@@ -3,7 +3,7 @@ import { AppContext } from './AppContext';
 import { appReducer } from './appReducer';
 import { AppPhase } from '../types';
 
-const initialState: AppPhase = { type: 'input' };
+const initialState: AppPhase = { type: 'input', isLinked: false };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
