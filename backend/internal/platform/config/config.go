@@ -6,12 +6,15 @@ import (
 )
 
 type Config struct {
-	AppEnv          string
-	BedrockModelID  string
-	InputBucketName string
-	IsLambda        bool
-	PromptFileName  string
-	Region          string
+	AppEnv            string
+	BedrockModelID    string
+	InputBucketName   string
+	IsLambda          bool
+	PromptFileName    string
+	Region            string
+	SlackClientID     string
+	SlackClientSecret string
+	SlackRedirectURI  string
 }
 
 func LoadConfig() (*Config, error) {
@@ -42,12 +45,30 @@ func LoadConfig() (*Config, error) {
 		region = "ap-northeast-1"
 	}
 
+	slackClientID := os.Getenv("SLACK_CLIENT_ID")
+	if slackClientID == "" {
+		return nil, fmt.Errorf("SLACK_CLIENT_ID is required")
+	}
+
+	slackClientSecret := os.Getenv("SLACK_CLIENT_SECRET")
+	if slackClientSecret == "" {
+		return nil, fmt.Errorf("SLACK_CLIENT_SECRET is required")
+	}
+
+	slackRedirectURI := os.Getenv("SLACK_REDIRECT_URI")
+	if slackRedirectURI == "" {
+		return nil, fmt.Errorf("SLACK_REDIRECT_URI is required")
+	}
+
 	return &Config{
-		AppEnv:          env,
-		BedrockModelID:  modelID,
-		InputBucketName: inputBucket,
-		IsLambda:        isLambda,
-		PromptFileName:  promptFile,
-		Region:          region,
+		AppEnv:            env,
+		BedrockModelID:    modelID,
+		InputBucketName:   inputBucket,
+		IsLambda:          isLambda,
+		PromptFileName:    promptFile,
+		Region:            region,
+		SlackClientID:     slackClientID,
+		SlackClientSecret: slackClientSecret,
+		SlackRedirectURI:  slackRedirectURI,
 	}, nil
 }
