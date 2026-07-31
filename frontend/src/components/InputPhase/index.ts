@@ -1,1 +1,1 @@
-export { URLRegistration as InputPhase } from './URLRegistration';
+export { SlackOAuth as InputPhase } from './SlackOAuth';
