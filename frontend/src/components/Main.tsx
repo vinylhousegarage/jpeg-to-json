@@ -1,5 +1,5 @@
-import { useAppState } from '../state/useContext';
-import { InputPhase } from './InputPhase';
+import { useAppState } from '../state/AppContext';
+import { SlackOAuth } from './InputPhase/SlackOAuth';
 import { PreviewPhase } from './PreviewPhase';
 import { ResultPhase } from './ResultPhase';
 import { Spinner } from '../common/Spinner';
@@ -10,8 +10,11 @@ export const Main = () => {
   switch (state.type) {
     case 'input':
       return (
-        <InputPhase 
-          onRegister={(url: string) => dispatch({ type: 'SUBMIT', slackUrl: url })} 
+        <SlackOAuth 
+          isLinked={state.isLinked} 
+          onConnectSlack={() => {
+            dispatch({ type: 'SET_LINKED', isLinked: true });
+          }} 
         />
       );
     case 'preview':
