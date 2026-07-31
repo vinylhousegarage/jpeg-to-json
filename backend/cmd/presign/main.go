@@ -13,6 +13,7 @@ import (
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/logger"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/router"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage/put"
 )
@@ -45,16 +46,17 @@ func main() {
 
 	// Put用Serviceの初期化
 	putService := put.NewService(presignClient)
+
 	// ハンドラーの初期化
 	presignHandler := put.NewHandler(putService, l)
 
 	// サーバーの初期化
 	mux := http.NewServeMux()
 
-	// ルーティング
-	mux.Handle("/presign", presignHandler)
+	// ルーティングの設定を委譲
+	router.SetupRoutes(mux, presignHandler)
 
-	// サーバー起動
+	// サーバーの起動
 	if cfg.IsLambda {
 		// Lambda 環境
 		l.Info("Starting server on AWS Lambda")
