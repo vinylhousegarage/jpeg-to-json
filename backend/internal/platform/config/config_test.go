@@ -3,11 +3,7 @@ package config
 import "testing"
 
 func TestLoadConfig(t *testing.T) {
-	t.Parallel()
-
 	t.Run("Success: All required variables set (Local environment)", func(t *testing.T) {
-		t.Parallel()
-
 		t.Setenv("INPUT_BUCKET_NAME", "my-test-bucket")
 		t.Setenv("BEDROCK_MODEL_ID", "jp.anthropic.claude-sonnet-4-6")
 		t.Setenv("SLACK_CLIENT_ID", "test-client-id")
@@ -36,8 +32,6 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Success: Lambda environment", func(t *testing.T) {
-		t.Parallel()
-
 		t.Setenv("INPUT_BUCKET_NAME", "my-test-bucket")
 		t.Setenv("BEDROCK_MODEL_ID", "jp.anthropic.claude-sonnet-4-6")
 		t.Setenv("AWS_LAMBDA_FUNCTION_NAME", "my-lambda-function")
@@ -56,8 +50,6 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing INPUT_BUCKET_NAME", func(t *testing.T) {
-		t.Parallel()
-
 		t.Setenv("BEDROCK_MODEL_ID", "jp.anthropic.claude-sonnet-4-6")
 		t.Setenv("INPUT_BUCKET_NAME", "")
 		t.Setenv("SLACK_CLIENT_ID", "test-client-id")
@@ -71,8 +63,6 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing BEDROCK_MODEL_ID", func(t *testing.T) {
-		t.Parallel()
-
 		t.Setenv("INPUT_BUCKET_NAME", "test")
 		t.Setenv("BEDROCK_MODEL_ID", "")
 		t.Setenv("SLACK_CLIENT_ID", "test-client-id")
@@ -86,8 +76,6 @@ func TestLoadConfig(t *testing.T) {
 	})
 
 	t.Run("Error: Missing SLACK_CLIENT_ID", func(t *testing.T) {
-		t.Parallel()
-
 		t.Setenv("INPUT_BUCKET_NAME", "test")
 		t.Setenv("BEDROCK_MODEL_ID", "test")
 		t.Setenv("SLACK_CLIENT_ID", "")
