@@ -38,8 +38,15 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "amazonwebservices.aws-toolkit-vscode",
+        "docker.docker",
         "golang.go",
-        "amazonwebservices.aws-toolkit-vscode"
+        "mhutchie.git-graph",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+        "MS-CEINTL.vscode-language-pack-ja",
+        "openai.chatgpt",
+        "yzane.markdown-pdf"
       ]
     }
   },
