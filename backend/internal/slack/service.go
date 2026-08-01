@@ -3,37 +3,65 @@ package slack
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 )
 
-const OAuthStateBytes = 32
+const (
+	OAuthStateBytes = 32
+	OAuthStateTTL   = 10 * time.Minute
 
-func GenerateState() string {
-	b := make([]byte, OAuthStateBytes)
-	if _, err := rand.Read(b); err != nil {
-		panic("failed to generate secure random state: " + err.Error())
+	oauthStateCookieName = "oauth_state"
+	oauthStateCookiePath = "/oauth/slack"
+
+	slackAuthorizeURL = "https://slack.com/oauth/v2/authorize"
+	slackBotScopes    = "chat:write,im:write"
+)
+
+func GenerateState() (string, error) {
+	stateBytes := make([]byte, OAuthStateBytes)
+
+	if _, err := rand.Read(stateBytes); err != nil {
+		return "", fmt.Errorf("generate OAuth state: %w", err)
 	}
-	return base64.URLEncoding.EncodeToString(b)
+
+	return base64.RawURLEncoding.EncodeToString(stateBytes), nil
 }
 
-func BuildStateCookie(state string) *http.Cookie {
+func BuildStateCookie(state string, secure bool) *http.Cookie {
 	return &http.Cookie{
-		Name:     "oauth_state",
+		Name:     oauthStateCookieName,
 		Value:    state,
+		Path:     oauthStateCookiePath,
 		HttpOnly: true,
-		Path:     "/",
-		Secure:   true,
+		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
+		MaxAge:   int(OAuthStateTTL.Seconds()),
+		Expires:  time.Now().Add(OAuthStateTTL),
+	}
+}
+
+func BuildDeleteStateCookie(secure bool) *http.Cookie {
+	return &http.Cookie{
+		Name:     oauthStateCookieName,
+		Value:    "",
+		Path:     oauthStateCookiePath,
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
 	}
 }
 
 func BuildAuthURL(clientID, redirectURI, state string) string {
-	v := url.Values{}
-	v.Set("client_id", clientID)
-	v.Set("scope", "chat:write,im:write")
-	v.Set("redirect_uri", redirectURI)
-	v.Set("state", state)
+	query := url.Values{}
+	query.Set("client_id", clientID)
+	query.Set("scope", slackBotScopes)
+	query.Set("redirect_uri", redirectURI)
+	query.Set("state", state)
 
-	return "https://slack.com/oauth/v2/authorize?" + v.Encode()
+	return slackAuthorizeURL + "?" + query.Encode()
 }
