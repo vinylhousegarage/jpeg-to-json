@@ -6,27 +6,68 @@ import (
 	"go.uber.org/zap"
 )
 
-// 構造体を定義
 type Handler struct {
-	clientID    string
-	redirectURI string
-	logger      *zap.Logger
+	clientID     string
+	redirectURI  string
+	cookieSecure bool
+	logger       *zap.Logger
 }
 
-// 構造体を初期化
-func NewHandler(clientID, redirectURI string, logger *zap.Logger) *Handler {
+func NewHandler(
+	clientID string,
+	redirectURI string,
+	cookieSecure bool,
+	logger *zap.Logger,
+) *Handler {
 	return &Handler{
-		clientID:    clientID,
-		redirectURI: redirectURI,
-		logger:      logger,
+		clientID:     clientID,
+		redirectURI:  redirectURI,
+		cookieSecure: cookieSecure,
+		logger:       logger,
 	}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	state := GenerateState()
-	cookie := BuildStateCookie(state)
-	http.SetCookie(w, cookie)
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		http.Error(
+			w,
+			http.StatusText(http.StatusMethodNotAllowed),
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
 
-	authURL := BuildAuthURL(h.clientID, h.redirectURI, state)
-	http.Redirect(w, r, authURL, http.StatusTemporaryRedirect)
+	state, err := GenerateState()
+	if err != nil {
+		h.logger.Error(
+			"failed to generate Slack OAuth state",
+			zap.Error(err),
+		)
+
+		http.Error(
+			w,
+			"failed to start Slack OAuth",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	http.SetCookie(
+		w,
+		BuildStateCookie(state, h.cookieSecure),
+	)
+
+	authURL := BuildAuthURL(
+		h.clientID,
+		h.redirectURI,
+		state,
+	)
+
+	http.Redirect(
+		w,
+		r,
+		authURL,
+		http.StatusFound,
+	)
 }
