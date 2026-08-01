@@ -47,7 +47,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		http.Error(
 			w,
-			"failed to start Slack OAuth",
+			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
 		return
