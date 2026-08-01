@@ -5,13 +5,23 @@ import (
 	"os"
 )
 
+const (
+	appEnvDevelopment = "development"
+	appEnvStaging     = "staging"
+	appEnvProduction  = "production"
+)
+
 type Config struct {
-	AppEnv            string
-	BedrockModelID    string
-	InputBucketName   string
-	IsLambda          bool
-	PromptFileName    string
-	Region            string
+	AppEnv       string
+	CookieSecure bool
+
+	IsLambda bool
+	Region   string
+
+	BedrockModelID  string
+	InputBucketName string
+	PromptFileName  string
+
 	SlackClientID     string
 	SlackClientSecret string
 	SlackRedirectURI  string
@@ -20,7 +30,16 @@ type Config struct {
 func LoadConfig() (*Config, error) {
 	env := os.Getenv("APP_ENV")
 	if env == "" {
-		env = "development"
+		env = appEnvDevelopment
+	}
+
+	cookieSecure := env == appEnvProduction || env == appEnvStaging
+
+	isLambda := os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != ""
+
+	region := os.Getenv("AWS_REGION")
+	if region == "" {
+		region = "ap-northeast-1"
 	}
 
 	modelID := os.Getenv("BEDROCK_MODEL_ID")
@@ -33,16 +52,9 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("INPUT_BUCKET_NAME is required")
 	}
 
-	isLambda := os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != ""
-
 	promptFile := os.Getenv("PROMPT_FILE_NAME")
 	if promptFile == "" {
 		promptFile = "extractor.txt"
-	}
-
-	region := os.Getenv("AWS_REGION")
-	if region == "" {
-		region = "ap-northeast-1"
 	}
 
 	slackClientID := os.Getenv("SLACK_CLIENT_ID")
@@ -61,12 +73,16 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		AppEnv:            env,
-		BedrockModelID:    modelID,
-		InputBucketName:   inputBucket,
-		IsLambda:          isLambda,
-		PromptFileName:    promptFile,
-		Region:            region,
+		AppEnv:       env,
+		CookieSecure: cookieSecure,
+
+		IsLambda: isLambda,
+		Region:   region,
+
+		BedrockModelID:  modelID,
+		InputBucketName: inputBucket,
+		PromptFileName:  promptFile,
+
 		SlackClientID:     slackClientID,
 		SlackClientSecret: slackClientSecret,
 		SlackRedirectURI:  slackRedirectURI,
