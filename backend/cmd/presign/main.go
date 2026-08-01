@@ -26,14 +26,14 @@ func main() {
 	}
 
 	// AWS 設定の読み込み
-	awsCfg, err := awsconfig.LoadDefaultConfig(context.TODO(), awsconfig.WithRegion(cfg.Region))
+	awsCfg, err := awsconfig.LoadDefaultConfig(context.TODO(), awsconfig.WithRegion(cfg.AWS.Region))
 	if err != nil {
 		log.Fatalf("failed to load AWS config: %v", err)
 	}
 	// S3 クライアント
 	baseS3Client := s3.NewFromConfig(awsCfg)
 	// 依存を注入
-	presignClient := storage.NewS3PresignClient(cfg.InputBucketName, baseS3Client)
+	presignClient := storage.NewS3PresignClient(cfg.Bedrock.InputBucketName, baseS3Client)
 
 	// logger の初期化
 	l, err := logger.NewLogger(cfg)
@@ -57,7 +57,7 @@ func main() {
 	router.SetupRoutes(mux, presignHandler)
 
 	// サーバーの起動
-	if cfg.IsLambda {
+	if cfg.AWS.IsLambda {
 		// Lambda 環境
 		l.Info("Starting server on AWS Lambda")
 

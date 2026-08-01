@@ -33,13 +33,13 @@ func main() {
 	ctx := context.Background()
 
 	// プロンプトの読み込み
-	promptText, err := prompts.LoadPrompt(cfg.PromptFileName)
+	promptText, err := prompts.LoadPrompt(cfg.Bedrock.PromptFileName)
 	if err != nil {
 		l.Fatal("failed to load prompt", zap.Error(err))
 	}
 
 	// Bedrock クライアントおよびサービスの初期化
-	bedrockClient, err := bedrock.NewClient(ctx, cfg.BedrockModelID, promptText, l)
+	bedrockClient, err := bedrock.NewClient(ctx, cfg.Bedrock.ModelID, promptText, l)
 	if err != nil {
 		l.Fatal("failed to create bedrock client", zap.Error(err))
 	}
