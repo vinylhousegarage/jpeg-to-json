@@ -1,8 +1,6 @@
 package apierror
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type ErrorCode string
 
@@ -22,6 +20,10 @@ type APIError struct {
 }
 
 func (e *APIError) Error() string {
+	if e.Err == nil {
+		return string(e.Code)
+	}
+
 	return fmt.Sprintf("[%s] %v", e.Code, e.Err)
 }
 
