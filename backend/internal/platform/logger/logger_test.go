@@ -12,7 +12,11 @@ func TestNewLogger(t *testing.T) {
 	t.Run("Production mode", func(t *testing.T) {
 		t.Parallel()
 
-		cfg := &config.Config{AppEnv: "production"}
+		cfg := &config.Config{
+			App: config.AppConfig{
+				Env: "production",
+			},
+		}
 
 		l, err := NewLogger(cfg)
 		if err != nil {
@@ -26,7 +30,11 @@ func TestNewLogger(t *testing.T) {
 	t.Run("Development mode", func(t *testing.T) {
 		t.Parallel()
 
-		cfg := &config.Config{AppEnv: "development"}
+		cfg := &config.Config{
+			App: config.AppConfig{
+				Env: "development",
+			},
+		}
 
 		l, err := NewLogger(cfg)
 		if err != nil {

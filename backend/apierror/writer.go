@@ -8,12 +8,11 @@ import (
 	"go.uber.org/zap"
 )
 
-// ErrorResponse 構造体
+// ErrorResponse 構造体を定義
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-// エラーを判定してレスポンスを送信
 func WriteError(w http.ResponseWriter, err error, logger *zap.Logger) {
 	var apiErr *APIError
 
@@ -26,13 +25,27 @@ func WriteError(w http.ResponseWriter, err error, logger *zap.Logger) {
 		code = apiErr.Code
 	}
 
+	fields := []zap.Field{
+		zap.String("error_code", string(code)),
+		zap.Int("http_status", status),
+		zap.Error(err),
+	}
+
+	if status >= http.StatusInternalServerError {
+		logger.Error("request failed", fields...)
+	} else {
+		logger.Warn("request rejected", fields...)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	// 構造体を使ってレスポンスを生成
-	if err := json.NewEncoder(w).Encode(ErrorResponse{
+	if encodeErr := json.NewEncoder(w).Encode(ErrorResponse{
 		Error: string(code),
-	}); err != nil {
-		logger.Error("failed to write json response", zap.Error(err))
+	}); encodeErr != nil {
+		logger.Error(
+			"failed to write json response",
+			zap.Error(encodeErr),
+		)
 	}
 }
