@@ -1,4 +1,4 @@
-package slack
+package oauth
 
 import (
 	"net/http"
