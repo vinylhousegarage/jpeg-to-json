@@ -2,10 +2,10 @@ import { AppPhase, AppAction } from '../types';
 
 export const appReducer = (state: AppPhase, action: AppAction): AppPhase => {
   switch (action.type) {
-    case 'SET_LINKED':
+    case 'SET_SLACK_LINKED':
       return {
         type: 'input',
-        isLinked: action.isLinked,
+        isSlackLinked: action.isSlackLinked,
       };
 
     case 'SET_PREVIEW':
@@ -21,7 +21,7 @@ export const appReducer = (state: AppPhase, action: AppAction): AppPhase => {
     case 'EXIT':
       return {
         type: 'input',
-        isLinked: 'isLinked' in state ? state.isLinked : false,
+        isSlackLinked: 'isSlackLinked' in state ? state.isSlackLinked : false,
       };
 
     case 'SEND':

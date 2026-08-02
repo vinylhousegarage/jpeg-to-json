@@ -7,7 +7,7 @@ describe('SlackOAuth', () => {
   it('should render the unlinked state and call onConnectSlack when the button is clicked', () => {
     const mockOnConnectSlack = vi.fn();
 
-    render(<SlackOAuth isLinked={false} onConnectSlack={mockOnConnectSlack} />);
+    render(<SlackOAuth isSlackLinked={false} onConnectSlack={mockOnConnectSlack} />);
 
     // 未連携のメッセージとボタンが表示されているか確認
     expect(screen.getByText(/Slackアカウントを連携します/i)).toBeDefined();
@@ -21,10 +21,10 @@ describe('SlackOAuth', () => {
     expect(mockOnConnectSlack).toHaveBeenCalledTimes(1);
   });
 
-  it('should render the linked state when isLinked is true', () => {
+  it('should render the linked state when isSlackLinked is true', () => {
     const mockOnConnectSlack = vi.fn();
 
-    render(<SlackOAuth isLinked={true} onConnectSlack={mockOnConnectSlack} />);
+    render(<SlackOAuth isSlackLinked={true} onConnectSlack={mockOnConnectSlack} />);
 
     // 「Slack連携済み」が表示されているか確認
     expect(screen.getByText(/Slack連携済み/i)).toBeDefined();

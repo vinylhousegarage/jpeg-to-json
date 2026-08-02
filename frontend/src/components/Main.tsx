@@ -11,9 +11,9 @@ export const Main = () => {
     case 'input':
       return (
         <SlackOAuth 
-          isLinked={state.isLinked} 
+          isSlackLinked={state.isSlackLinked} 
           onConnectSlack={() => {
-            dispatch({ type: 'SET_LINKED', isLinked: true });
+            dispatch({ type: 'SET_SLACK_LINKED', isSlackLinked: true });
           }} 
         />
       );

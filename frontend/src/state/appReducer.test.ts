@@ -2,17 +2,17 @@ import { appReducer } from './appReducer';
 import { AppPhase, AppAction } from '../types';
 
 describe('appReducer', () => {
-  const initialState: AppPhase = { type: 'input', isLinked: false };
+  const initialState: AppPhase = { type: 'input', isSlackLinked: false };
 
   it('should return the initial state when action is unknown', () => {
     const action = { type: 'INVALID_TYPE' } as unknown as AppAction;
     expect(appReducer(initialState, action)).toEqual(initialState);
   });
 
-  it('should handle SET_LINKED', () => {
-    const action: AppAction = { type: 'SET_LINKED', isLinked: true };
+  it('should handle SET_SLACK_LINKED', () => {
+    const action: AppAction = { type: 'SET_SLACK_LINKED', isSlackLinked: true };
     const state = appReducer(initialState, action);
-    expect(state).toEqual({ type: 'input', isLinked: true });
+    expect(state).toEqual({ type: 'input', isSlackLinked: true });
   });
 
   it('should handle SET_PREVIEW', () => {
@@ -68,6 +68,6 @@ describe('appReducer', () => {
     
     const state = appReducer(previewState, action);
     
-    expect(state).toEqual({ type: 'input', isLinked: false });
+    expect(state).toEqual({ type: 'input', isSlackLinked: false });
   });
 });

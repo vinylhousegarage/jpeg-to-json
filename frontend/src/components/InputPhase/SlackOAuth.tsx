@@ -2,11 +2,11 @@ import React from 'react';
 import { standardButtonStyle } from '../../styles/button';
 
 type Props = {
-  isLinked: boolean;
+  isSlackLinked: boolean;
   onConnectSlack: () => void;
 };
 
-export const SlackOAuth: React.FC<Props> = ({ isLinked, onConnectSlack }) => {
+export const SlackOAuth: React.FC<Props> = ({ isSlackLinked, onConnectSlack }) => {
   return (
     <div
       className="slack-oauth"
@@ -18,7 +18,7 @@ export const SlackOAuth: React.FC<Props> = ({ isLinked, onConnectSlack }) => {
     >
       <h2>Slack通知設定</h2>
 
-      {isLinked ? (
+      {isSlackLinked ? (
         <p style={{ color: 'green', fontWeight: 'bold' }}>
           Slack連携済み
         </p>

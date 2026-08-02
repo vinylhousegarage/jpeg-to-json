@@ -3,7 +3,7 @@ import { AppContext } from './AppContext';
 import { appReducer } from './appReducer';
 import { AppPhase } from '../types';
 
-const initialState: AppPhase = { type: 'input', isLinked: false };
+const initialState: AppPhase = { type: 'input', isSlackLinked: false };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);

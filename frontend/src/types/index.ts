@@ -1,6 +1,6 @@
 export type InputPhase = {
   type: 'input';
-  isLinked: boolean;
+  isSlackLinked: boolean;
 };
 
 export type PreviewPhase = {
@@ -25,7 +25,7 @@ export type ResultPhase = {
 export type AppPhase = InputPhase | PreviewPhase | UploadPhase | ResultPhase;
 
   export type AppAction =
-  | { type: 'SET_LINKED'; isLinked: boolean }
+  | { type: 'SET_SLACK_LINKED'; isSlackLinked: boolean }
   | { type: 'SET_PREVIEW'; file: Blob; previewUrl: string; shotNumber: string }
   | { type: 'RETAKE' }
   | { type: 'SEND' }
