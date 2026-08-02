@@ -7,7 +7,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-type putItemAPI interface {
+type dynamodbAPI interface {
+	GetItem(
+		ctx context.Context,
+		params *dynamodb.GetItemInput,
+		optFns ...func(*dynamodb.Options),
+	) (*dynamodb.GetItemOutput, error)
+
 	PutItem(
 		ctx context.Context,
 		params *dynamodb.PutItemInput,
@@ -17,13 +23,13 @@ type putItemAPI interface {
 
 // Store persists Slack OAuth tokens in DynamoDB.
 type Store struct {
-	client    putItemAPI
+	client    dynamodbAPI
 	tableName string
 	now       func() time.Time
 }
 
 func NewStore(
-	client putItemAPI,
+	client dynamodbAPI,
 	tableName string,
 ) *Store {
 	return &Store{
@@ -33,7 +39,6 @@ func NewStore(
 	}
 }
 
-// tokenItem represents a Slack bot token persisted in DynamoDB.
 type tokenItem struct {
 	TeamID      string `dynamodbav:"team_id"`
 	AccessToken string `dynamodbav:"access_token"`

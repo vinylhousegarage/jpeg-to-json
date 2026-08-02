@@ -14,23 +14,38 @@ import (
 
 const testTableName = "slack-tokens"
 
-type stubPutItemClient struct {
-	output *dynamodb.PutItemOutput
-	err    error
+type stubDynamoDBClient struct {
+	putItemOutput *dynamodb.PutItemOutput
+	putItemErr    error
+	putItemCalled bool
+	putItemInput  *dynamodb.PutItemInput
 
-	called bool
-	input  *dynamodb.PutItemInput
+	getItemOutput *dynamodb.GetItemOutput
+	getItemErr    error
+	getItemCalled bool
+	getItemInput  *dynamodb.GetItemInput
 }
 
-func (s *stubPutItemClient) PutItem(
+func (s *stubDynamoDBClient) PutItem(
 	_ context.Context,
 	input *dynamodb.PutItemInput,
 	_ ...func(*dynamodb.Options),
 ) (*dynamodb.PutItemOutput, error) {
-	s.called = true
-	s.input = input
+	s.putItemCalled = true
+	s.putItemInput = input
 
-	return s.output, s.err
+	return s.putItemOutput, s.putItemErr
+}
+
+func (s *stubDynamoDBClient) GetItem(
+	_ context.Context,
+	input *dynamodb.GetItemInput,
+	_ ...func(*dynamodb.Options),
+) (*dynamodb.GetItemOutput, error) {
+	s.getItemCalled = true
+	s.getItemInput = input
+
+	return s.getItemOutput, s.getItemErr
 }
 
 func TestStore_Save_Success(t *testing.T) {
@@ -47,8 +62,8 @@ func TestStore_Save_Success(t *testing.T) {
 		time.UTC,
 	)
 
-	client := &stubPutItemClient{
-		output: &dynamodb.PutItemOutput{},
+	client := &stubDynamoDBClient{
+		putItemOutput: &dynamodb.PutItemOutput{},
 	}
 	store := NewStore(client, testTableName)
 	store.now = func() time.Time {
@@ -66,19 +81,19 @@ func TestStore_Save_Success(t *testing.T) {
 		t.Fatalf("Save() error = %v", err)
 	}
 
-	if !client.called {
+	if !client.putItemCalled {
 		t.Fatal("PutItem() was not called")
 	}
 
-	if client.input == nil {
+	if client.putItemInput == nil {
 		t.Fatal("PutItem() input is nil")
 	}
 
-	if client.input.TableName == nil {
+	if client.putItemInput.TableName == nil {
 		t.Fatal("PutItem() TableName is nil")
 	}
 
-	if got := *client.input.TableName; got != testTableName {
+	if got := *client.putItemInput.TableName; got != testTableName {
 		t.Errorf(
 			"PutItem() TableName = %q, want %q",
 			got,
@@ -87,7 +102,10 @@ func TestStore_Save_Success(t *testing.T) {
 	}
 
 	var item tokenItem
-	if err := attributevalue.UnmarshalMap(client.input.Item, &item); err != nil {
+	if err := attributevalue.UnmarshalMap(
+		client.putItemInput.Item,
+		&item,
+	); err != nil {
 		t.Fatalf("failed to unmarshal PutItem item: %v", err)
 	}
 
@@ -122,6 +140,10 @@ func TestStore_Save_Success(t *testing.T) {
 			item.UpdatedAt,
 			wantUpdatedAt,
 		)
+	}
+
+	if client.getItemCalled {
+		t.Error("GetItem() was called by Save()")
 	}
 }
 
@@ -168,7 +190,7 @@ func TestStore_Save_ValidationErrors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			client := &stubPutItemClient{}
+			client := &stubDynamoDBClient{}
 			store := NewStore(client, testTableName)
 
 			err := store.Save(context.Background(), tt.token)
@@ -184,8 +206,12 @@ func TestStore_Save_ValidationErrors(t *testing.T) {
 				)
 			}
 
-			if client.called {
+			if client.putItemCalled {
 				t.Error("PutItem() was called for invalid token")
+			}
+
+			if client.getItemCalled {
+				t.Error("GetItem() was called by Save()")
 			}
 		})
 	}
@@ -195,8 +221,8 @@ func TestStore_Save_PutItemError(t *testing.T) {
 	t.Parallel()
 
 	putErr := errors.New("dynamodb unavailable")
-	client := &stubPutItemClient{
-		err: putErr,
+	client := &stubDynamoDBClient{
+		putItemErr: putErr,
 	}
 
 	store := NewStore(client, testTableName)
@@ -232,15 +258,20 @@ func TestStore_Save_PutItemError(t *testing.T) {
 		)
 	}
 
-	if got := err.Error(); got != "put slack token item: dynamodb unavailable" {
+	const wantError = "put slack token item: dynamodb unavailable"
+	if got := err.Error(); got != wantError {
 		t.Errorf(
 			"Save() error = %q, want %q",
 			got,
-			"put slack token item: dynamodb unavailable",
+			wantError,
 		)
 	}
 
-	if !client.called {
+	if !client.putItemCalled {
 		t.Fatal("PutItem() was not called")
+	}
+
+	if client.getItemCalled {
+		t.Error("GetItem() was called by Save()")
 	}
 }
