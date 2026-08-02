@@ -5,11 +5,19 @@ import "fmt"
 type ErrorCode string
 
 const (
-	ErrorCodeInternal        ErrorCode = "internal_server_error"
-	ErrorCodeInvalidJSON     ErrorCode = "invalid_json"
-	ErrorCodeInvalidMethod   ErrorCode = "invalid_method"
+	// Common
+	ErrorCodeInternal      ErrorCode = "internal_server_error"
+	ErrorCodeInvalidJSON   ErrorCode = "invalid_json"
+	ErrorCodeInvalidMethod ErrorCode = "invalid_method"
+
+	// Upload
 	ErrorCodeMissingFilename ErrorCode = "missing_filename"
 	ErrorCodeS3SigningFailed ErrorCode = "s3_signing_failed"
+
+	// Slack OAuth
+	ErrorCodeMissingState ErrorCode = "missing_state"
+	ErrorCodeInvalidState ErrorCode = "invalid_state"
+	ErrorCodeMissingCode  ErrorCode = "missing_code"
 )
 
 type APIError struct {
