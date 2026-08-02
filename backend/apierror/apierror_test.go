@@ -21,16 +21,16 @@ func TestNew(t *testing.T) {
 		wantInternal string
 	}{
 		{
-			name:         "All arguments provided",
-			code:         "TEST_CODE",
+			name:         "all arguments provided",
+			code:         ErrorCode("TEST_CODE"),
 			status:       http.StatusInternalServerError,
 			err:          originalErr,
 			internalArgs: []string{internalInfo},
 			wantInternal: internalInfo,
 		},
 		{
-			name:         "No internal info",
-			code:         "TEST_CODE_NO_INTERNAL",
+			name:         "no internal info",
+			code:         ErrorCode("TEST_CODE_NO_INTERNAL"),
 			status:       http.StatusBadRequest,
 			err:          originalErr,
 			internalArgs: nil,
@@ -41,11 +41,36 @@ func TestNew(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got := New(tt.code, tt.status, tt.err, tt.internalArgs...)
 
-			if got.Code != tt.code || got.HTTPStatus != tt.status || got.Err != tt.err || got.Internal != tt.wantInternal {
-				t.Errorf("New() = %+v, want code=%v, status=%v, err=%v, internal=%v",
-					got, tt.code, tt.status, tt.err, tt.wantInternal)
+			got := New(
+				tt.code,
+				tt.status,
+				tt.err,
+				tt.internalArgs...,
+			)
+
+			if got.Code != tt.code {
+				t.Errorf("Code = %q, want %q", got.Code, tt.code)
+			}
+
+			if got.HTTPStatus != tt.status {
+				t.Errorf(
+					"HTTPStatus = %d, want %d",
+					got.HTTPStatus,
+					tt.status,
+				)
+			}
+
+			if !errors.Is(got.Err, tt.err) {
+				t.Errorf("Err = %v, want %v", got.Err, tt.err)
+			}
+
+			if got.Internal != tt.wantInternal {
+				t.Errorf(
+					"Internal = %q, want %q",
+					got.Internal,
+					tt.wantInternal,
+				)
 			}
 		})
 	}
