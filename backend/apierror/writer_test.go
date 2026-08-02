@@ -16,11 +16,11 @@ func TestWriteError(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name       string
-		err        error
-		wantStatus int
-		wantCode   ErrorCode
-		wantLevel  zapcore.Level
+		name        string
+		err         error
+		wantStatus  int
+		wantCode    ErrorCode
+		wantLevel   zapcore.Level
 		wantMessage string
 	}{
 		{
