@@ -1,4 +1,4 @@
-import { appReducer } from './appReducer';
+import { appReducer } from './AppReducer';
 import { AppPhase, AppAction } from '../types';
 
 describe('appReducer', () => {
