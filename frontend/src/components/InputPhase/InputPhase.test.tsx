@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { InputPhase } from './InputPhase';
 import * as UseContextModule from '../../state/useContext';
 import * as UseImageProcessorModule from '../../hooks/useImageProcessor';
+import * as CreateShotNumberModule from '../../utils/createShotNumber';
 
 const mockDispatch = vi.fn();
 const mockProcessImage = vi.fn();
@@ -13,6 +14,10 @@ vi.mock('../../state/useContext', () => ({
 
 vi.mock('../../hooks/useImageProcessor', () => ({
   useImageProcessor: vi.fn(),
+}));
+
+vi.mock('../../utils/createShotNumber', () => ({
+  createShotNumber: vi.fn(),
 }));
 
 vi.mock('./SlackOAuth', () => ({
@@ -64,6 +69,10 @@ describe('InputPhase', () => {
       isCompressing: false,
       processImage: mockProcessImage,
     });
+
+    vi.mocked(
+      CreateShotNumberModule.createShotNumber,
+    ).mockReturnValue('SHOT-001');
   });
 
   it('renders SlackOAuth when Slack is not linked', () => {
@@ -131,15 +140,14 @@ describe('InputPhase', () => {
   });
 
   it('dispatches SET_PREVIEW when capture completes', () => {
+    const blob = new Blob(['image'], {
+      type: 'image/jpeg',
+    });
+
     vi.mocked(
       UseImageProcessorModule.useImageProcessor,
     ).mockImplementation((onCapture) => {
-      onCapture(
-        new Blob(['image'], {
-          type: 'image/jpeg',
-        }),
-        'SHOT-001',
-      );
+      onCapture(blob);
 
       return {
         isCompressing: false,
@@ -154,9 +162,13 @@ describe('InputPhase', () => {
       />,
     );
 
+    expect(
+      CreateShotNumberModule.createShotNumber,
+    ).toHaveBeenCalledTimes(1);
+
     expect(mockDispatch).toHaveBeenCalledWith({
       type: 'SET_PREVIEW',
-      file: expect.any(Blob),
+      file: blob,
       shotNumber: 'SHOT-001',
     });
   });

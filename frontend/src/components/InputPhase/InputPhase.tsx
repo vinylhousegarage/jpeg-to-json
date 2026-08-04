@@ -1,5 +1,6 @@
 import { useAppState } from '../../state/useContext';
 import { useImageProcessor } from '../../hooks/useImageProcessor';
+import { createShotNumber } from '../../utils/createShotNumber';
 import { SlackOAuth } from './SlackOAuth';
 import { CameraInput } from './CameraInput';
 
@@ -14,10 +15,9 @@ export const InputPhase = ({
 }: Props) => {
   const { dispatch } = useAppState();
 
-  const handleCapture = (
-    blob: Blob,
-    shotNumber: string,
-  ) => {
+  const handleCapture = (blob: Blob) => {
+    const shotNumber = createShotNumber();
+
     dispatch({
       type: 'SET_PREVIEW',
       file: blob,
