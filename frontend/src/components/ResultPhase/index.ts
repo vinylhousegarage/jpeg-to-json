@@ -1,1 +1,1 @@
-export { ResultView as ResultPhase } from './ResultView';
+export { ResultPhase } from './ResultPhase';
