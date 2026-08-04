@@ -40,7 +40,6 @@ describe('appReducer', () => {
     const action: AppAction = {
       type: 'SET_PREVIEW',
       file,
-      previewUrl: 'blob:...',
       shotNumber: 'SHOT-001',
     };
 
@@ -51,7 +50,6 @@ describe('appReducer', () => {
       phase: {
         type: 'preview',
         file,
-        previewUrl: 'blob:...',
         shotNumber: 'SHOT-001',
       },
     });
@@ -70,7 +68,6 @@ describe('appReducer', () => {
     const action: AppAction = {
       type: 'SET_PREVIEW',
       file,
-      previewUrl: 'blob:...',
       shotNumber: 'SHOT-001',
     };
 
@@ -115,7 +112,6 @@ describe('appReducer', () => {
         type: 'preview',
         shotNumber: 'SHOT-001',
         file: new File([''], 'test.png'),
-        previewUrl: 'blob:test',
       },
     };
 

@@ -1,5 +1,5 @@
 import { useAppState } from '../state/useContext';
-import { SlackOAuth } from './InputPhase/SlackOAuth';
+import { InputPhase } from './InputPhase';
 import { PreviewPhase } from './PreviewPhase';
 import { ResultPhase } from './ResultPhase';
 import { Spinner } from '../common/Spinner';
@@ -10,7 +10,7 @@ export const Main = () => {
   switch (state.phase.type) {
     case 'input':
       return (
-        <SlackOAuth
+        <InputPhase
           isSlackLinked={state.isSlackLinked}
           onConnectSlack={() => {
             dispatch({

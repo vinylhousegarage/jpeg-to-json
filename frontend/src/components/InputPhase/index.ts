@@ -1,1 +1,1 @@
-export { SlackOAuth as InputPhase } from './SlackOAuth';
+export { InputPhase } from './InputPhase';

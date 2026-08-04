@@ -28,7 +28,6 @@ describe('useS3Upload', () => {
           file: new Blob(['test'], {
             type: 'image/jpeg',
           }),
-          previewUrl: 'blob:http://localhost/test',
           shotNumber: '1',
         },
       },

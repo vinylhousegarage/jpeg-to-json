@@ -17,7 +17,6 @@ export const appReducer = (
         phase: {
           type: 'preview',
           file: action.file,
-          previewUrl: action.previewUrl,
           shotNumber: action.shotNumber,
         },
       };

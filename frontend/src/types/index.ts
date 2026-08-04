@@ -6,7 +6,6 @@ export type PreviewPhase = {
   type: 'preview';
   shotNumber: string;
   file: Blob;
-  previewUrl: string;
 };
 
 export type UploadPhase = {
@@ -40,7 +39,6 @@ export type AppAction =
   | {
       type: 'SET_PREVIEW';
       file: Blob;
-      previewUrl: string;
       shotNumber: string;
     }
   | { type: 'RETAKE' }
@@ -53,3 +51,4 @@ export type AppAction =
       error?: Error;
     }
   | { type: 'CONTINUE' };
+  
