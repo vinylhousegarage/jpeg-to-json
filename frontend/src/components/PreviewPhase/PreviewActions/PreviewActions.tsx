@@ -1,65 +1,41 @@
-import { useImageProcessor } from '../../../hooks/useImageProcessor';
-import { PreviewActionsProps } from './PreviewActions.types';
 import { standardButtonStyle } from '../../../styles/button';
 
+type Props = {
+  onRetake: () => void;
+  onSubmit: () => void;
+  isSending?: boolean;
+};
+
 export const PreviewActions = ({
-  onCapture,
-  onClearPreview,
+  onRetake,
   onSubmit,
   isSending = false,
-  onError,
-}: PreviewActionsProps) => {
-  // 圧縮処理中の Loading を管理する状態
-  const { isCompressing, processImage } =
-    useImageProcessor(
-      onCapture,
-      onClearPreview,
-      onError,
-    );
-
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    await processImage(file);
-
-    event.target.value = '';
-  };
-
+}: Props) => {
   return (
-    <div>
-      {/* 「撮り直し」ボタン */}
-      <p>
-        <label style={standardButtonStyle}>
-          撮り直し
+    <div
+      className="button-group"
+      style={{
+        display: 'flex',
+        gap: '10px',
+      }}
+    >
+      <button
+        type="button"
+        onClick={onRetake}
+        disabled={isSending}
+        style={standardButtonStyle}
+      >
+        撮り直し
+      </button>
 
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handleFileChange}
-            disabled={isCompressing || isSending}
-            style={{ display: 'none' }}
-          />
-        </label>
-      </p>
-
-      {/* 確定・送信ボタン */}
-      <p>
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={isCompressing || isSending}
-          style={standardButtonStyle}
-        >
-          画像を確定し送信
-        </button>
-      </p>
+      <button
+        type="button"
+        onClick={onSubmit}
+        disabled={isSending}
+        style={standardButtonStyle}
+      >
+        画像を確定し送信
+      </button>
     </div>
   );
 };

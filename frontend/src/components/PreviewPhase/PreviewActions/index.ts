@@ -1,2 +1,1 @@
-export * from './PreviewActions';
-export type { PreviewActionsProps } from './PreviewActions.types';
+export { PreviewActions } from './PreviewActions';
