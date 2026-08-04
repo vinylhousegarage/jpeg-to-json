@@ -1,21 +1,30 @@
 import { useImageProcessor } from '../../../hooks/useImageProcessor';
-import { CameraCaptureProps } from './CameraCapture.types';
+import { PreviewActionsProps } from './PreviewActions.types';
 import { standardButtonStyle } from '../../../styles/button';
 
-export const CameraCapture = ({ 
-  onCapture, 
-  onClearPreview, 
-  onSubmit, 
-  isSending = false, 
-  onError 
-}: CameraCaptureProps) => {
-
+export const PreviewActions = ({
+  onCapture,
+  onClearPreview,
+  onSubmit,
+  isSending = false,
+  onError,
+}: PreviewActionsProps) => {
   // 圧縮処理中の Loading を管理する状態
-  const { isCompressing, processImage } = useImageProcessor(onCapture, onClearPreview, onError);
+  const { isCompressing, processImage } =
+    useImageProcessor(
+      onCapture,
+      onClearPreview,
+      onError,
+    );
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+
+    if (!file) {
+      return;
+    }
 
     await processImage(file);
 
@@ -28,13 +37,14 @@ export const CameraCapture = ({
       <p>
         <label style={standardButtonStyle}>
           撮り直し
+
           <input
             type="file"
             accept="image/*"
             capture="environment"
             onChange={handleFileChange}
             disabled={isCompressing || isSending}
-            style={{ display: 'none' }} // 標準ボタンを隠す
+            style={{ display: 'none' }}
           />
         </label>
       </p>

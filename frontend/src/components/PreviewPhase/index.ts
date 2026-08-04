@@ -1,2 +1,2 @@
-export { CameraCapture } from './CameraCapture';
+export { PreviewActions } from './PreviewActions';
 export { PreviewArea as PreviewPhase } from './PreviewArea';
