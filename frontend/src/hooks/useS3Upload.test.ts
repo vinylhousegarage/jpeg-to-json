@@ -6,11 +6,6 @@ import {
   vi,
 } from 'vitest';
 import { useS3Upload } from './useS3Upload';
-import * as UseContextModule from '../state/useContext';
-
-vi.mock('../state/useContext', () => ({
-  useAppState: vi.fn(),
-}));
 
 describe('useS3Upload', () => {
   const mockDispatch = vi.fn();
@@ -18,26 +13,11 @@ describe('useS3Upload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(
-      UseContextModule.useAppState,
-    ).mockReturnValue({
-      state: {
-        isSlackLinked: true,
-        phase: {
-          type: 'preview',
-          file: new Blob(['test'], {
-            type: 'image/jpeg',
-          }),
-          shotNumber: '1',
-        },
-      },
-      dispatch: mockDispatch,
-    });
-
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
       }),
     );
   });
@@ -62,22 +42,29 @@ describe('useS3Upload', () => {
 
     expect(fetch).toHaveBeenCalledWith(
       'https://test-s3-presign.url',
-      expect.objectContaining({
+      {
         method: 'PUT',
-        headers: expect.objectContaining({
-          'x-amz-meta-shot-number':
-            encodeURIComponent('1'),
-        }),
-      }),
+        body: mockBlob,
+        headers: {
+          'Content-Type': 'image/jpeg',
+          'x-amz-meta-shot-number': '1',
+        },
+      },
     );
 
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'START_UPLOAD',
-    });
+    expect(mockDispatch).toHaveBeenNthCalledWith(
+      1,
+      {
+        type: 'START_UPLOAD',
+      },
+    );
 
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'UPLOAD_COMPLETE',
-      status: 'success',
-    });
+    expect(mockDispatch).toHaveBeenNthCalledWith(
+      2,
+      {
+        type: 'UPLOAD_COMPLETE',
+        status: 'success',
+      },
+    );
   });
 });
