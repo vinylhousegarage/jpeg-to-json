@@ -1,4 +1,4 @@
-import { standardButtonStyle } from '../../styles/button';
+import { standardButtonStyle } from '../../../styles/button';
 
 type Props = {
   onContinue: () => void;
@@ -9,15 +9,17 @@ export const SuccessDisplay: React.FC<Props> = ({ onContinue, onExit }) => {
   return (
     <div className="success-display">
       <h2>送信完了</h2>
-      <button 
-        onClick={onContinue} 
+      <button
+        type="button"
+        onClick={onContinue}
         style={standardButtonStyle}
       >
         つづけて撮影
       </button>
-      
-      <button 
-        onClick={onExit} 
+
+      <button
+        type="button"
+        onClick={onExit}
         style={standardButtonStyle}
       >
         終了

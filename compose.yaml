@@ -48,6 +48,9 @@ services:
       - INPUT_BUCKET_NAME=${INPUT_BUCKET_NAME}
       - IS_LAMBDA=${IS_LAMBDA}
       - PROMPT_FILE_NAME=${PROMPT_FILE_NAME}
+      - SLACK_CLIENT_ID=${SLACK_CLIENT_ID}
+      - SLACK_CLIENT_SECRET=${SLACK_CLIENT_SECRET}
+      - SLACK_REDIRECT_URI=${SLACK_REDIRECT_URI}
     networks:
       - app-network
 
@@ -69,6 +72,7 @@ services:
       - "8081:5173"
     environment:
       - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     networks:
       - app-network
     command: sh -c "npm run dev -- --host 0.0.0.0"

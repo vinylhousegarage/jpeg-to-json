@@ -1,4 +1,4 @@
-import { standardButtonStyle } from '../../styles/button';
+import { standardButtonStyle } from '../../../styles/button';
 
 type Props = {
   error?: Error;
@@ -10,17 +10,19 @@ export const ErrorDisplay: React.FC<Props> = ({ error, onContinue, onExit }) => 
   return (
     <div className="error-display">
       <h2>送信失敗</h2>
-      
+
       {error && <p style={{ color: 'red' }}>{error.message}</p>}
-      
+
       <button
+        type="button"
         onClick={onContinue}
         style={standardButtonStyle}
       >
         撮り直し
       </button>
-      
+
       <button
+        type="button"
         onClick={onExit}
         style={standardButtonStyle}
       >
