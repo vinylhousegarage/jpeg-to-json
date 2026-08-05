@@ -1,49 +1,80 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-test.describe('S3 Upload Pipeline', () => {
-  test('should acquire presigned URL and upload image to S3', async ({ request }) => {
-    // ダミーのJPEG画像データを作成 (Base64からBufferへ変換)
-    const dummyImageBuffer = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-      'base64'
-    );
+test.describe('Slack OAuth Phase', () => {
+  test.use({
+    viewport: {
+      width: 375,
+      height: 667,
+    },
+  });
 
-    // バックエンドからPresigned URLを取得
-    const response = await request.post('http://backend:8080/presign', {
-      headers: { 'Content-Type': 'application/json' },
-      data: { filename: 'test-image.jpg' }
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  test('should display the Slack notification settings', async ({
+    page,
+  }) => {
+    await expect(
+      page.getByRole('heading', {
+        name: 'Slack通知設定',
+      }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole('button', {
+        name: 'DM通知を設定',
+      }),
+    ).toBeVisible();
+  });
+
+  test('should display the content in the centered container', async ({
+    page,
+  }) => {
+    const container = page.locator('.slack-oauth');
+    const heading = page.getByRole('heading', {
+      name: 'Slack通知設定',
+    });
+    const button = page.getByRole('button', {
+      name: 'DM通知を設定',
     });
 
-    // エラー発生時に詳細を表示
-    if (!response.ok()) {
-      const errorBody = await response.text();
-      console.error(`[DEBUG] Presigned URL acquisition failed (Status: ${response.status()})`);
-      console.error(`[DEBUG] Response Body: ${errorBody}`);
-      
-      // エラー内容
-      expect(response.ok(), `Failed to acquire presigned URL: ${response.status()} - ${errorBody}`).toBeTruthy();
+    await expect(container).toBeVisible();
+    await expect(heading).toBeVisible();
+    await expect(button).toBeVisible();
+
+    const [containerBox, headingBox, buttonBox] =
+      await Promise.all([
+        container.boundingBox(),
+        heading.boundingBox(),
+        button.boundingBox(),
+      ]);
+
+    if (!containerBox || !headingBox || !buttonBox) {
+      throw new Error('Some elements are not visible');
     }
 
-    // レスポンスから uploadURL を抽出
-    const body = await response.json();
-    const { uploadURL } = body;
-    expect(uploadURL).toBeDefined();
+    const getCenter = (box: {
+      x: number;
+      width: number;
+    }) => box.x + box.width / 2;
 
-    // S3へ直接PUTリクエストを送信
-    const putResponse = await request.put(uploadURL, {
-      data: dummyImageBuffer,
-      headers: {
-        'Content-Type': 'image/jpeg'
-      }
-    });
+    expect(
+      Math.abs(
+        getCenter(containerBox) -
+          getCenter(headingBox),
+      ),
+    ).toBeLessThan(1);
 
-    // アップロード結果の検証とエラー出力
-    if (!putResponse.ok()) {
-      const errorBody = await putResponse.text();
-      console.error(`[DEBUG] S3 Upload failed (Status: ${putResponse.status()})`);
-      console.error(`[DEBUG] Response Body: ${errorBody}`);
-      
-      expect(putResponse.ok(), `Failed to upload to S3: ${putResponse.status()} - ${errorBody}`).toBeTruthy();
-    }
+    expect(
+      Math.abs(
+        getCenter(containerBox) -
+          getCenter(buttonBox),
+      ),
+    ).toBeLessThan(1);
+
+    expect(
+      headingBox.y + headingBox.height,
+    ).toBeLessThanOrEqual(buttonBox.y);
   });
 });
