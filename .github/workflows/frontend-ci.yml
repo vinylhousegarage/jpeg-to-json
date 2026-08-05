@@ -63,18 +63,24 @@ jobs:
         run: |
           cat <<EOF > .env
           APP_ENV=${{ secrets.APP_ENV }}
-          AWS_LAMBDA_FUNCTION_NAME=
-          AWS_PROFILE=
           AWS_REGION=${{ secrets.AWS_REGION }}
           AWS_SDK_LOAD_CONFIG=${{ secrets.AWS_SDK_LOAD_CONFIG }}
           BEDROCK_MODEL_ID=${{ secrets.BEDROCK_MODEL_ID }}
           INPUT_BUCKET_NAME=${{ secrets.INPUT_BUCKET_NAME }}
           IS_LAMBDA=${{ secrets.IS_LAMBDA }}
-          VITE_API_BASE_URL=http://localhost:8080
           PROMPT_FILE_NAME=${{ secrets.PROMPT_FILE_NAME }}
+          SLACK_CLIENT_ID=${{ secrets.SLACK_CLIENT_ID }}
+          SLACK_CLIENT_SECRET=${{ secrets.SLACK_CLIENT_SECRET }}
+          SLACK_REDIRECT_URI=${{ secrets.SLACK_REDIRECT_URI }}
+
           AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
           AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
           AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+
+          VITE_API_BASE_URL=http://localhost:8080
+
+          AWS_LAMBDA_FUNCTION_NAME=
+          AWS_PROFILE=
           EOF
 
       - name: Start Services
