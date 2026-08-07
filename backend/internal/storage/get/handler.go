@@ -34,7 +34,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 署名付きURLの生成
-	url, expiresAt, err := h.service.GeneratePresignURL(r.Context(), req.Filename)
+	url, expiresAt, err := h.service.GeneratePresignURL(r.Context(), req.ShotNumber)
 	if err != nil {
 		apierror.WriteError(w, err, h.logger)
 		return
@@ -55,8 +55,8 @@ func (h *Handler) validateRequest(r *http.Request) (*storage.GetPresignRequest, 
 		return nil, apierror.New(apierror.ErrorCodeInvalidJSON, http.StatusBadRequest, err)
 	}
 
-	if req.Filename == "" {
-		return nil, apierror.New(apierror.ErrorCodeMissingFilename, http.StatusBadRequest, nil)
+	if req.ShotNumber == "" {
+		return nil, apierror.New(apierror.ErrorCodeMissingShotNumber, http.StatusBadRequest, nil)
 	}
 
 	return &req, nil
