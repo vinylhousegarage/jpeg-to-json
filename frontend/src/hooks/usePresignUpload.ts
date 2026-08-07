@@ -18,10 +18,7 @@ export const usePresignUpload = (
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          filename: `${shotNumber}.jpg`,
-          shotNumber,
-        }),
+        body: JSON.stringify({ shotNumber }),
       },
     );
 
