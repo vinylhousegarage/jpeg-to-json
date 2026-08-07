@@ -1,5 +1,5 @@
 import { useAppState } from '../state/useContext';
-import { useS3Upload } from '../hooks/useS3Upload';
+import { usePresignUpload } from '../hooks/usePresignUpload';
 import { InputPhase } from './InputPhase';
 import { PreviewPhase } from './PreviewPhase';
 import { ResultPhase } from './ResultPhase';
@@ -7,52 +7,7 @@ import { Spinner } from '../common/Spinner';
 
 export const Main = () => {
   const { state, dispatch } = useAppState();
-  const { upload } = useS3Upload(dispatch);
-
-  const handleSend = async () => {
-    if (state.phase.type !== 'preview') {
-      return;
-    }
-
-    const { file, shotNumber } = state.phase;
-
-    const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/presign`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          filename: `${shotNumber}.jpg`,
-          contentType: 'image/jpeg',
-          shotNumber,
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      dispatch({
-        type: 'UPLOAD_COMPLETE',
-        status: 'error',
-        error: new Error(
-          `Failed to get presigned URL: ${response.status}`,
-        ),
-      });
-      return;
-    }
-
-    const data: {
-      uploadURL: string;
-      expiresAt: string;
-    } = await response.json();
-
-    await upload(
-      file,
-      data.uploadURL,
-      shotNumber,
-    );
-  };
+  const { send } = usePresignUpload(dispatch);
 
   switch (state.phase.type) {
     case 'input':
@@ -68,15 +23,23 @@ export const Main = () => {
         />
       );
 
-    case 'preview':
+    case 'preview': {
+      const { file, shotNumber } = state.phase;
+
       return (
         <PreviewPhase
-          blob={state.phase.file}
+          blob={file}
           isSending={false}
           onRetake={() => dispatch({ type: 'RETAKE' })}
-          onSend={handleSend}
+          onSend={() =>
+            send(
+              file,
+              shotNumber,
+            )
+          }
         />
       );
+    }
 
     case 'upload':
       return <Spinner />;
