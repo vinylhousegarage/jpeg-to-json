@@ -67,7 +67,7 @@ func TestHandler_ServeHTTP(t *testing.T) {
 			expectedStatus: http.StatusBadRequest,
 		},
 		{
-			name:   "Error: returns bad request when filename is empty",
+			name:   "Error: returns bad request when shot number is empty",
 			method: http.MethodPost,
 			requestBody: storage.GetPresignRequest{
 				ShotNumber: "",
