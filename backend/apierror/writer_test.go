@@ -26,12 +26,12 @@ func TestWriteError(t *testing.T) {
 		{
 			name: "APIError returns specified status and warn log",
 			err: New(
-				ErrorCodeMissingFilename,
+				ErrorCodeMissingShotNumber,
 				http.StatusBadRequest,
 				nil,
 			),
 			wantStatus:  http.StatusBadRequest,
-			wantCode:    ErrorCodeMissingFilename,
+			wantCode:    ErrorCodeMissingShotNumber,
 			wantLevel:   zapcore.WarnLevel,
 			wantMessage: "request rejected",
 		},

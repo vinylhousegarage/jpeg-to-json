@@ -4,8 +4,7 @@ import "time"
 
 // Put用リクエスト構造体
 type PutPresignRequest struct {
-	Filename    string `json:"filename"`
-	ContentType string `json:"contentType"`
+	ShotNumber string `json:"shotNumber"`
 }
 
 // Put用レスポンス構造体
@@ -16,7 +15,7 @@ type PutPresignResponse struct {
 
 // Get用リクエスト構造体
 type GetPresignRequest struct {
-	Filename string `json:"filename"`
+	ShotNumber string `json:"shotNumber"`
 }
 
 // Get用レスポンス構造体

@@ -11,8 +11,8 @@ const (
 	ErrorCodeInvalidMethod ErrorCode = "invalid_method"
 
 	// Upload
-	ErrorCodeMissingFilename ErrorCode = "missing_filename"
-	ErrorCodeS3SigningFailed ErrorCode = "s3_signing_failed"
+	ErrorCodeMissingShotNumber ErrorCode = "missing_shot_number"
+	ErrorCodeS3SigningFailed   ErrorCode = "s3_signing_failed"
 
 	// Slack OAuth
 	ErrorCodeMissingState ErrorCode = "missing_state"

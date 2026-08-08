@@ -14,6 +14,7 @@ import (
 type mockPresigner struct {
 	mockResult *v4.PresignedHTTPRequest
 	mockErr    error
+	gotKey     string
 }
 
 func (m *mockPresigner) PresignPutObject(
@@ -21,6 +22,10 @@ func (m *mockPresigner) PresignPutObject(
 	params *s3.PutObjectInput,
 	optFns ...func(*s3.PresignOptions),
 ) (*v4.PresignedHTTPRequest, error) {
+	if params.Key != nil {
+		m.gotKey = *params.Key
+	}
+
 	return m.mockResult, m.mockErr
 }
 
@@ -33,12 +38,14 @@ func TestService_GeneratePresignURL_Success(t *testing.T) {
 		mockResult: &v4.PresignedHTTPRequest{
 			URL: expectedURL,
 		},
-		mockErr: nil,
 	}
 
 	svc := NewService(mock)
 
-	url, expiresAt, err := svc.GeneratePresignURL(context.Background(), "test.jpg")
+	url, expiresAt, err := svc.GeneratePresignURL(
+		context.Background(),
+		"001",
+	)
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -48,7 +55,12 @@ func TestService_GeneratePresignURL_Success(t *testing.T) {
 		t.Errorf("expected URL %s, got %s", expectedURL, url)
 	}
 
-	if time.Until(expiresAt) > 16*time.Minute || time.Until(expiresAt) < 14*time.Minute {
+	if mock.gotKey != "001.jpg" {
+		t.Errorf("expected key %q, got %q", "001.jpg", mock.gotKey)
+	}
+
+	if time.Until(expiresAt) > 16*time.Minute ||
+		time.Until(expiresAt) < 14*time.Minute {
 		t.Errorf("unexpected expiration time: %v", expiresAt)
 	}
 }
@@ -58,13 +70,15 @@ func TestService_GeneratePresignURL_Error(t *testing.T) {
 	t.Parallel()
 
 	mock := &mockPresigner{
-		mockResult: nil,
-		mockErr:    errors.New("aws error"),
+		mockErr: errors.New("aws error"),
 	}
 
 	svc := NewService(mock)
 
-	_, _, err := svc.GeneratePresignURL(context.Background(), "test.jpg")
+	_, _, err := svc.GeneratePresignURL(
+		context.Background(),
+		"001",
+	)
 
 	if err == nil {
 		t.Fatal("expected error, got nil")

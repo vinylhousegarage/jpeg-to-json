@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage"
 )
 
 // インターフェースを定義
@@ -28,13 +30,21 @@ func NewService(s3Presigner S3Presigner) *Service {
 }
 
 // 署名付きURL生成ロジック
-func (s *Service) GeneratePresignURL(ctx context.Context, filename string) (string, time.Time, error) {
+func (s *Service) GeneratePresignURL(
+	ctx context.Context,
+	shotNumber string,
+) (string, time.Time, error) {
 	now := time.Now()
 	duration := 15 * time.Minute
+	objectKey := storage.BuildObjectKey(shotNumber)
 
-	request, err := s.s3Presigner.PresignPutObject(ctx, &s3.PutObjectInput{
-		Key: aws.String(filename),
-	}, s3.WithPresignExpires(duration))
+	request, err := s.s3Presigner.PresignPutObject(
+		ctx,
+		&s3.PutObjectInput{
+			Key: aws.String(objectKey),
+		},
+		s3.WithPresignExpires(duration),
+	)
 
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("failed to sign request: %w", err)
