@@ -13,6 +13,10 @@ func TestLoadSlackConfig(t *testing.T) {
 			"SLACK_REDIRECT_URI",
 			"https://example.com/oauth/slack/callback",
 		)
+		t.Setenv(
+			"SLACK_TOKEN_TABLE_NAME",
+			"slack-tokens",
+		)
 
 		cfg, err := loadSlackConfig()
 		if err != nil {
@@ -45,50 +49,83 @@ func TestLoadSlackConfig(t *testing.T) {
 				cfg.RedirectURI,
 			)
 		}
+
+		if cfg.TokenTableName != "slack-tokens" {
+			t.Errorf(
+				"expected TokenTableName %q, got %q",
+				"slack-tokens",
+				cfg.TokenTableName,
+			)
+		}
 	})
 
 	tests := []struct {
-		name         string
-		clientID     string
-		clientSecret string
-		redirectURI  string
-		expectedErr  string
+		name           string
+		clientID       string
+		clientSecret   string
+		redirectURI    string
+		tokenTableName string
+		expectedErr    string
 	}{
 		{
-			name:         "missing client ID",
-			clientID:     "",
-			clientSecret: "test-client-secret",
-			redirectURI:  "https://example.com/oauth/slack/callback",
-			expectedErr:  "SLACK_CLIENT_ID is required",
+			name:           "missing client ID",
+			clientID:       "",
+			clientSecret:   "test-client-secret",
+			redirectURI:    "https://example.com/oauth/slack/callback",
+			tokenTableName: "slack-tokens",
+			expectedErr:    "SLACK_CLIENT_ID is required",
 		},
 		{
-			name:         "missing client secret",
-			clientID:     "test-client-id",
-			clientSecret: "",
-			redirectURI:  "https://example.com/oauth/slack/callback",
-			expectedErr:  "SLACK_CLIENT_SECRET is required",
+			name:           "missing client secret",
+			clientID:       "test-client-id",
+			clientSecret:   "",
+			redirectURI:    "https://example.com/oauth/slack/callback",
+			tokenTableName: "slack-tokens",
+			expectedErr:    "SLACK_CLIENT_SECRET is required",
 		},
 		{
-			name:         "missing redirect URI",
-			clientID:     "test-client-id",
-			clientSecret: "test-client-secret",
-			redirectURI:  "",
-			expectedErr:  "SLACK_REDIRECT_URI is required",
+			name:           "missing redirect URI",
+			clientID:       "test-client-id",
+			clientSecret:   "test-client-secret",
+			redirectURI:    "",
+			tokenTableName: "slack-tokens",
+			expectedErr:    "SLACK_REDIRECT_URI is required",
+		},
+		{
+			name:           "missing token table name",
+			clientID:       "test-client-id",
+			clientSecret:   "test-client-secret",
+			redirectURI:    "https://example.com/oauth/slack/callback",
+			tokenTableName: "",
+			expectedErr:    "SLACK_TOKEN_TABLE_NAME is required",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Setenv("SLACK_CLIENT_ID", tt.clientID)
-			t.Setenv("SLACK_CLIENT_SECRET", tt.clientSecret)
-			t.Setenv("SLACK_REDIRECT_URI", tt.redirectURI)
+			t.Setenv(
+				"SLACK_CLIENT_SECRET",
+				tt.clientSecret,
+			)
+			t.Setenv(
+				"SLACK_REDIRECT_URI",
+				tt.redirectURI,
+			)
+			t.Setenv(
+				"SLACK_TOKEN_TABLE_NAME",
+				tt.tokenTableName,
+			)
 
 			_, err := loadSlackConfig()
 			if err == nil {
 				t.Fatal("expected error, got nil")
 			}
 
-			if !strings.Contains(err.Error(), tt.expectedErr) {
+			if !strings.Contains(
+				err.Error(),
+				tt.expectedErr,
+			) {
 				t.Errorf(
 					"expected error containing %q, got %q",
 					tt.expectedErr,
