@@ -43,7 +43,7 @@ type SlackConfig struct {
 	RedirectURI  string
 }
 
-func LoadConfig() (*Config, error) {
+func Load() (*Config, error) {
 	appConfig := loadAppConfig()
 	awsConfig := loadAWSConfig()
 

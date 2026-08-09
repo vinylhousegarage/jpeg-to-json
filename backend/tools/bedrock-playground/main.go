@@ -16,7 +16,7 @@ import (
 
 func main() {
 	// 設定の初期化
-	cfg, err := config.LoadConfig()
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}

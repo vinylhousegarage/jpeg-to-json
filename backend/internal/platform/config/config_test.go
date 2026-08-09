@@ -2,7 +2,7 @@ package config
 
 import "testing"
 
-func TestLoadConfig(t *testing.T) {
+func TestLoad(t *testing.T) {
 	t.Setenv("APP_ENV", appEnvDevelopment)
 	t.Setenv("AWS_LAMBDA_FUNCTION_NAME", "")
 	t.Setenv("AWS_REGION", defaultAWSRegion)
@@ -16,7 +16,7 @@ func TestLoadConfig(t *testing.T) {
 		"https://example.com/oauth/slack/callback",
 	)
 
-	cfg, err := LoadConfig()
+	cfg, err := Load()
 	if err != nil {
 		t.Fatalf("LoadConfig() error = %v", err)
 	}
