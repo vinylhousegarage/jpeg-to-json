@@ -1,0 +1,98 @@
+package usecase
+
+import (
+	"context"
+	"io"
+
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+)
+
+type mockS3Getter struct {
+	getOutput *s3.GetObjectOutput
+	getErr    error
+}
+
+func (m *mockS3Getter) GetObject(
+	ctx context.Context,
+	params *s3.GetObjectInput,
+	optFns ...func(*s3.Options),
+) (*s3.GetObjectOutput, error) {
+	return m.getOutput, m.getErr
+}
+
+type mockS3Putter struct {
+	putErr error
+}
+
+func (m *mockS3Putter) PutObject(
+	ctx context.Context,
+	params *s3.PutObjectInput,
+	optFns ...func(*s3.Options),
+) (*s3.PutObjectOutput, error) {
+	return &s3.PutObjectOutput{}, m.putErr
+}
+
+type mockS3Presigner struct {
+	presignURL string
+	presignErr error
+}
+
+func (m *mockS3Presigner) PresignGetObject(
+	ctx context.Context,
+	params *s3.GetObjectInput,
+	optFns ...func(*s3.PresignOptions),
+) (*v4.PresignedHTTPRequest, error) {
+	if m.presignErr != nil {
+		return nil, m.presignErr
+	}
+
+	return &v4.PresignedHTTPRequest{
+		URL: m.presignURL,
+	}, nil
+}
+
+type mockBedrockService struct {
+	resultMap  map[string]any
+	processErr error
+}
+
+func (m *mockBedrockService) ProcessImage(
+	ctx context.Context,
+	rawImage []byte,
+) (map[string]any, error) {
+	return m.resultMap, m.processErr
+}
+
+type mockSlackClient struct {
+	sendErr error
+	called  bool
+	shot    string
+	msg     string
+}
+
+func (m *mockSlackClient) SendNotification(
+	ctx context.Context,
+	shotNumber string,
+	downloadURL string,
+) error {
+	m.called = true
+	m.shot = shotNumber
+	m.msg = downloadURL
+
+	return m.sendErr
+}
+
+type errorReadCloser struct {
+	err error
+}
+
+func (r *errorReadCloser) Read(p []byte) (int, error) {
+	return 0, r.err
+}
+
+func (r *errorReadCloser) Close() error {
+	return nil
+}
+
+var _ io.ReadCloser = (*errorReadCloser)(nil)
