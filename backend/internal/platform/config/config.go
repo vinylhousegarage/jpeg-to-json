@@ -39,9 +39,10 @@ type BedrockConfig struct {
 }
 
 type SlackConfig struct {
-	ClientID     string
-	ClientSecret string
-	RedirectURI  string
+	ClientID       string
+	ClientSecret   string
+	RedirectURI    string
+	TokenTableName string
 }
 
 func Load() (*Config, error) {
@@ -148,9 +149,17 @@ func loadSlackConfig() (SlackConfig, error) {
 		)
 	}
 
+	tokenTableName := os.Getenv("SLACK_TOKEN_TABLE_NAME")
+	if tokenTableName == "" {
+		return SlackConfig{}, fmt.Errorf(
+			"SLACK_TOKEN_TABLE_NAME is required",
+		)
+	}
+
 	return SlackConfig{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		RedirectURI:  redirectURI,
+		ClientID:       clientID,
+		ClientSecret:   clientSecret,
+		RedirectURI:    redirectURI,
+		TokenTableName: tokenTableName,
 	}, nil
 }
