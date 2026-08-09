@@ -6,8 +6,12 @@ func TestLoad(t *testing.T) {
 	t.Setenv("APP_ENV", appEnvDevelopment)
 	t.Setenv("AWS_LAMBDA_FUNCTION_NAME", "")
 	t.Setenv("AWS_REGION", defaultAWSRegion)
-	t.Setenv("BEDROCK_MODEL_ID", "jp.anthropic.claude-sonnet-4-6")
+	t.Setenv(
+		"BEDROCK_MODEL_ID",
+		"jp.anthropic.claude-sonnet-4-6",
+	)
 	t.Setenv("INPUT_BUCKET_NAME", "my-test-bucket")
+	t.Setenv("OUTPUT_BUCKET_NAME", "my-output-bucket")
 	t.Setenv("PROMPT_FILE_NAME", defaultPromptFileName)
 	t.Setenv("SLACK_CLIENT_ID", "test-client-id")
 	t.Setenv("SLACK_CLIENT_SECRET", "test-client-secret")
@@ -18,7 +22,7 @@ func TestLoad(t *testing.T) {
 
 	cfg, err := Load()
 	if err != nil {
-		t.Fatalf("LoadConfig() error = %v", err)
+		t.Fatalf("Load() error = %v", err)
 	}
 
 	if cfg.App.Env != appEnvDevelopment {
@@ -42,6 +46,14 @@ func TestLoad(t *testing.T) {
 			"expected Bedrock.ModelID %q, got %q",
 			"jp.anthropic.claude-sonnet-4-6",
 			cfg.Bedrock.ModelID,
+		)
+	}
+
+	if cfg.Bedrock.OutputBucketName != "my-output-bucket" {
+		t.Errorf(
+			"expected Bedrock.OutputBucketName %q, got %q",
+			"my-output-bucket",
+			cfg.Bedrock.OutputBucketName,
 		)
 	}
 
