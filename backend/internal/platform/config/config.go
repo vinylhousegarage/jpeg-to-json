@@ -32,9 +32,10 @@ type AWSConfig struct {
 }
 
 type BedrockConfig struct {
-	ModelID         string
-	InputBucketName string
-	PromptFileName  string
+	ModelID          string
+	InputBucketName  string
+	OutputBucketName string
+	PromptFileName   string
 }
 
 type SlackConfig struct {
@@ -105,15 +106,23 @@ func loadBedrockConfig() (BedrockConfig, error) {
 		)
 	}
 
+	outputBucketName := os.Getenv("OUTPUT_BUCKET_NAME")
+	if outputBucketName == "" {
+		return BedrockConfig{}, fmt.Errorf(
+			"OUTPUT_BUCKET_NAME is required",
+		)
+	}
+
 	promptFileName := os.Getenv("PROMPT_FILE_NAME")
 	if promptFileName == "" {
 		promptFileName = defaultPromptFileName
 	}
 
 	return BedrockConfig{
-		ModelID:         modelID,
-		InputBucketName: inputBucketName,
-		PromptFileName:  promptFileName,
+		ModelID:          modelID,
+		InputBucketName:  inputBucketName,
+		OutputBucketName: outputBucketName,
+		PromptFileName:   promptFileName,
 	}, nil
 }
 
