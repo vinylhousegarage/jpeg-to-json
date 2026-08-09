@@ -7,7 +7,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
 )
@@ -28,29 +27,23 @@ type BedrockClient struct {
 }
 
 func NewClient(
-	ctx context.Context,
+	sdkClient BedrockRuntimeClient,
 	modelID string,
 	prompt string,
 	logger *zap.Logger,
-) (*BedrockClient, error) {
-	cfg, err := config.LoadDefaultConfig(
-		ctx,
-		config.WithRetryMaxAttempts(5),
-		config.WithRetryMode(aws.RetryModeStandard),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("unable to load SDK config: %w", err)
-	}
-
+) *BedrockClient {
 	return &BedrockClient{
-		sdkClient: bedrockruntime.NewFromConfig(cfg),
+		sdkClient: sdkClient,
 		modelID:   modelID,
 		prompt:    prompt,
 		logger:    logger,
-	}, nil
+	}
 }
 
-func (c *BedrockClient) Analyze(ctx context.Context, imgData []byte) (string, error) {
+func (c *BedrockClient) Analyze(
+	ctx context.Context,
+	imgData []byte,
+) (string, error) {
 	input := &bedrockruntime.ConverseInput{
 		ModelId: &c.modelID,
 		Messages: []types.Message{
@@ -78,7 +71,10 @@ func (c *BedrockClient) Analyze(ctx context.Context, imgData []byte) (string, er
 
 	output, err := c.sdkClient.Converse(ctx, input)
 	if err != nil {
-		return "", fmt.Errorf("failed to invoke bedrock converse: %w", err)
+		return "", fmt.Errorf(
+			"failed to invoke bedrock converse: %w",
+			err,
+		)
 	}
 
 	message, ok := output.Output.(*types.ConverseOutputMemberMessage)
@@ -92,9 +88,16 @@ func (c *BedrockClient) Analyze(ctx context.Context, imgData []byte) (string, er
 	}
 
 	if output.Usage != nil {
-		c.logger.Info("bedrock inference success",
-			zap.Int32("input_tokens", aws.ToInt32(output.Usage.InputTokens)),
-			zap.Int32("output_tokens", aws.ToInt32(output.Usage.OutputTokens)),
+		c.logger.Info(
+			"bedrock inference success",
+			zap.Int32(
+				"input_tokens",
+				aws.ToInt32(output.Usage.InputTokens),
+			),
+			zap.Int32(
+				"output_tokens",
+				aws.ToInt32(output.Usage.OutputTokens),
+			),
 		)
 	}
 
