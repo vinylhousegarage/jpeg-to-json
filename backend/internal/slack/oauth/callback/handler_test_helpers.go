@@ -38,6 +38,27 @@ func (s *stubCodeExchanger) ExchangeCode(
 	return s.token, s.err
 }
 
+type stubConversationOpener struct {
+	channelID string
+	err       error
+
+	called         bool
+	gotAccessToken string
+	gotUserID      string
+}
+
+func (s *stubConversationOpener) OpenConversation(
+	_ context.Context,
+	accessToken string,
+	userID string,
+) (string, error) {
+	s.called = true
+	s.gotAccessToken = accessToken
+	s.gotUserID = userID
+
+	return s.channelID, s.err
+}
+
 type stubTokenStore struct {
 	err error
 
@@ -61,10 +82,13 @@ func newValidCallbackRequest() *http.Request {
 		"/oauth/slack/callback?state="+testState+"&code="+testCode,
 		nil,
 	)
-	req.AddCookie(&http.Cookie{
-		Name:  oauthStateCookieName,
-		Value: testState,
-	})
+
+	req.AddCookie(
+		&http.Cookie{
+			Name:  oauthStateCookieName,
+			Value: testState,
+		},
+	)
 
 	return req
 }
@@ -96,7 +120,10 @@ func assertErrorResponse(
 
 	var response apierror.ErrorResponse
 	if err := json.NewDecoder(rec.Body).Decode(&response); err != nil {
-		t.Fatalf("failed to decode error response: %v", err)
+		t.Fatalf(
+			"failed to decode error response: %v",
+			err,
+		)
 	}
 
 	if response.Error != string(wantCode) {
