@@ -16,15 +16,18 @@ func TestHandler_ServeHTTP_ExchangeCodeError(t *testing.T) {
 	t.Parallel()
 
 	exchangeErr := errors.New("slack token exchange failed")
+
 	exchanger := &stubCodeExchanger{
 		err: exchangeErr,
 	}
+	opener := &stubConversationOpener{}
 	store := &stubTokenStore{}
 
 	handler := NewHandler(
 		testRedirectURI,
 		true,
 		exchanger,
+		opener,
 		store,
 		zap.NewNop(),
 	)
@@ -45,11 +48,101 @@ func TestHandler_ServeHTTP_ExchangeCodeError(t *testing.T) {
 		t.Fatal("ExchangeCode() was not called")
 	}
 
-	if store.called {
-		t.Error("Save() was called after ExchangeCode() failed")
+	if opener.called {
+		t.Error(
+			"OpenConversation() was called after ExchangeCode() failed",
+		)
 	}
 
-	assertDeleteStateCookie(t, rec, true)
+	if store.called {
+		t.Error(
+			"Save() was called after ExchangeCode() failed",
+		)
+	}
+
+	assertDeleteStateCookie(
+		t,
+		rec,
+		true,
+	)
+}
+
+func TestHandler_ServeHTTP_OpenConversationError(t *testing.T) {
+	t.Parallel()
+
+	token := &oauth.Token{
+		AccessToken: "xoxb-test",
+		BotUserID:   "B123",
+		TeamID:      "T123",
+		UserID:      "U123",
+	}
+
+	exchanger := &stubCodeExchanger{
+		token: token,
+	}
+
+	opener := &stubConversationOpener{
+		err: errors.New("open conversation failed"),
+	}
+
+	store := &stubTokenStore{}
+
+	handler := NewHandler(
+		testRedirectURI,
+		true,
+		exchanger,
+		opener,
+		store,
+		zap.NewNop(),
+	)
+
+	req := newValidCallbackRequest()
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	assertErrorResponse(
+		t,
+		rec,
+		http.StatusInternalServerError,
+		apierror.ErrorCodeInternal,
+	)
+
+	if !exchanger.called {
+		t.Fatal("ExchangeCode() was not called")
+	}
+
+	if !opener.called {
+		t.Fatal("OpenConversation() was not called")
+	}
+
+	if opener.gotAccessToken != token.AccessToken {
+		t.Errorf(
+			"OpenConversation() accessToken = %q, want %q",
+			opener.gotAccessToken,
+			token.AccessToken,
+		)
+	}
+
+	if opener.gotUserID != token.UserID {
+		t.Errorf(
+			"OpenConversation() userID = %q, want %q",
+			opener.gotUserID,
+			token.UserID,
+		)
+	}
+
+	if store.called {
+		t.Error(
+			"Save() was called after OpenConversation() failed",
+		)
+	}
+
+	assertDeleteStateCookie(
+		t,
+		rec,
+		true,
+	)
 }
 
 func TestHandler_ServeHTTP_SaveError(t *testing.T) {
@@ -59,10 +152,17 @@ func TestHandler_ServeHTTP_SaveError(t *testing.T) {
 		AccessToken: "xoxb-test",
 		BotUserID:   "B123",
 		TeamID:      "T123",
+		UserID:      "U123",
 	}
+
 	exchanger := &stubCodeExchanger{
 		token: token,
 	}
+
+	opener := &stubConversationOpener{
+		channelID: "D123",
+	}
+
 	store := &stubTokenStore{
 		err: errors.New("dynamodb save failed"),
 	}
@@ -71,6 +171,7 @@ func TestHandler_ServeHTTP_SaveError(t *testing.T) {
 		testRedirectURI,
 		true,
 		exchanger,
+		opener,
 		store,
 		zap.NewNop(),
 	)
@@ -89,6 +190,26 @@ func TestHandler_ServeHTTP_SaveError(t *testing.T) {
 
 	if !exchanger.called {
 		t.Fatal("ExchangeCode() was not called")
+	}
+
+	if !opener.called {
+		t.Fatal("OpenConversation() was not called")
+	}
+
+	if opener.gotAccessToken != token.AccessToken {
+		t.Errorf(
+			"OpenConversation() accessToken = %q, want %q",
+			opener.gotAccessToken,
+			token.AccessToken,
+		)
+	}
+
+	if opener.gotUserID != token.UserID {
+		t.Errorf(
+			"OpenConversation() userID = %q, want %q",
+			opener.gotUserID,
+			token.UserID,
+		)
 	}
 
 	if !store.called {
@@ -103,5 +224,17 @@ func TestHandler_ServeHTTP_SaveError(t *testing.T) {
 		)
 	}
 
-	assertDeleteStateCookie(t, rec, true)
+	if store.gotToken.ChannelID != "D123" {
+		t.Errorf(
+			"Save() token ChannelID = %q, want %q",
+			store.gotToken.ChannelID,
+			"D123",
+		)
+	}
+
+	assertDeleteStateCookie(
+		t,
+		rec,
+		true,
+	)
 }

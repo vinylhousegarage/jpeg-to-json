@@ -14,12 +14,14 @@ func TestHandler_ServeHTTP_RejectsUnsupportedMethod(t *testing.T) {
 	t.Parallel()
 
 	exchanger := &stubCodeExchanger{}
+	opener := &stubConversationOpener{}
 	store := &stubTokenStore{}
 
 	handler := NewHandler(
 		testRedirectURI,
 		true,
 		exchanger,
+		opener,
 		store,
 		zap.NewNop(),
 	)
@@ -44,6 +46,10 @@ func TestHandler_ServeHTTP_RejectsUnsupportedMethod(t *testing.T) {
 		t.Error("ExchangeCode() was called")
 	}
 
+	if opener.called {
+		t.Error("OpenConversation() was called")
+	}
+
 	if store.called {
 		t.Error("Save() was called")
 	}
@@ -57,12 +63,14 @@ func TestHandler_ServeHTTP_MissingStateCookie(t *testing.T) {
 	t.Parallel()
 
 	exchanger := &stubCodeExchanger{}
+	opener := &stubConversationOpener{}
 	store := &stubTokenStore{}
 
 	handler := NewHandler(
 		testRedirectURI,
 		true,
 		exchanger,
+		opener,
 		store,
 		zap.NewNop(),
 	)
@@ -85,6 +93,10 @@ func TestHandler_ServeHTTP_MissingStateCookie(t *testing.T) {
 
 	if exchanger.called {
 		t.Error("ExchangeCode() was called")
+	}
+
+	if opener.called {
+		t.Error("OpenConversation() was called")
 	}
 
 	if store.called {
@@ -121,12 +133,14 @@ func TestHandler_ServeHTTP_InvalidState(t *testing.T) {
 			t.Parallel()
 
 			exchanger := &stubCodeExchanger{}
+			opener := &stubConversationOpener{}
 			store := &stubTokenStore{}
 
 			handler := NewHandler(
 				testRedirectURI,
 				true,
 				exchanger,
+				opener,
 				store,
 				zap.NewNop(),
 			)
@@ -137,10 +151,13 @@ func TestHandler_ServeHTTP_InvalidState(t *testing.T) {
 					"&code="+testCode,
 				nil,
 			)
-			req.AddCookie(&http.Cookie{
-				Name:  oauthStateCookieName,
-				Value: tt.cookieState,
-			})
+
+			req.AddCookie(
+				&http.Cookie{
+					Name:  oauthStateCookieName,
+					Value: tt.cookieState,
+				},
+			)
 
 			rec := httptest.NewRecorder()
 
@@ -155,6 +172,10 @@ func TestHandler_ServeHTTP_InvalidState(t *testing.T) {
 
 			if exchanger.called {
 				t.Error("ExchangeCode() was called")
+			}
+
+			if opener.called {
+				t.Error("OpenConversation() was called")
 			}
 
 			if store.called {
@@ -174,12 +195,14 @@ func TestHandler_ServeHTTP_MissingCode(t *testing.T) {
 	t.Parallel()
 
 	exchanger := &stubCodeExchanger{}
+	opener := &stubConversationOpener{}
 	store := &stubTokenStore{}
 
 	handler := NewHandler(
 		testRedirectURI,
 		false,
 		exchanger,
+		opener,
 		store,
 		zap.NewNop(),
 	)
@@ -189,10 +212,13 @@ func TestHandler_ServeHTTP_MissingCode(t *testing.T) {
 		"/oauth/slack/callback?state="+testState,
 		nil,
 	)
-	req.AddCookie(&http.Cookie{
-		Name:  oauthStateCookieName,
-		Value: testState,
-	})
+
+	req.AddCookie(
+		&http.Cookie{
+			Name:  oauthStateCookieName,
+			Value: testState,
+		},
+	)
 
 	rec := httptest.NewRecorder()
 
@@ -209,9 +235,17 @@ func TestHandler_ServeHTTP_MissingCode(t *testing.T) {
 		t.Error("ExchangeCode() was called")
 	}
 
+	if opener.called {
+		t.Error("OpenConversation() was called")
+	}
+
 	if store.called {
 		t.Error("Save() was called")
 	}
 
-	assertDeleteStateCookie(t, rec, false)
+	assertDeleteStateCookie(
+		t,
+		rec,
+		false,
+	)
 }

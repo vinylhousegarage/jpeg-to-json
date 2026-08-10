@@ -20,6 +20,14 @@ type codeExchanger interface {
 	) (*oauth.Token, error)
 }
 
+type conversationOpener interface {
+	OpenConversation(
+		ctx context.Context,
+		accessToken string,
+		userID string,
+	) (string, error)
+}
+
 type tokenStore interface {
 	Save(
 		ctx context.Context,
@@ -31,6 +39,7 @@ type Handler struct {
 	redirectURI  string
 	cookieSecure bool
 	exchanger    codeExchanger
+	opener       conversationOpener
 	store        tokenStore
 	logger       *zap.Logger
 }
@@ -39,6 +48,7 @@ func NewHandler(
 	redirectURI string,
 	cookieSecure bool,
 	exchanger codeExchanger,
+	opener conversationOpener,
 	store tokenStore,
 	logger *zap.Logger,
 ) *Handler {
@@ -46,6 +56,7 @@ func NewHandler(
 		redirectURI:  redirectURI,
 		cookieSecure: cookieSecure,
 		exchanger:    exchanger,
+		opener:       opener,
 		store:        store,
 		logger:       logger,
 	}
@@ -121,12 +132,39 @@ func (h *Handler) ServeHTTP(
 		h.redirectURI,
 	)
 	if err != nil {
-		apierror.WriteError(w, err, h.logger)
+		apierror.WriteError(
+			w,
+			err,
+			h.logger,
+		)
 		return
 	}
 
-	if err := h.store.Save(r.Context(), token); err != nil {
-		apierror.WriteError(w, err, h.logger)
+	channelID, err := h.opener.OpenConversation(
+		r.Context(),
+		token.AccessToken,
+		token.UserID,
+	)
+	if err != nil {
+		apierror.WriteError(
+			w,
+			err,
+			h.logger,
+		)
+		return
+	}
+
+	token.ChannelID = channelID
+
+	if err := h.store.Save(
+		r.Context(),
+		token,
+	); err != nil {
+		apierror.WriteError(
+			w,
+			err,
+			h.logger,
+		)
 		return
 	}
 
