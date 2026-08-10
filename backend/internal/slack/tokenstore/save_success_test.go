@@ -87,6 +87,14 @@ func TestStore_Save_Success(t *testing.T) {
 		)
 	}
 
+	if item.ID != defaultTokenID {
+		t.Errorf(
+			"ID = %q, want %q",
+			item.ID,
+			defaultTokenID,
+		)
+	}
+
 	if item.TeamID != token.TeamID {
 		t.Errorf(
 			"TeamID = %q, want %q",

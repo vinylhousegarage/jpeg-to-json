@@ -8,50 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-func TestStore_Get_EmptyTeamID(t *testing.T) {
-	t.Parallel()
-
-	client := &stubDynamoDBClient{}
-	store := NewStore(client, testTableName)
-
-	got, err := store.Get(
-		context.Background(),
-		"",
-	)
-	if err == nil {
-		t.Fatal("Get() error = nil, want an error")
-	}
-
-	if got != nil {
-		t.Errorf(
-			"Get() token = %#v, want nil",
-			got,
-		)
-	}
-
-	const wantError = "get slack token: team ID is empty"
-
-	if err.Error() != wantError {
-		t.Errorf(
-			"Get() error = %q, want %q",
-			err.Error(),
-			wantError,
-		)
-	}
-
-	if client.getItemCalled {
-		t.Error(
-			"GetItem() was called for an empty team ID",
-		)
-	}
-
-	if client.putItemCalled {
-		t.Error(
-			"PutItem() was called by Get()",
-		)
-	}
-}
-
 func TestStore_Get_InvalidStoredToken(t *testing.T) {
 	t.Parallel()
 
@@ -63,6 +19,7 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 		{
 			name: "missing stored team ID",
 			item: tokenItem{
+				ID:          defaultTokenID,
 				AccessToken: "xoxb-test",
 				BotUserID:   "B123",
 				UserID:      "U123",
@@ -73,6 +30,7 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 		{
 			name: "missing stored access token",
 			item: tokenItem{
+				ID:        defaultTokenID,
 				TeamID:    "T123",
 				BotUserID: "B123",
 				UserID:    "U123",
@@ -83,6 +41,7 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 		{
 			name: "missing stored bot user ID",
 			item: tokenItem{
+				ID:          defaultTokenID,
 				TeamID:      "T123",
 				AccessToken: "xoxb-test",
 				UserID:      "U123",
@@ -93,6 +52,7 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 		{
 			name: "missing stored user ID",
 			item: tokenItem{
+				ID:          defaultTokenID,
 				TeamID:      "T123",
 				AccessToken: "xoxb-test",
 				BotUserID:   "B123",
@@ -103,6 +63,7 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 		{
 			name: "missing stored channel ID",
 			item: tokenItem{
+				ID:          defaultTokenID,
 				TeamID:      "T123",
 				AccessToken: "xoxb-test",
 				BotUserID:   "B123",
@@ -137,7 +98,6 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 
 			got, err := store.Get(
 				context.Background(),
-				"T123",
 			)
 			if err == nil {
 				t.Fatal(
