@@ -17,6 +17,7 @@ func TestNotifier_Notify_Success(t *testing.T) {
 			TeamID:      "T123",
 			AccessToken: "xoxb-test",
 			BotUserID:   "B123",
+			ChannelID:   "C123",
 		},
 	}
 	client := &stubMessageClient{}
@@ -26,7 +27,6 @@ func TestNotifier_Notify_Success(t *testing.T) {
 	err := notifier.Notify(
 		ctx,
 		"T123",
-		"C123",
 		"test message",
 	)
 	if err != nil {
