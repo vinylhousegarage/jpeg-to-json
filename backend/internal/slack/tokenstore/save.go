@@ -31,16 +31,29 @@ func (s *Store) Save(
 		return fmt.Errorf("save slack token: bot user ID is empty")
 	}
 
+	if token.UserID == "" {
+		return fmt.Errorf("save slack token: user ID is empty")
+	}
+
+	if token.ChannelID == "" {
+		return fmt.Errorf("save slack token: channel ID is empty")
+	}
+
 	item := tokenItem{
 		TeamID:      token.TeamID,
 		AccessToken: token.AccessToken,
 		BotUserID:   token.BotUserID,
+		UserID:      token.UserID,
+		ChannelID:   token.ChannelID,
 		UpdatedAt:   s.now().UTC().Format(time.RFC3339),
 	}
 
 	attributes, err := attributevalue.MarshalMap(item)
 	if err != nil {
-		return fmt.Errorf("marshal slack token item: %w", err)
+		return fmt.Errorf(
+			"marshal slack token item: %w",
+			err,
+		)
 	}
 
 	_, err = s.client.PutItem(
@@ -51,7 +64,10 @@ func (s *Store) Save(
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("put slack token item: %w", err)
+		return fmt.Errorf(
+			"put slack token item: %w",
+			err,
+		)
 	}
 
 	return nil

@@ -14,16 +14,23 @@ func TestStore_Get_EmptyTeamID(t *testing.T) {
 	client := &stubDynamoDBClient{}
 	store := NewStore(client, testTableName)
 
-	got, err := store.Get(context.Background(), "")
+	got, err := store.Get(
+		context.Background(),
+		"",
+	)
 	if err == nil {
 		t.Fatal("Get() error = nil, want an error")
 	}
 
 	if got != nil {
-		t.Errorf("Get() token = %#v, want nil", got)
+		t.Errorf(
+			"Get() token = %#v, want nil",
+			got,
+		)
 	}
 
 	const wantError = "get slack token: team ID is empty"
+
 	if err.Error() != wantError {
 		t.Errorf(
 			"Get() error = %q, want %q",
@@ -33,11 +40,15 @@ func TestStore_Get_EmptyTeamID(t *testing.T) {
 	}
 
 	if client.getItemCalled {
-		t.Error("GetItem() was called for an empty team ID")
+		t.Error(
+			"GetItem() was called for an empty team ID",
+		)
 	}
 
 	if client.putItemCalled {
-		t.Error("PutItem() was called by Get()")
+		t.Error(
+			"PutItem() was called by Get()",
+		)
 	}
 }
 
@@ -54,6 +65,8 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 			item: tokenItem{
 				AccessToken: "xoxb-test",
 				BotUserID:   "B123",
+				UserID:      "U123",
+				ChannelID:   "D123",
 			},
 			wantError: "get slack token: stored team ID is empty",
 		},
@@ -62,6 +75,8 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 			item: tokenItem{
 				TeamID:    "T123",
 				BotUserID: "B123",
+				UserID:    "U123",
+				ChannelID: "D123",
 			},
 			wantError: "get slack token: stored access token is empty",
 		},
@@ -70,8 +85,30 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 			item: tokenItem{
 				TeamID:      "T123",
 				AccessToken: "xoxb-test",
+				UserID:      "U123",
+				ChannelID:   "D123",
 			},
 			wantError: "get slack token: stored bot user ID is empty",
+		},
+		{
+			name: "missing stored user ID",
+			item: tokenItem{
+				TeamID:      "T123",
+				AccessToken: "xoxb-test",
+				BotUserID:   "B123",
+				ChannelID:   "D123",
+			},
+			wantError: "get slack token: stored user ID is empty",
+		},
+		{
+			name: "missing stored channel ID",
+			item: tokenItem{
+				TeamID:      "T123",
+				AccessToken: "xoxb-test",
+				BotUserID:   "B123",
+				UserID:      "U123",
+			},
+			wantError: "get slack token: stored channel ID is empty",
 		},
 	}
 
@@ -81,7 +118,10 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 
 			attributes, err := attributevalue.MarshalMap(tt.item)
 			if err != nil {
-				t.Fatalf("failed to marshal test token item: %v", err)
+				t.Fatalf(
+					"failed to marshal test token item: %v",
+					err,
+				)
 			}
 
 			client := &stubDynamoDBClient{
@@ -89,15 +129,27 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 					Item: attributes,
 				},
 			}
-			store := NewStore(client, testTableName)
 
-			got, err := store.Get(context.Background(), "T123")
+			store := NewStore(
+				client,
+				testTableName,
+			)
+
+			got, err := store.Get(
+				context.Background(),
+				"T123",
+			)
 			if err == nil {
-				t.Fatal("Get() error = nil, want an error")
+				t.Fatal(
+					"Get() error = nil, want an error",
+				)
 			}
 
 			if got != nil {
-				t.Errorf("Get() token = %#v, want nil", got)
+				t.Errorf(
+					"Get() token = %#v, want nil",
+					got,
+				)
 			}
 
 			if err.Error() != tt.wantError {
@@ -109,11 +161,15 @@ func TestStore_Get_InvalidStoredToken(t *testing.T) {
 			}
 
 			if !client.getItemCalled {
-				t.Fatal("GetItem() was not called")
+				t.Fatal(
+					"GetItem() was not called",
+				)
 			}
 
 			if client.putItemCalled {
-				t.Error("PutItem() was called by Get()")
+				t.Error(
+					"PutItem() was called by Get()",
+				)
 			}
 		})
 	}

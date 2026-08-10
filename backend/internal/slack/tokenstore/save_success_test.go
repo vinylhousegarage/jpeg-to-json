@@ -28,7 +28,11 @@ func TestStore_Save_Success(t *testing.T) {
 	client := &stubDynamoDBClient{
 		putItemOutput: &dynamodb.PutItemOutput{},
 	}
-	store := NewStore(client, testTableName)
+
+	store := NewStore(
+		client,
+		testTableName,
+	)
 	store.now = func() time.Time {
 		return fixedTime
 	}
@@ -37,11 +41,19 @@ func TestStore_Save_Success(t *testing.T) {
 		TeamID:      "T123",
 		AccessToken: "xoxb-test",
 		BotUserID:   "B123",
+		UserID:      "U123",
+		ChannelID:   "D123",
 	}
 
-	err := store.Save(context.Background(), token)
+	err := store.Save(
+		context.Background(),
+		token,
+	)
 	if err != nil {
-		t.Fatalf("Save() error = %v", err)
+		t.Fatalf(
+			"Save() error = %v",
+			err,
+		)
 	}
 
 	if !client.putItemCalled {
@@ -69,7 +81,10 @@ func TestStore_Save_Success(t *testing.T) {
 		client.putItemInput.Item,
 		&item,
 	); err != nil {
-		t.Fatalf("failed to unmarshal PutItem item: %v", err)
+		t.Fatalf(
+			"failed to unmarshal PutItem item: %v",
+			err,
+		)
 	}
 
 	if item.TeamID != token.TeamID {
@@ -93,6 +108,22 @@ func TestStore_Save_Success(t *testing.T) {
 			"BotUserID = %q, want %q",
 			item.BotUserID,
 			token.BotUserID,
+		)
+	}
+
+	if item.UserID != token.UserID {
+		t.Errorf(
+			"UserID = %q, want %q",
+			item.UserID,
+			token.UserID,
+		)
+	}
+
+	if item.ChannelID != token.ChannelID {
+		t.Errorf(
+			"ChannelID = %q, want %q",
+			item.ChannelID,
+			token.ChannelID,
 		)
 	}
 

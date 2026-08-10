@@ -25,6 +25,8 @@ func TestStore_Save_ValidationErrors(t *testing.T) {
 			token: &oauth.Token{
 				AccessToken: "xoxb-test",
 				BotUserID:   "B123",
+				UserID:      "U123",
+				ChannelID:   "D123",
 			},
 			wantError: "save slack token: team ID is empty",
 		},
@@ -33,6 +35,8 @@ func TestStore_Save_ValidationErrors(t *testing.T) {
 			token: &oauth.Token{
 				TeamID:    "T123",
 				BotUserID: "B123",
+				UserID:    "U123",
+				ChannelID: "D123",
 			},
 			wantError: "save slack token: access token is empty",
 		},
@@ -41,8 +45,30 @@ func TestStore_Save_ValidationErrors(t *testing.T) {
 			token: &oauth.Token{
 				TeamID:      "T123",
 				AccessToken: "xoxb-test",
+				UserID:      "U123",
+				ChannelID:   "D123",
 			},
 			wantError: "save slack token: bot user ID is empty",
+		},
+		{
+			name: "missing user ID",
+			token: &oauth.Token{
+				TeamID:      "T123",
+				AccessToken: "xoxb-test",
+				BotUserID:   "B123",
+				ChannelID:   "D123",
+			},
+			wantError: "save slack token: user ID is empty",
+		},
+		{
+			name: "missing channel ID",
+			token: &oauth.Token{
+				TeamID:      "T123",
+				AccessToken: "xoxb-test",
+				BotUserID:   "B123",
+				UserID:      "U123",
+			},
+			wantError: "save slack token: channel ID is empty",
 		},
 	}
 
@@ -51,11 +77,19 @@ func TestStore_Save_ValidationErrors(t *testing.T) {
 			t.Parallel()
 
 			client := &stubDynamoDBClient{}
-			store := NewStore(client, testTableName)
+			store := NewStore(
+				client,
+				testTableName,
+			)
 
-			err := store.Save(context.Background(), tt.token)
+			err := store.Save(
+				context.Background(),
+				tt.token,
+			)
 			if err == nil {
-				t.Fatal("Save() error = nil, want an error")
+				t.Fatal(
+					"Save() error = nil, want an error",
+				)
 			}
 
 			if err.Error() != tt.wantError {
@@ -67,11 +101,15 @@ func TestStore_Save_ValidationErrors(t *testing.T) {
 			}
 
 			if client.putItemCalled {
-				t.Error("PutItem() was called for invalid token")
+				t.Error(
+					"PutItem() was called for invalid token",
+				)
 			}
 
 			if client.getItemCalled {
-				t.Error("GetItem() was called by Save()")
+				t.Error(
+					"GetItem() was called by Save()",
+				)
 			}
 		})
 	}

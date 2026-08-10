@@ -13,11 +13,15 @@ func TestStore_Save_PutItemError(t *testing.T) {
 	t.Parallel()
 
 	putErr := errors.New("dynamodb unavailable")
+
 	client := &stubDynamoDBClient{
 		putItemErr: putErr,
 	}
 
-	store := NewStore(client, testTableName)
+	store := NewStore(
+		client,
+		testTableName,
+	)
 	store.now = func() time.Time {
 		return time.Date(
 			2026,
@@ -35,11 +39,18 @@ func TestStore_Save_PutItemError(t *testing.T) {
 		TeamID:      "T123",
 		AccessToken: "xoxb-test",
 		BotUserID:   "B123",
+		UserID:      "U123",
+		ChannelID:   "D123",
 	}
 
-	err := store.Save(context.Background(), token)
+	err := store.Save(
+		context.Background(),
+		token,
+	)
 	if err == nil {
-		t.Fatal("Save() error = nil, want an error")
+		t.Fatal(
+			"Save() error = nil, want an error",
+		)
 	}
 
 	if !errors.Is(err, putErr) {
@@ -51,6 +62,7 @@ func TestStore_Save_PutItemError(t *testing.T) {
 	}
 
 	const wantError = "put slack token item: dynamodb unavailable"
+
 	if got := err.Error(); got != wantError {
 		t.Errorf(
 			"Save() error = %q, want %q",
@@ -60,10 +72,14 @@ func TestStore_Save_PutItemError(t *testing.T) {
 	}
 
 	if !client.putItemCalled {
-		t.Fatal("PutItem() was not called")
+		t.Fatal(
+			"PutItem() was not called",
+		)
 	}
 
 	if client.getItemCalled {
-		t.Error("GetItem() was called by Save()")
+		t.Error(
+			"GetItem() was called by Save()",
+		)
 	}
 }
