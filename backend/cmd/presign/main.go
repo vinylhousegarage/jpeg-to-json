@@ -8,12 +8,18 @@ import (
 
 	"github.com/aws/aws-lambda-go/lambda"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/logger"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/router"
+	slackapi "github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/api"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/oauth"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/oauth/callback"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/oauth/login"
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/tokenstore"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/storage/put"
 )
@@ -26,14 +32,13 @@ func main() {
 	}
 
 	// AWS 設定の読み込み
-	awsCfg, err := awsconfig.LoadDefaultConfig(context.TODO(), awsconfig.WithRegion(cfg.AWS.Region))
+	awsCfg, err := awsconfig.LoadDefaultConfig(
+		context.TODO(),
+		awsconfig.WithRegion(cfg.AWS.Region),
+	)
 	if err != nil {
 		log.Fatalf("failed to load AWS config: %v", err)
 	}
-	// S3 クライアント
-	baseS3Client := s3.NewFromConfig(awsCfg)
-	// 依存を注入
-	presignClient := storage.NewS3PresignClient(cfg.Bedrock.InputBucketName, baseS3Client)
 
 	// logger の初期化
 	l, err := logger.NewLogger(cfg)
@@ -41,34 +46,90 @@ func main() {
 		panic(fmt.Sprintf("failed to initialize logger: %v", err))
 	}
 
-	// ログに出力
 	l.Info("Application successfully initialized")
 
-	// Put用Serviceの初期化
+	// S3 クライアント
+	baseS3Client := s3.NewFromConfig(awsCfg)
+
+	// DynamoDB クライアント
+	dynamoDBClient := dynamodb.NewFromConfig(awsCfg)
+
+	// Presign 用依存
+	presignClient := storage.NewS3PresignClient(
+		cfg.Bedrock.InputBucketName,
+		baseS3Client,
+	)
+
+	// Put 用 Service
 	putService := put.NewService(presignClient)
 
-	// ハンドラーの初期化
-	presignHandler := put.NewHandler(putService, l)
+	// Presign Handler
+	presignHandler := put.NewHandler(
+		putService,
+		l,
+	)
+
+	// Slack OAuth Client
+	oauthClient := oauth.NewClient(
+		http.DefaultClient,
+		cfg.Slack.ClientID,
+		cfg.Slack.ClientSecret,
+	)
+
+	// Slack API Client
+	slackAPIClient := slackapi.NewClient(
+		http.DefaultClient,
+	)
+
+	// Slack Token Store
+	tokenStore := tokenstore.NewStore(
+		dynamoDBClient,
+		cfg.Slack.TokenTableName,
+	)
+
+	// Slack Login Handler
+	slackLoginHandler := login.NewHandler(
+		cfg.Slack.ClientID,
+		cfg.Slack.RedirectURI,
+		cfg.App.CookieSecure,
+		l,
+	)
+
+	// Slack Callback Handler
+	slackCallbackHandler := callback.NewHandler(
+		cfg.Slack.RedirectURI,
+		cfg.App.CookieSecure,
+		oauthClient,
+		slackAPIClient,
+		tokenStore,
+		l,
+	)
 
 	// サーバーの初期化
 	mux := http.NewServeMux()
 
 	// ルーティングの設定を委譲
-	router.SetupRoutes(mux, presignHandler)
+	router.SetupRoutes(
+		mux,
+		presignHandler,
+		slackLoginHandler,
+		slackCallbackHandler,
+	)
 
 	// サーバーの起動
 	if cfg.AWS.IsLambda {
-		// Lambda 環境
 		l.Info("Starting server on AWS Lambda")
 
 		adapter := httpadapter.NewV2(mux)
 		lambda.Start(adapter.ProxyWithContext)
-
 	} else {
-		// ローカル環境
 		l.Info("Starting local server on :8080")
 
-		srv := &http.Server{Addr: ":8080", Handler: mux}
+		srv := &http.Server{
+			Addr:    ":8080",
+			Handler: mux,
+		}
+
 		if err := srv.ListenAndServe(); err != nil {
 			log.Fatalf("server failed: %v", err)
 		}
