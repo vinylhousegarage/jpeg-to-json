@@ -42,15 +42,10 @@ func NewNotifier(
 func (n *Notifier) Notify(
 	ctx context.Context,
 	teamID string,
-	channelID string,
 	text string,
 ) error {
 	if teamID == "" {
 		return fmt.Errorf("notify slack: team ID is empty")
-	}
-
-	if channelID == "" {
-		return fmt.Errorf("notify slack: channel ID is empty")
 	}
 
 	if text == "" {
@@ -70,10 +65,14 @@ func (n *Notifier) Notify(
 		return fmt.Errorf("get slack token: access token is empty")
 	}
 
+	if token.ChannelID == "" {
+		return fmt.Errorf("get slack token: channel ID is empty")
+	}
+
 	if err := n.client.PostMessage(
 		ctx,
 		token.AccessToken,
-		channelID,
+		token.ChannelID,
 		text,
 	); err != nil {
 		return fmt.Errorf("post slack message: %w", err)
