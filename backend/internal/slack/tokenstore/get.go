@@ -16,21 +16,14 @@ var ErrTokenNotFound = errors.New("slack token not found")
 
 func (s *Store) Get(
 	ctx context.Context,
-	teamID string,
 ) (*oauth.Token, error) {
-	if teamID == "" {
-		return nil, fmt.Errorf(
-			"get slack token: team ID is empty",
-		)
-	}
-
 	output, err := s.client.GetItem(
 		ctx,
 		&dynamodb.GetItemInput{
 			TableName: &s.tableName,
 			Key: map[string]types.AttributeValue{
-				"team_id": &types.AttributeValueMemberS{
-					Value: teamID,
+				"id": &types.AttributeValueMemberS{
+					Value: defaultTokenID,
 				},
 			},
 		},
@@ -44,8 +37,7 @@ func (s *Store) Get(
 
 	if output == nil || len(output.Item) == 0 {
 		return nil, fmt.Errorf(
-			"get slack token for team %q: %w",
-			teamID,
+			"get slack token: %w",
 			ErrTokenNotFound,
 		)
 	}

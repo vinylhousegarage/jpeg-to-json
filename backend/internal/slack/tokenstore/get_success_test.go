@@ -13,6 +13,7 @@ func TestStore_Get_Success(t *testing.T) {
 	t.Parallel()
 
 	wantItem := tokenItem{
+		ID:          defaultTokenID,
 		TeamID:      "T123",
 		AccessToken: "xoxb-test",
 		BotUserID:   "B123",
@@ -42,7 +43,6 @@ func TestStore_Get_Success(t *testing.T) {
 
 	got, err := store.Get(
 		context.Background(),
-		wantItem.TeamID,
 	)
 	if err != nil {
 		t.Fatalf(
@@ -71,26 +71,26 @@ func TestStore_Get_Success(t *testing.T) {
 		)
 	}
 
-	teamIDAttribute, ok := client.getItemInput.Key["team_id"]
+	idAttribute, ok := client.getItemInput.Key["id"]
 	if !ok {
 		t.Fatal(
-			`GetItem() key does not contain "team_id"`,
+			`GetItem() key does not contain "id"`,
 		)
 	}
 
-	teamID, ok := teamIDAttribute.(*types.AttributeValueMemberS)
+	id, ok := idAttribute.(*types.AttributeValueMemberS)
 	if !ok {
 		t.Fatalf(
-			`GetItem() key "team_id" type = %T, want *types.AttributeValueMemberS`,
-			teamIDAttribute,
+			`GetItem() key "id" type = %T, want *types.AttributeValueMemberS`,
+			idAttribute,
 		)
 	}
 
-	if teamID.Value != wantItem.TeamID {
+	if id.Value != defaultTokenID {
 		t.Errorf(
-			`GetItem() key "team_id" = %q, want %q`,
-			teamID.Value,
-			wantItem.TeamID,
+			`GetItem() key "id" = %q, want %q`,
+			id.Value,
+			defaultTokenID,
 		)
 	}
 

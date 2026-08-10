@@ -40,6 +40,7 @@ func (s *Store) Save(
 	}
 
 	item := tokenItem{
+		ID:          defaultTokenID,
 		TeamID:      token.TeamID,
 		AccessToken: token.AccessToken,
 		BotUserID:   token.BotUserID,
