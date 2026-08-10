@@ -23,7 +23,6 @@ func TestNotifier_Notify_GetTokenError(t *testing.T) {
 	err := notifier.Notify(
 		context.Background(),
 		"T123",
-		"C123",
 		"test message",
 	)
 	if err == nil {
@@ -66,6 +65,7 @@ func TestNotifier_Notify_PostMessageError(t *testing.T) {
 			TeamID:      "T123",
 			AccessToken: "xoxb-test",
 			BotUserID:   "B123",
+			ChannelID:   "C123",
 		},
 	}
 	client := &stubMessageClient{
@@ -77,7 +77,6 @@ func TestNotifier_Notify_PostMessageError(t *testing.T) {
 	err := notifier.Notify(
 		context.Background(),
 		"T123",
-		"C123",
 		"test message",
 	)
 	if err == nil {

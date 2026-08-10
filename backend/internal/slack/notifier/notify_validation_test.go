@@ -13,28 +13,18 @@ func TestNotifier_Notify_ValidationErrors(t *testing.T) {
 	tests := []struct {
 		name      string
 		teamID    string
-		channelID string
 		text      string
 		wantError string
 	}{
 		{
 			name:      "missing team ID",
 			teamID:    "",
-			channelID: "C123",
 			text:      "test message",
 			wantError: "notify slack: team ID is empty",
 		},
 		{
-			name:      "missing channel ID",
-			teamID:    "T123",
-			channelID: "",
-			text:      "test message",
-			wantError: "notify slack: channel ID is empty",
-		},
-		{
 			name:      "missing text",
 			teamID:    "T123",
-			channelID: "C123",
 			text:      "",
 			wantError: "notify slack: text is empty",
 		},
@@ -52,7 +42,6 @@ func TestNotifier_Notify_ValidationErrors(t *testing.T) {
 			err := notifier.Notify(
 				context.Background(),
 				tt.teamID,
-				tt.channelID,
 				tt.text,
 			)
 			if err == nil {
@@ -96,8 +85,18 @@ func TestNotifier_Notify_InvalidToken(t *testing.T) {
 			token: &oauth.Token{
 				TeamID:    "T123",
 				BotUserID: "B123",
+				ChannelID: "C123",
 			},
 			wantError: "get slack token: access token is empty",
+		},
+		{
+			name: "missing channel ID",
+			token: &oauth.Token{
+				TeamID:      "T123",
+				AccessToken: "xoxb-test",
+				BotUserID:   "B123",
+			},
+			wantError: "get slack token: channel ID is empty",
 		},
 	}
 
@@ -115,7 +114,6 @@ func TestNotifier_Notify_InvalidToken(t *testing.T) {
 			err := notifier.Notify(
 				context.Background(),
 				"T123",
-				"C123",
 				"test message",
 			)
 			if err == nil {
