@@ -43,5 +43,7 @@ type tokenItem struct {
 	TeamID      string `dynamodbav:"team_id"`
 	AccessToken string `dynamodbav:"access_token"`
 	BotUserID   string `dynamodbav:"bot_user_id"`
+	UserID      string `dynamodbav:"user_id"`
+	ChannelID   string `dynamodbav:"channel_id"`
 	UpdatedAt   string `dynamodbav:"updated_at"`
 }

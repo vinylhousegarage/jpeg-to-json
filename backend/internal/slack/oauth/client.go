@@ -16,6 +16,7 @@ type Token struct {
 	BotUserID   string
 	TeamID      string
 	UserID      string
+	ChannelID   string
 }
 
 type Client struct {
