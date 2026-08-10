@@ -42,15 +42,27 @@ func TestStore_Get_NotFound(t *testing.T) {
 			client := &stubDynamoDBClient{
 				getItemOutput: tt.output,
 			}
-			store := NewStore(client, testTableName)
 
-			got, err := store.Get(context.Background(), "T123")
+			store := NewStore(
+				client,
+				testTableName,
+			)
+
+			got, err := store.Get(
+				context.Background(),
+				"T123",
+			)
 			if err == nil {
-				t.Fatal("Get() error = nil, want an error")
+				t.Fatal(
+					"Get() error = nil, want an error",
+				)
 			}
 
 			if got != nil {
-				t.Errorf("Get() token = %#v, want nil", got)
+				t.Errorf(
+					"Get() token = %#v, want nil",
+					got,
+				)
 			}
 
 			if !errors.Is(err, ErrTokenNotFound) {
@@ -61,6 +73,7 @@ func TestStore_Get_NotFound(t *testing.T) {
 			}
 
 			const wantError = `get slack token for team "T123": slack token not found`
+
 			if err.Error() != wantError {
 				t.Errorf(
 					"Get() error = %q, want %q",
@@ -70,11 +83,15 @@ func TestStore_Get_NotFound(t *testing.T) {
 			}
 
 			if !client.getItemCalled {
-				t.Fatal("GetItem() was not called")
+				t.Fatal(
+					"GetItem() was not called",
+				)
 			}
 
 			if client.putItemCalled {
-				t.Error("PutItem() was called by Get()")
+				t.Error(
+					"PutItem() was called by Get()",
+				)
 			}
 		})
 	}
@@ -84,18 +101,31 @@ func TestStore_Get_GetItemError(t *testing.T) {
 	t.Parallel()
 
 	getErr := errors.New("dynamodb unavailable")
+
 	client := &stubDynamoDBClient{
 		getItemErr: getErr,
 	}
-	store := NewStore(client, testTableName)
 
-	got, err := store.Get(context.Background(), "T123")
+	store := NewStore(
+		client,
+		testTableName,
+	)
+
+	got, err := store.Get(
+		context.Background(),
+		"T123",
+	)
 	if err == nil {
-		t.Fatal("Get() error = nil, want an error")
+		t.Fatal(
+			"Get() error = nil, want an error",
+		)
 	}
 
 	if got != nil {
-		t.Errorf("Get() token = %#v, want nil", got)
+		t.Errorf(
+			"Get() token = %#v, want nil",
+			got,
+		)
 	}
 
 	if !errors.Is(err, getErr) {
@@ -107,6 +137,7 @@ func TestStore_Get_GetItemError(t *testing.T) {
 	}
 
 	const wantError = "get slack token item: dynamodb unavailable"
+
 	if err.Error() != wantError {
 		t.Errorf(
 			"Get() error = %q, want %q",
@@ -116,11 +147,15 @@ func TestStore_Get_GetItemError(t *testing.T) {
 	}
 
 	if !client.getItemCalled {
-		t.Fatal("GetItem() was not called")
+		t.Fatal(
+			"GetItem() was not called",
+		)
 	}
 
 	if client.putItemCalled {
-		t.Error("PutItem() was called by Get()")
+		t.Error(
+			"PutItem() was called by Get()",
+		)
 	}
 }
 
@@ -143,22 +178,44 @@ func TestStore_Get_UnmarshalError(t *testing.T) {
 				"bot_user_id": &types.AttributeValueMemberS{
 					Value: "B123",
 				},
+				"user_id": &types.AttributeValueMemberS{
+					Value: "U123",
+				},
+				"channel_id": &types.AttributeValueMemberS{
+					Value: "D123",
+				},
 			},
 		},
 	}
-	store := NewStore(client, testTableName)
 
-	got, err := store.Get(context.Background(), "T123")
+	store := NewStore(
+		client,
+		testTableName,
+	)
+
+	got, err := store.Get(
+		context.Background(),
+		"T123",
+	)
 	if err == nil {
-		t.Fatal("Get() error = nil, want an error")
+		t.Fatal(
+			"Get() error = nil, want an error",
+		)
 	}
 
 	if got != nil {
-		t.Errorf("Get() token = %#v, want nil", got)
+		t.Errorf(
+			"Get() token = %#v, want nil",
+			got,
+		)
 	}
 
 	const wantPrefix = "unmarshal slack token item:"
-	if !strings.HasPrefix(err.Error(), wantPrefix) {
+
+	if !strings.HasPrefix(
+		err.Error(),
+		wantPrefix,
+	) {
 		t.Errorf(
 			"Get() error = %q, want prefix %q",
 			err.Error(),
@@ -167,10 +224,14 @@ func TestStore_Get_UnmarshalError(t *testing.T) {
 	}
 
 	if !client.getItemCalled {
-		t.Fatal("GetItem() was not called")
+		t.Fatal(
+			"GetItem() was not called",
+		)
 	}
 
 	if client.putItemCalled {
-		t.Error("PutItem() was called by Get()")
+		t.Error(
+			"PutItem() was called by Get()",
+		)
 	}
 }

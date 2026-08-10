@@ -16,12 +16,17 @@ func TestStore_Get_Success(t *testing.T) {
 		TeamID:      "T123",
 		AccessToken: "xoxb-test",
 		BotUserID:   "B123",
+		UserID:      "U123",
+		ChannelID:   "D123",
 		UpdatedAt:   "2026-08-02T12:00:00Z",
 	}
 
 	attributes, err := attributevalue.MarshalMap(wantItem)
 	if err != nil {
-		t.Fatalf("failed to marshal test token item: %v", err)
+		t.Fatalf(
+			"failed to marshal test token item: %v",
+			err,
+		)
 	}
 
 	client := &stubDynamoDBClient{
@@ -29,11 +34,21 @@ func TestStore_Get_Success(t *testing.T) {
 			Item: attributes,
 		},
 	}
-	store := NewStore(client, testTableName)
 
-	got, err := store.Get(context.Background(), wantItem.TeamID)
+	store := NewStore(
+		client,
+		testTableName,
+	)
+
+	got, err := store.Get(
+		context.Background(),
+		wantItem.TeamID,
+	)
 	if err != nil {
-		t.Fatalf("Get() error = %v", err)
+		t.Fatalf(
+			"Get() error = %v",
+			err,
+		)
 	}
 
 	if !client.getItemCalled {
@@ -58,7 +73,9 @@ func TestStore_Get_Success(t *testing.T) {
 
 	teamIDAttribute, ok := client.getItemInput.Key["team_id"]
 	if !ok {
-		t.Fatal(`GetItem() key does not contain "team_id"`)
+		t.Fatal(
+			`GetItem() key does not contain "team_id"`,
+		)
 	}
 
 	teamID, ok := teamIDAttribute.(*types.AttributeValueMemberS)
@@ -102,6 +119,22 @@ func TestStore_Get_Success(t *testing.T) {
 			"Get() BotUserID = %q, want %q",
 			got.BotUserID,
 			wantItem.BotUserID,
+		)
+	}
+
+	if got.UserID != wantItem.UserID {
+		t.Errorf(
+			"Get() UserID = %q, want %q",
+			got.UserID,
+			wantItem.UserID,
+		)
+	}
+
+	if got.ChannelID != wantItem.ChannelID {
+		t.Errorf(
+			"Get() ChannelID = %q, want %q",
+			got.ChannelID,
+			wantItem.ChannelID,
 		)
 	}
 
