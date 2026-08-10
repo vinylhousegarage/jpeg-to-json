@@ -7,23 +7,26 @@ import (
 
 const (
 	testAccessToken = "xoxb-test-token"
-	testChannelID   = "C12345678"
-	testMessageText = "JPEG analysis completed"
+	testChannelID   = "D123456"
+	testUserID      = "U123456"
+	testMessage     = "test message"
 )
 
-type roundTripFunc func(
-	req *http.Request,
-) (*http.Response, error)
+func newTestClient(
+	server *httptest.Server,
+) *Client {
+	client := NewClient(
+		server.Client(),
+	)
 
-func (f roundTripFunc) RoundTrip(
-	req *http.Request,
-) (*http.Response, error) {
-	return f(req)
-}
-
-func newTestClient(server *httptest.Server) *Client {
-	client := NewClient(server.Client())
 	client.postMessageURL = server.URL
+	client.openConversationURL = server.URL
 
 	return client
+}
+
+func newTestServer(
+	handler http.HandlerFunc,
+) *httptest.Server {
+	return httptest.NewServer(handler)
 }

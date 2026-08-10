@@ -15,6 +15,7 @@ type Token struct {
 	AccessToken string
 	BotUserID   string
 	TeamID      string
+	UserID      string
 }
 
 type Client struct {
@@ -46,9 +47,14 @@ type tokenResponse struct {
 	AccessToken string `json:"access_token"`
 	BotUserID   string `json:"bot_user_id"`
 	Error       string `json:"error"`
-	Team        struct {
+
+	Team struct {
 		ID string `json:"id"`
 	} `json:"team"`
+
+	AuthedUser struct {
+		ID string `json:"id"`
+	} `json:"authed_user"`
 }
 
 func (c *Client) ExchangeCode(
@@ -67,18 +73,27 @@ func (c *Client) ExchangeCode(
 		strings.NewReader(form.Encode()),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("create Slack OAuth token request: %w", err)
+		return nil, fmt.Errorf(
+			"create Slack OAuth token request: %w",
+			err,
+		)
 	}
 
 	req.Header.Set(
 		"Content-Type",
 		"application/x-www-form-urlencoded",
 	)
-	req.SetBasicAuth(c.clientID, c.clientSecret)
+	req.SetBasicAuth(
+		c.clientID,
+		c.clientSecret,
+	)
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("send Slack OAuth token request: %w", err)
+		return nil, fmt.Errorf(
+			"send Slack OAuth token request: %w",
+			err,
+		)
 	}
 	defer func() {
 		_ = res.Body.Close()
@@ -112,9 +127,16 @@ func (c *Client) ExchangeCode(
 		)
 	}
 
+	if payload.AuthedUser.ID == "" {
+		return nil, fmt.Errorf(
+			"slack OAuth token response is missing authed_user.id",
+		)
+	}
+
 	return &Token{
 		AccessToken: payload.AccessToken,
 		BotUserID:   payload.BotUserID,
 		TeamID:      payload.Team.ID,
+		UserID:      payload.AuthedUser.ID,
 	}, nil
 }

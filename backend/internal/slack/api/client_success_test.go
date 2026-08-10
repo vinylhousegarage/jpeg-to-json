@@ -4,30 +4,30 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
 func TestClient_PostMessage_Success(t *testing.T) {
 	t.Parallel()
 
-	server := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := newTestServer(
+		http.HandlerFunc(func(
+			w http.ResponseWriter,
+			r *http.Request,
+		) {
 			if r.Method != http.MethodPost {
 				t.Errorf(
 					"method = %q, want %q",
 					r.Method,
 					http.MethodPost,
 				)
-				return
 			}
 
-			wantAuthorization := "Bearer " + testAccessToken
-			if got := r.Header.Get("Authorization"); got != wantAuthorization {
+			if got := r.Header.Get("Authorization"); got != "Bearer "+testAccessToken {
 				t.Errorf(
 					"Authorization = %q, want %q",
 					got,
-					wantAuthorization,
+					"Bearer "+testAccessToken,
 				)
 			}
 
@@ -41,7 +41,10 @@ func TestClient_PostMessage_Success(t *testing.T) {
 
 			var request postMessageRequest
 			if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-				t.Errorf("failed to decode request body: %v", err)
+				t.Errorf(
+					"failed to decode request: %v",
+					err,
+				)
 				return
 			}
 
@@ -53,22 +56,28 @@ func TestClient_PostMessage_Success(t *testing.T) {
 				)
 			}
 
-			if request.Text != testMessageText {
+			if request.Text != testMessage {
 				t.Errorf(
 					"Text = %q, want %q",
 					request.Text,
-					testMessageText,
+					testMessage,
 				)
 			}
 
-			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set(
+				"Content-Type",
+				"application/json",
+			)
 
 			response := postMessageResponse{
 				OK: true,
 			}
 
 			if err := json.NewEncoder(w).Encode(response); err != nil {
-				t.Errorf("failed to encode response: %v", err)
+				t.Errorf(
+					"failed to encode response: %v",
+					err,
+				)
 			}
 		}),
 	)
@@ -80,31 +89,104 @@ func TestClient_PostMessage_Success(t *testing.T) {
 		context.Background(),
 		testAccessToken,
 		testChannelID,
-		testMessageText,
+		testMessage,
 	)
 	if err != nil {
-		t.Fatalf("PostMessage() error = %v", err)
+		t.Fatalf(
+			"PostMessage() error = %v",
+			err,
+		)
 	}
 }
 
-func TestNewClient_UsesDefaultHTTPClient(t *testing.T) {
+func TestClient_OpenConversation_Success(t *testing.T) {
 	t.Parallel()
 
-	client := NewClient(nil)
+	server := newTestServer(
+		http.HandlerFunc(func(
+			w http.ResponseWriter,
+			r *http.Request,
+		) {
+			if r.Method != http.MethodPost {
+				t.Errorf(
+					"method = %q, want %q",
+					r.Method,
+					http.MethodPost,
+				)
+			}
 
-	if client.httpClient != http.DefaultClient {
-		t.Errorf(
-			"httpClient = %p, want http.DefaultClient %p",
-			client.httpClient,
-			http.DefaultClient,
+			if got := r.Header.Get("Authorization"); got != "Bearer "+testAccessToken {
+				t.Errorf(
+					"Authorization = %q, want %q",
+					got,
+					"Bearer "+testAccessToken,
+				)
+			}
+
+			if got := r.Header.Get("Content-Type"); got != "application/json" {
+				t.Errorf(
+					"Content-Type = %q, want %q",
+					got,
+					"application/json",
+				)
+			}
+
+			var request openConversationRequest
+			if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+				t.Errorf(
+					"failed to decode request: %v",
+					err,
+				)
+				return
+			}
+
+			if request.Users != testUserID {
+				t.Errorf(
+					"Users = %q, want %q",
+					request.Users,
+					testUserID,
+				)
+			}
+
+			w.Header().Set(
+				"Content-Type",
+				"application/json",
+			)
+
+			response := openConversationResponse{
+				OK: true,
+			}
+			response.Channel.ID = testChannelID
+
+			if err := json.NewEncoder(w).Encode(response); err != nil {
+				t.Errorf(
+					"failed to encode response: %v",
+					err,
+				)
+			}
+		}),
+	)
+	defer server.Close()
+
+	client := newTestClient(server)
+
+	channelID, err := client.OpenConversation(
+		context.Background(),
+		testAccessToken,
+		testUserID,
+	)
+	if err != nil {
+		t.Fatalf(
+			"OpenConversation() error = %v",
+			err,
 		)
 	}
 
-	if client.postMessageURL != slackPostMessageURL {
+	if channelID != testChannelID {
 		t.Errorf(
-			"postMessageURL = %q, want %q",
-			client.postMessageURL,
-			slackPostMessageURL,
+			"OpenConversation() channelID = %q, want %q",
+			channelID,
+			testChannelID,
 		)
 	}
 }

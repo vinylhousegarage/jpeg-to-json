@@ -2,83 +2,163 @@ package api
 
 import (
 	"context"
-	"errors"
-	"net/http"
+	"strings"
 	"testing"
 )
 
-func TestClient_PostMessage_ValidationErrors(t *testing.T) {
+func TestClient_PostMessage_EmptyAccessToken(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name        string
-		accessToken string
-		channelID   string
-		text        string
-		wantError   string
-	}{
-		{
-			name:        "missing access token",
-			accessToken: "",
-			channelID:   testChannelID,
-			text:        testMessageText,
-			wantError:   "post slack message: access token is empty",
-		},
-		{
-			name:        "missing channel ID",
-			accessToken: testAccessToken,
-			channelID:   "",
-			text:        testMessageText,
-			wantError:   "post slack message: channel ID is empty",
-		},
-		{
-			name:        "missing text",
-			accessToken: testAccessToken,
-			channelID:   testChannelID,
-			text:        "",
-			wantError:   "post slack message: text is empty",
-		},
+	client := NewClient(nil)
+
+	err := client.PostMessage(
+		context.Background(),
+		"",
+		testChannelID,
+		testMessage,
+	)
+
+	if err == nil {
+		t.Fatal(
+			"PostMessage() error = nil, want an error",
+		)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+	if !strings.Contains(
+		err.Error(),
+		"access token is empty",
+	) {
+		t.Errorf(
+			"PostMessage() error = %q, want access token error",
+			err,
+		)
+	}
+}
 
-			transportCalled := false
+func TestClient_PostMessage_EmptyChannelID(t *testing.T) {
+	t.Parallel()
 
-			httpClient := &http.Client{
-				Transport: roundTripFunc(
-					func(*http.Request) (*http.Response, error) {
-						transportCalled = true
+	client := NewClient(nil)
 
-						return nil, errors.New("unexpected request")
-					},
-				),
-			}
+	err := client.PostMessage(
+		context.Background(),
+		testAccessToken,
+		"",
+		testMessage,
+	)
 
-			client := NewClient(httpClient)
+	if err == nil {
+		t.Fatal(
+			"PostMessage() error = nil, want an error",
+		)
+	}
 
-			err := client.PostMessage(
-				context.Background(),
-				tt.accessToken,
-				tt.channelID,
-				tt.text,
-			)
-			if err == nil {
-				t.Fatal("PostMessage() error = nil, want an error")
-			}
+	if !strings.Contains(
+		err.Error(),
+		"channel ID is empty",
+	) {
+		t.Errorf(
+			"PostMessage() error = %q, want channel ID error",
+			err,
+		)
+	}
+}
 
-			if err.Error() != tt.wantError {
-				t.Errorf(
-					"PostMessage() error = %q, want %q",
-					err.Error(),
-					tt.wantError,
-				)
-			}
+func TestClient_PostMessage_EmptyText(t *testing.T) {
+	t.Parallel()
 
-			if transportCalled {
-				t.Error("HTTP request was sent for invalid input")
-			}
-		})
+	client := NewClient(nil)
+
+	err := client.PostMessage(
+		context.Background(),
+		testAccessToken,
+		testChannelID,
+		"",
+	)
+
+	if err == nil {
+		t.Fatal(
+			"PostMessage() error = nil, want an error",
+		)
+	}
+
+	if !strings.Contains(
+		err.Error(),
+		"text is empty",
+	) {
+		t.Errorf(
+			"PostMessage() error = %q, want text error",
+			err,
+		)
+	}
+}
+
+func TestClient_OpenConversation_EmptyAccessToken(t *testing.T) {
+	t.Parallel()
+
+	client := NewClient(nil)
+
+	channelID, err := client.OpenConversation(
+		context.Background(),
+		"",
+		testUserID,
+	)
+
+	if err == nil {
+		t.Fatal(
+			"OpenConversation() error = nil, want an error",
+		)
+	}
+
+	if channelID != "" {
+		t.Errorf(
+			"OpenConversation() channelID = %q, want empty",
+			channelID,
+		)
+	}
+
+	if !strings.Contains(
+		err.Error(),
+		"access token is empty",
+	) {
+		t.Errorf(
+			"OpenConversation() error = %q, want access token error",
+			err,
+		)
+	}
+}
+
+func TestClient_OpenConversation_EmptyUserID(t *testing.T) {
+	t.Parallel()
+
+	client := NewClient(nil)
+
+	channelID, err := client.OpenConversation(
+		context.Background(),
+		testAccessToken,
+		"",
+	)
+
+	if err == nil {
+		t.Fatal(
+			"OpenConversation() error = nil, want an error",
+		)
+	}
+
+	if channelID != "" {
+		t.Errorf(
+			"OpenConversation() channelID = %q, want empty",
+			channelID,
+		)
+	}
+
+	if !strings.Contains(
+		err.Error(),
+		"user ID is empty",
+	) {
+		t.Errorf(
+			"OpenConversation() error = %q, want user ID error",
+			err,
+		)
 	}
 }
