@@ -22,7 +22,6 @@ func TestNotifier_Notify_GetTokenError(t *testing.T) {
 
 	err := notifier.Notify(
 		context.Background(),
-		"T123",
 		"test message",
 	)
 	if err == nil {
@@ -76,7 +75,6 @@ func TestNotifier_Notify_PostMessageError(t *testing.T) {
 
 	err := notifier.Notify(
 		context.Background(),
-		"T123",
 		"test message",
 	)
 	if err == nil {

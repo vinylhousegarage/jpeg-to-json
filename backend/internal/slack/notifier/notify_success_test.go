@@ -26,7 +26,6 @@ func TestNotifier_Notify_Success(t *testing.T) {
 
 	err := notifier.Notify(
 		ctx,
-		"T123",
 		"test message",
 	)
 	if err != nil {
@@ -39,14 +38,6 @@ func TestNotifier_Notify_Success(t *testing.T) {
 
 	if tokenStore.ctx != ctx {
 		t.Error("Get() received an unexpected context")
-	}
-
-	if tokenStore.teamID != "T123" {
-		t.Errorf(
-			"Get() teamID = %q, want %q",
-			tokenStore.teamID,
-			"T123",
-		)
 	}
 
 	if !client.called {

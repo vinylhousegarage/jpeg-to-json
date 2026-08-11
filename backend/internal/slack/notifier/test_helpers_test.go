@@ -12,16 +12,13 @@ type stubTokenStore struct {
 
 	called bool
 	ctx    context.Context
-	teamID string
 }
 
 func (s *stubTokenStore) Get(
 	ctx context.Context,
-	teamID string,
 ) (*oauth.Token, error) {
 	s.called = true
 	s.ctx = ctx
-	s.teamID = teamID
 
 	return s.token, s.err
 }
