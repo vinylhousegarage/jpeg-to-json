@@ -3,6 +3,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"testing"
 
@@ -10,12 +11,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestWorkflow_Execute_Success(t *testing.T) {
+func TestWorkflow_Execute_SlackError(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	slackErr := errors.New("slack error")
 
-	slackNotifier := &mockSlackNotifier{}
+	slackNotifier := &mockSlackNotifier{
+		notifyErr: slackErr,
+	}
 
 	workflow := NewWorkflow(
 		&mockS3Getter{
@@ -40,23 +43,33 @@ func TestWorkflow_Execute_Success(t *testing.T) {
 	)
 
 	err := workflow.Execute(
-		ctx,
+		context.Background(),
 		"input-bucket",
 		"SHOT-001.jpg",
 	)
-	if err != nil {
-		t.Fatalf(
-			"Execute() error = %v",
+	if err == nil {
+		t.Fatal("Execute() error = nil, want an error")
+	}
+
+	if !errors.Is(err, slackErr) {
+		t.Errorf(
+			"Execute() error = %v, want wrapped error %v",
 			err,
+			slackErr,
+		)
+	}
+
+	const wantError = "failed to send slack notification: slack error"
+	if err.Error() != wantError {
+		t.Errorf(
+			"Execute() error = %q, want %q",
+			err.Error(),
+			wantError,
 		)
 	}
 
 	if !slackNotifier.called {
 		t.Fatal("Notify() was not called")
-	}
-
-	if slackNotifier.ctx != ctx {
-		t.Error("Notify() received an unexpected context")
 	}
 
 	if slackNotifier.message.ShotNumber != "SHOT-001" {
