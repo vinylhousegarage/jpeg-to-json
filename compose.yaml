@@ -8,9 +8,11 @@ services:
     user: "${UID:-1000}:${GID:-1000}"
     container_name: cdk
     working_dir: /workspace/infra
+
     volumes:
-      - ./infra:/workspace/infra
+      - ./:/workspace
       - ~/.aws:/home/node/.aws
+
     command: sleep infinity
     tty: true
     stdin_open: true
@@ -27,14 +29,17 @@ services:
     user: "${UID:-1000}:${GID:-1000}"
     container_name: go
     working_dir: /workspace/backend
+
     volumes:
-      - ./backend:/workspace/backend
+      - ./:/workspace
       - ~/.aws:/home/appuser/.aws
       - ~/.aws/sso/cache:/home/appuser/.aws/sso/cache
       - backend_pkg:/go/pkg
       - backend_bin:/go/bin
+
     ports:
       - "8080:8080"
+
     environment:
       - APP_ENV=${APP_ENV}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
@@ -52,6 +57,7 @@ services:
       - SLACK_CLIENT_ID=${SLACK_CLIENT_ID}
       - SLACK_CLIENT_SECRET=${SLACK_CLIENT_SECRET}
       - SLACK_REDIRECT_URI=${SLACK_REDIRECT_URI}
+
     networks:
       - app-network
 
@@ -65,17 +71,21 @@ services:
     user: "${UID:-1000}:${GID:-1000}"
     container_name: typescript
     working_dir: /workspace/frontend
+
     volumes:
-      - ./frontend:/workspace/frontend
+      - ./:/workspace
       - frontend_node_modules:/workspace/frontend/node_modules
-      - ./.git:/workspace/.git:ro
+
     ports:
       - "8081:5173"
+
     environment:
       - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
       - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
     networks:
       - app-network
+
     command: sh -c "npm run dev -- --host 0.0.0.0"
 
 networks:
@@ -87,3 +97,4 @@ volumes:
   backend_bin:
   backend_pkg:
   frontend_node_modules:
+  
