@@ -39,9 +39,10 @@
     "vscode": {
       "extensions": [
         "dbaeumer.vscode-eslint",
+        "ecmel.vscode-html-css",
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-docker",
-        "ecmel.vscode-html-css"
+        "openai.chatgpt"
       ]
     }
   },
