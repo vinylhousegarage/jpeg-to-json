@@ -26,7 +26,10 @@ func TestNotifier_Notify_Success(t *testing.T) {
 
 	err := notifier.Notify(
 		ctx,
-		"test message",
+		Message{
+			ShotNumber:  "001",
+			DownloadURL: "https://example.com/test.json",
+		},
 	)
 	if err != nil {
 		t.Fatalf("Notify() error = %v", err)
@@ -64,11 +67,34 @@ func TestNotifier_Notify_Success(t *testing.T) {
 		)
 	}
 
-	if client.text != "test message" {
+	const wantText = "撮影番号：001"
+	if client.message.Text != wantText {
 		t.Errorf(
-			"PostMessage() text = %q, want %q",
-			client.text,
-			"test message",
+			"PostMessage() message.Text = %q, want %q",
+			client.message.Text,
+			wantText,
+		)
+	}
+
+	if client.message.Button == nil {
+		t.Fatal("PostMessage() message.Button = nil")
+	}
+
+	const wantButtonText = "ダウンロード"
+	if client.message.Button.Text != wantButtonText {
+		t.Errorf(
+			"PostMessage() button.Text = %q, want %q",
+			client.message.Button.Text,
+			wantButtonText,
+		)
+	}
+
+	const wantButtonURL = "https://example.com/test.json"
+	if client.message.Button.URL != wantButtonURL {
+		t.Errorf(
+			"PostMessage() button.URL = %q, want %q",
+			client.message.Button.URL,
+			wantButtonURL,
 		)
 	}
 }

@@ -8,9 +8,27 @@ import (
 	"net/http"
 )
 
+type textObject struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+}
+
+type block struct {
+	Type     string        `json:"type"`
+	Text     *textObject   `json:"text,omitempty"`
+	Elements []blockButton `json:"elements,omitempty"`
+}
+
+type blockButton struct {
+	Type string     `json:"type"`
+	Text textObject `json:"text"`
+	URL  string     `json:"url"`
+}
+
 type postMessageRequest struct {
-	Channel string `json:"channel"`
-	Text    string `json:"text"`
+	Channel string  `json:"channel"`
+	Text    string  `json:"text"`
+	Blocks  []block `json:"blocks,omitempty"`
 }
 
 type postMessageResponse struct {
@@ -22,7 +40,7 @@ func (c *Client) PostMessage(
 	ctx context.Context,
 	accessToken string,
 	channelID string,
-	text string,
+	message Message,
 ) error {
 	if accessToken == "" {
 		return fmt.Errorf(
@@ -36,18 +54,55 @@ func (c *Client) PostMessage(
 		)
 	}
 
-	if text == "" {
+	if message.Text == "" {
 		return fmt.Errorf(
 			"post slack message: text is empty",
 		)
 	}
 
-	body, err := json.Marshal(
-		postMessageRequest{
-			Channel: channelID,
-			Text:    text,
-		},
-	)
+	request := postMessageRequest{
+		Channel: channelID,
+		Text:    message.Text,
+	}
+
+	if message.Button != nil {
+		if message.Button.Text == "" {
+			return fmt.Errorf(
+				"post slack message: button text is empty",
+			)
+		}
+
+		if message.Button.URL == "" {
+			return fmt.Errorf(
+				"post slack message: button URL is empty",
+			)
+		}
+
+		request.Blocks = []block{
+			{
+				Type: "section",
+				Text: &textObject{
+					Type: "mrkdwn",
+					Text: message.Text,
+				},
+			},
+			{
+				Type: "actions",
+				Elements: []blockButton{
+					{
+						Type: "button",
+						Text: textObject{
+							Type: "plain_text",
+							Text: message.Button.Text,
+						},
+						URL: message.Button.URL,
+					},
+				},
+			},
+		}
+	}
+
+	body, err := json.Marshal(request)
 	if err != nil {
 		return fmt.Errorf(
 			"marshal slack post message request: %w",

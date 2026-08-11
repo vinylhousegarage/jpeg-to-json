@@ -3,6 +3,7 @@ package notifier
 import (
 	"context"
 
+	slackapi "github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/api"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/oauth"
 )
 
@@ -30,20 +31,20 @@ type stubMessageClient struct {
 	ctx         context.Context
 	accessToken string
 	channelID   string
-	text        string
+	message     slackapi.Message
 }
 
 func (s *stubMessageClient) PostMessage(
 	ctx context.Context,
 	accessToken string,
 	channelID string,
-	text string,
+	message slackapi.Message,
 ) error {
 	s.called = true
 	s.ctx = ctx
 	s.accessToken = accessToken
 	s.channelID = channelID
-	s.text = text
+	s.message = message
 
 	return s.err
 }

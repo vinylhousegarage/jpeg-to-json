@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	slackapi "github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/api"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/oauth"
 )
 
@@ -18,7 +19,7 @@ type messageClient interface {
 		ctx context.Context,
 		accessToken string,
 		channelID string,
-		text string,
+		message slackapi.Message,
 	) error
 }
 
@@ -40,10 +41,14 @@ func NewNotifier(
 
 func (n *Notifier) Notify(
 	ctx context.Context,
-	text string,
+	message Message,
 ) error {
-	if text == "" {
-		return fmt.Errorf("notify slack: text is empty")
+	if message.ShotNumber == "" {
+		return fmt.Errorf("notify slack: shot number is empty")
+	}
+
+	if message.DownloadURL == "" {
+		return fmt.Errorf("notify slack: download URL is empty")
 	}
 
 	token, err := n.tokenStore.Get(ctx)
@@ -63,11 +68,22 @@ func (n *Notifier) Notify(
 		return fmt.Errorf("get slack token: channel ID is empty")
 	}
 
+	slackMessage := slackapi.Message{
+		Text: fmt.Sprintf(
+			"撮影番号：%s",
+			message.ShotNumber,
+		),
+		Button: &slackapi.Button{
+			Text: "ダウンロード",
+			URL:  message.DownloadURL,
+		},
+	}
+
 	if err := n.client.PostMessage(
 		ctx,
 		token.AccessToken,
 		token.ChannelID,
-		text,
+		slackMessage,
 	); err != nil {
 		return fmt.Errorf("post slack message: %w", err)
 	}

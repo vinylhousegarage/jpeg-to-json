@@ -12,13 +12,22 @@ func TestNotifier_Notify_ValidationErrors(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		text      string
+		message   Message
 		wantError string
 	}{
 		{
-			name:      "missing text",
-			text:      "",
-			wantError: "notify slack: text is empty",
+			name: "missing shot number",
+			message: Message{
+				DownloadURL: "https://example.com/test.json",
+			},
+			wantError: "notify slack: shot number is empty",
+		},
+		{
+			name: "missing download URL",
+			message: Message{
+				ShotNumber: "001",
+			},
+			wantError: "notify slack: download URL is empty",
 		},
 	}
 
@@ -33,7 +42,7 @@ func TestNotifier_Notify_ValidationErrors(t *testing.T) {
 
 			err := notifier.Notify(
 				context.Background(),
-				tt.text,
+				tt.message,
 			)
 			if err == nil {
 				t.Fatal("Notify() error = nil, want an error")
@@ -104,7 +113,10 @@ func TestNotifier_Notify_InvalidToken(t *testing.T) {
 
 			err := notifier.Notify(
 				context.Background(),
-				"test message",
+				Message{
+					ShotNumber:  "001",
+					DownloadURL: "https://example.com/test.json",
+				},
 			)
 			if err == nil {
 				t.Fatal("Notify() error = nil, want an error")
