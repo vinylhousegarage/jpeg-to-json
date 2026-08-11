@@ -72,7 +72,7 @@ export class InfraStack extends cdk.Stack {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
-      code: lambda.Code.fromAsset('../backend/bin/presign'),
+      code: lambda.Code.fromAsset('../backend/bin/api'),
       environment: {
         ALLOWED_ORIGINS: '*',
         INPUT_BUCKET_NAME: inputBucket.bucketName,
