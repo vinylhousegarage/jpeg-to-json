@@ -10,7 +10,6 @@ import (
 type tokenStore interface {
 	Get(
 		ctx context.Context,
-		teamID string,
 	) (*oauth.Token, error)
 }
 
@@ -41,18 +40,13 @@ func NewNotifier(
 
 func (n *Notifier) Notify(
 	ctx context.Context,
-	teamID string,
 	text string,
 ) error {
-	if teamID == "" {
-		return fmt.Errorf("notify slack: team ID is empty")
-	}
-
 	if text == "" {
 		return fmt.Errorf("notify slack: text is empty")
 	}
 
-	token, err := n.tokenStore.Get(ctx, teamID)
+	token, err := n.tokenStore.Get(ctx)
 	if err != nil {
 		return fmt.Errorf("get slack token: %w", err)
 	}
