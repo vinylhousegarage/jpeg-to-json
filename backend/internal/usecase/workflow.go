@@ -15,6 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/notifier"
 )
 
 // インターフェースを定義
@@ -49,11 +51,10 @@ type BedrockService interface {
 	) (map[string]any, error)
 }
 
-type SlackClient interface {
-	SendNotification(
+type SlackNotifier interface {
+	Notify(
 		ctx context.Context,
-		shotNumber string,
-		downloadURL string,
+		message notifier.Message,
 	) error
 }
 
@@ -63,7 +64,7 @@ type Workflow struct {
 	s3Putter       S3Putter
 	s3Presigner    S3Presigner
 	bedrockService BedrockService
-	slackClient    SlackClient
+	slackNotifier  SlackNotifier
 	outputBucket   string
 	logger         *zap.Logger
 }
@@ -74,7 +75,7 @@ func NewWorkflow(
 	s3Putter S3Putter,
 	s3Presigner S3Presigner,
 	bedrockService BedrockService,
-	slackClient SlackClient,
+	slackNotifier SlackNotifier,
 	outputBucket string,
 	logger *zap.Logger,
 ) *Workflow {
@@ -83,7 +84,7 @@ func NewWorkflow(
 		s3Putter:       s3Putter,
 		s3Presigner:    s3Presigner,
 		bedrockService: bedrockService,
-		slackClient:    slackClient,
+		slackNotifier:  slackNotifier,
 		outputBucket:   outputBucket,
 		logger:         logger,
 	}
@@ -179,10 +180,12 @@ func (w *Workflow) Execute(
 	}
 
 	// Slack OAuthで連携済みのSlackへ通知
-	if err := w.slackClient.SendNotification(
+	if err := w.slackNotifier.Notify(
 		ctx,
-		shotNumber,
-		presignReq.URL,
+		notifier.Message{
+			ShotNumber:  shotNumber,
+			DownloadURL: presignReq.URL,
+		},
 	); err != nil {
 		return fmt.Errorf("failed to send slack notification: %w", err)
 	}

@@ -6,6 +6,8 @@ import (
 
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/notifier"
 )
 
 type mockS3Getter struct {
@@ -64,23 +66,23 @@ func (m *mockBedrockService) ProcessImage(
 	return m.resultMap, m.processErr
 }
 
-type mockSlackClient struct {
-	sendErr error
+type mockSlackNotifier struct {
+	notifyErr error
+
 	called  bool
-	shot    string
-	msg     string
+	ctx     context.Context
+	message notifier.Message
 }
 
-func (m *mockSlackClient) SendNotification(
+func (m *mockSlackNotifier) Notify(
 	ctx context.Context,
-	shotNumber string,
-	downloadURL string,
+	message notifier.Message,
 ) error {
 	m.called = true
-	m.shot = shotNumber
-	m.msg = downloadURL
+	m.ctx = ctx
+	m.message = message
 
-	return m.sendErr
+	return m.notifyErr
 }
 
 type errorReadCloser struct {
