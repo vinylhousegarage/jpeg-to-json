@@ -67,8 +67,8 @@ export class InfraStack extends cdk.Stack {
 
     // 3. Lambda 関数の作成（Goランタイム）
 
-    // PresignHandler（署名付きURL発行）
-    const presignHandler = new lambda.Function(this, 'PresignHandler', {
+    // API Handler（HTTP API）
+    const apiHandler = new lambda.Function(this, 'ApiHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
@@ -96,8 +96,8 @@ export class InfraStack extends cdk.Stack {
 
     // 4. 権限（IAM）と トリガー（Event）の設定
 
-    // PresignHandlerには、Inputバケットへ「書き込む」権限のみ付与
-    inputBucket.grantWrite(presignHandler);
+    // API Handlerには、Inputバケットへ「書き込む」権限のみ付与
+    inputBucket.grantWrite(apiHandler);
 
     // MainHandlerには、Inputから「読み込む」権限、Outputへ「書き込む」権限を付与
     inputBucket.grantRead(mainHandler);
@@ -127,12 +127,12 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
-    // GET /presign で PresignHandler を呼び出す
-    const presignIntegration = new HttpLambdaIntegration('PresignIntegration', presignHandler);
+    // POST /presign で API Handler を呼び出す
+    const apiIntegration = new HttpLambdaIntegration('ApiIntegration', apiHandler);
     api.addRoutes({
       path: '/presign',
       methods: [apigwv2.HttpMethod.POST],
-      integration: presignIntegration,
+      integration: apiIntegration,
     });
 
     // 6. ログでURLを出力
