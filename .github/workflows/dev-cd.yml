@@ -5,6 +5,7 @@ on:
     branches:
       - dev
     paths:
+      - 'backend/**'
       - 'infra/**'
       - '.github/workflows/dev-cd.yml'
 
@@ -15,6 +16,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: ./infra
@@ -38,8 +40,15 @@ jobs:
           go build -tags lambda.norpc -trimpath -ldflags="-s -w" \
           -o bin/presign/bootstrap ./cmd/presign/main.go
 
+      - name: Build Processor Handler
+        working-directory: ./backend
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
+          go build -tags lambda.norpc -trimpath -ldflags="-s -w" \
+          -o bin/processor/bootstrap ./cmd/processor/main.go
+
       # ==========================================
-      # 2. インフラのデプロイ（Hotswap対応）
+      # 2. インフラのデプロイ
       # ==========================================
       - name: Setup Node.js
         uses: actions/setup-node@v4
