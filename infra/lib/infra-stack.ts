@@ -9,6 +9,7 @@ import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -46,6 +47,12 @@ export class InfraStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, 
     });
 
+    // Slack OAuthトークン保存用テーブル
+    const slackTokenTable = new dynamodb.Table(this, 'SlackTokenTable', {
+      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      removalPolicy,
+    });
+
     // 2. CloudFront の作成
 
     // CloudFront
@@ -76,6 +83,7 @@ export class InfraStack extends cdk.Stack {
       environment: {
         ALLOWED_ORIGINS: '*',
         INPUT_BUCKET_NAME: inputBucket.bucketName,
+        SLACK_TOKEN_TABLE_NAME: slackTokenTable.tableName,
       },
     });
 
@@ -96,8 +104,9 @@ export class InfraStack extends cdk.Stack {
 
     // 4. 権限（IAM）と トリガー（Event）の設定
 
-    // API Handlerには、Inputバケットへ「書き込む」権限のみ付与
+    // API Handlerには、Inputバケットへの「書き込む」権限と Slack Token Tableへの「読み込む」・「書き込む」権限を付与
     inputBucket.grantWrite(apiHandler);
+    slackTokenTable.grantReadWriteData(apiHandler);
 
     // MainHandlerには、Inputから「読み込む」権限、Outputへ「書き込む」権限を付与
     inputBucket.grantRead(mainHandler);
