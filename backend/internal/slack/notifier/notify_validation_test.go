@@ -12,19 +12,11 @@ func TestNotifier_Notify_ValidationErrors(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		teamID    string
 		text      string
 		wantError string
 	}{
 		{
-			name:      "missing team ID",
-			teamID:    "",
-			text:      "test message",
-			wantError: "notify slack: team ID is empty",
-		},
-		{
 			name:      "missing text",
-			teamID:    "T123",
 			text:      "",
 			wantError: "notify slack: text is empty",
 		},
@@ -41,7 +33,6 @@ func TestNotifier_Notify_ValidationErrors(t *testing.T) {
 
 			err := notifier.Notify(
 				context.Background(),
-				tt.teamID,
 				tt.text,
 			)
 			if err == nil {
@@ -113,7 +104,6 @@ func TestNotifier_Notify_InvalidToken(t *testing.T) {
 
 			err := notifier.Notify(
 				context.Background(),
-				"T123",
 				"test message",
 			)
 			if err == nil {
