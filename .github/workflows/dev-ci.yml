@@ -74,16 +74,18 @@ jobs:
           cache: true
           cache-dependency-path: backend/go.sum
 
-      - name: Build Presign Handler
+      - name: Build API Handler
         working-directory: ./backend
         run: |
+          mkdir -p bin/api
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
           go build -tags lambda.norpc -trimpath -ldflags="-s -w" \
-          -o bin/presign/bootstrap ./cmd/presign/main.go
+          -o bin/api/bootstrap ./cmd/api/main.go
 
       - name: Build Processor Handler
         working-directory: ./backend
         run: |
+          mkdir -p bin/processor
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
           go build -tags lambda.norpc -trimpath -ldflags="-s -w" \
           -o bin/processor/bootstrap ./cmd/processor/main.go
