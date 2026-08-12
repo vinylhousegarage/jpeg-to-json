@@ -9,9 +9,9 @@ tmp_dir = ""
   args_bin = []
   cmd = """
     if [ "$IS_LAMBDA" = "true" ]; then \
-      GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -trimpath -ldflags="-s -w" -o bin/presign/bootstrap ./cmd/presign/main.go; \
+      GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -trimpath -ldflags="-s -w" -o bin/api/bootstrap ./cmd/api/main.go; \
     else \
-      go run ./cmd/presign/main.go; \
+      go run ./cmd/api/main.go; \
     fi
   """
   delay = 1000

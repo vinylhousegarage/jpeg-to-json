@@ -74,7 +74,7 @@ RUN go mod download
 COPY . .
 
 # バイナリとしてビルド
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/server ./cmd/presign/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/server ./cmd/api/main.go
 
 # ------------------------------------
 # 本番用 (Target: runner)
