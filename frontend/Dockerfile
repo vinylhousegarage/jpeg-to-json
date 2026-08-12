@@ -1,45 +1,64 @@
 # -----------------------------------
 # 共通設定 (Target: base)
 # -----------------------------------
-FROM node:24-trixie-slim AS base
 
-# パッケージリストの更新とツールのインストール
-RUN apt-get update && apt-get install -y \
-    git \
-    zsh \
-    zip \
-    && rm -rf /var/lib/apt/lists/*
+FROM node:24-trixie-slim AS base
 
 # UID/GIDの受け取り
 ARG UID=1000
 ARG GID=1000
 
-# ユーザー作成
-RUN usermod -u ${UID} node && groupmod -g ${GID} node
+# パッケージリストの更新とツールのインストール
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    git \
+    zsh \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
 
-# ディリレクトリ
+# nodeユーザーのUID/GIDを変更
+RUN usermod -u ${UID} node && \
+    groupmod -g ${GID} node
+
+# nodeユーザーのデフォルトシェルをzshに変更
+RUN usermod -s /bin/zsh node
+
+# ディレクトリ
 WORKDIR /workspace/frontend
 
-# Zshプラグインのインストール
-RUN git clone https://github.com/zsh-users/zsh-autosuggestions /home/node/.oh-my-zsh/custom/plugins/zsh-autosuggestions \
-    && echo 'source /home/node/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh' >> /home/node/.zshrc
+# zshにGitブランチ表示と色付けを設定
+RUN echo 'autoload -Uz vcs_info' >> /home/node/.zshrc && \
+    echo 'precmd() { vcs_info }' >> /home/node/.zshrc && \
+    echo "zstyle ':vcs_info:*' formats '%F{green}(%b)%f'" >> /home/node/.zshrc && \
+    echo 'PROMPT="%F{cyan}%~%f ${vcs_info_msg_0_} %# "' >> /home/node/.zshrc
 
-# 所有者をユーザーに変更
-RUN chown -R node:node /workspace/frontend
+# zsh-autosuggestionsをインストール
+RUN git clone \
+    https://github.com/zsh-users/zsh-autosuggestions \
+    /home/node/.zsh-autosuggestions && \
+    echo 'source /home/node/.zsh-autosuggestions/zsh-autosuggestions.zsh' \
+    >> /home/node/.zshrc
+
+# 所有者をnodeユーザーに変更
+RUN chown -R node:node \
+    /home/node/.zshrc \
+    /home/node/.zsh-autosuggestions \
+    /workspace/frontend
 
 # -----------------------------------------
-# --- 開発用 (Target: dev) ---
+# 開発用 (Target: dev)
 # -----------------------------------------
+
 FROM base AS dev
 
-# root を明示
+# rootを明示
 USER root
 
 # ブラウザをインストールする場所を固定
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 # デバッグ用ツール・依存関係をインストール
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     iputils-ping \
     net-tools \
@@ -70,34 +89,38 @@ RUN apt-get update && apt-get install -y \
 # 設定ファイルをコピー
 COPY --chown=node:node package*.json ./
 
-# npm をインストール
+# npm依存関係をインストール
 RUN npm ci
 
-# ChromiumブラウザとOS依存ライブラリをインストール
+# Chromiumブラウザをインストール
 RUN npx playwright install chromium
 
 # ユーザー切り替え
 USER node
 
-# Git 所有権エラー回避
+# Git所有権エラー回避
 RUN git config --global --add safe.directory '*'
 
 # ソースコードをコピー
 COPY --chown=node:node . .
 
-# Vite 開発サーバーのポートを開放
+# Vite開発サーバーのポートを開放
 EXPOSE 5173
 
 # -----------------------------------------
-# --- ビルド＆ZIP用 (Target: builder) ---
+# ビルド＆ZIP用 (Target: builder)
 # -----------------------------------------
+
 FROM base AS builder
+
 USER node
-COPY --chown=node:node package*.json package-lock.json ./
+
+COPY --chown=node:node package*.json ./
 RUN npm ci
+
 COPY --chown=node:node . .
 
-# Vite でビルドして dist フォルダを作成
+# Viteでビルドしてdistフォルダを作成
 RUN npm run build
 
 # ビルド成果物（dist）をZIPに固める
