@@ -92,7 +92,7 @@ export class InfraStack extends cdk.Stack {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
-      code: lambda.Code.fromAsset('./test-assets/dummy-lambda'),
+      code: lambda.Code.fromAsset('../backend/bin/processor'),
       timeout: cdk.Duration.seconds(30),
       environment: {
         ALLOWED_ORIGINS: '*',
