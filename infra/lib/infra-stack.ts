@@ -87,8 +87,8 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
-    // MainHandler（Textract解析・JSON生成・Slack通知）
-    const mainHandler = new lambda.Function(this, 'MainHandler', {
+    // Processor Handler（Bedrock解析・JSON生成・Slack通知）
+    const processorHandler = new lambda.Function(this, 'ProcessorHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
@@ -108,20 +108,20 @@ export class InfraStack extends cdk.Stack {
     inputBucket.grantWrite(apiHandler);
     slackTokenTable.grantReadWriteData(apiHandler);
 
-    // MainHandlerには、Inputから「読み込む」権限、Outputへ「書き込む」権限を付与
-    inputBucket.grantRead(mainHandler);
-    outputBucket.grantWrite(mainHandler);
+    // ProcessorHandlerには、Inputから「読み込む」権限、Outputへ「書き込む」権限を付与
+    inputBucket.grantRead(processorHandler);
+    outputBucket.grantWrite(processorHandler);
 
-    // MainHandlerにTextractの実行権限を付与
-    mainHandler.addToRolePolicy(new iam.PolicyStatement({
+    // ProcessorHandlerにTextractの実行権限を付与
+    processorHandler.addToRolePolicy(new iam.PolicyStatement({
       actions: ['textract:AnalyzeDocument', 'textract:DetectDocumentText'],
       resources: ['*'],
     }));
 
-    // Inputバケットに画像が入ったら MainHandler を自動起動
+    // Inputバケットに画像が入ったら ProcessorHandler を自動起動
     inputBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,
-      new s3n.LambdaDestination(mainHandler)
+      new s3n.LambdaDestination(processorHandler)
     );
 
     // 5. API Gateway の構築 (HTTP API)
