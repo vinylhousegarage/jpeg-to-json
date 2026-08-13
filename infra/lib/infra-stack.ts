@@ -33,7 +33,7 @@ export class InfraStack extends cdk.Stack {
       }],
     });
 
-    // Outputバケット（生成したExcel保存用：1日で自動削除）
+    // Outputバケット（生成したJSON保存用：1日で自動削除）
     const outputBucket = new s3.Bucket(this, 'OutputBucket', {
       removalPolicy,
       autoDeleteObjects,
@@ -81,7 +81,6 @@ export class InfraStack extends cdk.Stack {
       architecture: lambda.Architecture.ARM_64,
       code: lambda.Code.fromAsset('../backend/bin/api'),
       environment: {
-        ALLOWED_ORIGINS: '*',
         INPUT_BUCKET_NAME: inputBucket.bucketName,
         SLACK_TOKEN_TABLE_NAME: slackTokenTable.tableName,
       },
