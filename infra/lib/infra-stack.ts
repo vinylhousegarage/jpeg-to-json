@@ -112,9 +112,9 @@ export class InfraStack extends cdk.Stack {
     inputBucket.grantRead(processorHandler);
     outputBucket.grantWrite(processorHandler);
 
-    // ProcessorHandlerにTextractの実行権限を付与
+    // ProcessorHandlerにBedrockの実行権限を付与
     processorHandler.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['textract:AnalyzeDocument', 'textract:DetectDocumentText'],
+      actions: ['bedrock:InvokeModel'],
       resources: ['*'],
     }));
 
