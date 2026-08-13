@@ -25,6 +25,7 @@ infra/*.d.ts
 # --- Security & Environment Variables ---
 .env
 .env.local
+.env.staging
 
 # --- OS / IDE ---
 .DS_Store
