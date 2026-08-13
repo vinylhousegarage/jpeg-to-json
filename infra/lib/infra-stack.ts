@@ -95,10 +95,12 @@ export class InfraStack extends cdk.Stack {
       code: lambda.Code.fromAsset('../backend/bin/processor'),
       timeout: cdk.Duration.seconds(30),
       environment: {
-        ALLOWED_ORIGINS: '*',
+        APP_ENV: 'production',
+        INPUT_BUCKET_NAME: inputBucket.bucketName,
         OUTPUT_BUCKET_NAME: outputBucket.bucketName,
-        OUTPUT_FORMAT: 'json', 
-        SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL || '',
+        BEDROCK_MODEL_ID: process.env.BEDROCK_MODEL_ID || '',
+        PROMPT_FILE_NAME: process.env.PROMPT_FILE_NAME || 'extractor.txt',
+        SLACK_TOKEN_TABLE_NAME: slackTokenTable.tableName,
       },
     });
 
