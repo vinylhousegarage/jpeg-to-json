@@ -62,16 +62,19 @@ jobs:
         shell: bash
         run: |
           cat <<EOF > .env
-          APP_ENV=${{ secrets.APP_ENV }}
-          AWS_REGION=${{ secrets.AWS_REGION }}
-          AWS_SDK_LOAD_CONFIG=${{ secrets.AWS_SDK_LOAD_CONFIG }}
-          BEDROCK_MODEL_ID=${{ secrets.BEDROCK_MODEL_ID }}
-          INPUT_BUCKET_NAME=${{ secrets.INPUT_BUCKET_NAME }}
-          IS_LAMBDA=${{ secrets.IS_LAMBDA }}
-          PROMPT_FILE_NAME=${{ secrets.PROMPT_FILE_NAME }}
-          SLACK_CLIENT_ID=${{ secrets.SLACK_CLIENT_ID }}
+          APP_ENV=${{ vars.APP_ENV }}
+          AWS_REGION=${{ vars.AWS_REGION }}
+          AWS_SDK_LOAD_CONFIG=${{ vars.AWS_SDK_LOAD_CONFIG }}
+          BEDROCK_MODEL_ID=${{ vars.BEDROCK_MODEL_ID }}
+          INPUT_BUCKET_NAME=${{ vars.INPUT_BUCKET_NAME }}
+          IS_LAMBDA=${{ vars.IS_LAMBDA }}
+          OUTPUT_BUCKET_NAME=${{ vars.OUTPUT_BUCKET_NAME }}
+          PROMPT_FILE_NAME=${{ vars.PROMPT_FILE_NAME }}
+          SLACK_CLIENT_ID=${{ vars.SLACK_CLIENT_ID }}
+          SLACK_REDIRECT_URI=${{ vars.SLACK_REDIRECT_URI }}
+          SLACK_TOKEN_TABLE_NAME=${{ vars.SLACK_TOKEN_TABLE_NAME }}
+
           SLACK_CLIENT_SECRET=${{ secrets.SLACK_CLIENT_SECRET }}
-          SLACK_REDIRECT_URI=${{ secrets.SLACK_REDIRECT_URI }}
 
           AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
           AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
