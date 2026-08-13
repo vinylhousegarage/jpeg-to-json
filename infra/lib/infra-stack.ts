@@ -106,13 +106,14 @@ export class InfraStack extends cdk.Stack {
 
     // 4. 権限（IAM）と トリガー（Event）の設定
 
-    // API Handlerには、Inputバケットへの「書き込む」権限と Slack Token Tableへの「読み込む」・「書き込む」権限を付与
+    // API Handlerには、Inputバケットへの「書き込み」権限と Slack Token Tableへの「読み・書き」権限を付与
     inputBucket.grantWrite(apiHandler);
     slackTokenTable.grantReadWriteData(apiHandler);
 
-    // ProcessorHandlerには、Inputから「読み込む」権限、Outputへ「書き込む」権限を付与
+    // ProcessorHandlerには、Inputから「読み取り」権限、Outputへ「書き込み」権限、Slack Token Tableへの「読み取り」権限を付与
     inputBucket.grantRead(processorHandler);
     outputBucket.grantWrite(processorHandler);
+    slackTokenTable.grantReadData(processorHandler);
 
     // ProcessorHandlerにBedrockの実行権限を付与
     processorHandler.addToRolePolicy(new iam.PolicyStatement({
