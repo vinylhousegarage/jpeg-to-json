@@ -87,41 +87,44 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
-    // MainHandler（Textract解析・JSON生成・Slack通知）
-    const mainHandler = new lambda.Function(this, 'MainHandler', {
+    // Processor Handler（Bedrock解析・JSON生成・Slack通知）
+    const processorHandler = new lambda.Function(this, 'ProcessorHandler', {
       runtime: lambda.Runtime.PROVIDED_AL2023,
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
-      code: lambda.Code.fromAsset('./test-assets/dummy-lambda'),
+      code: lambda.Code.fromAsset('../backend/bin/processor'),
       timeout: cdk.Duration.seconds(30),
       environment: {
-        ALLOWED_ORIGINS: '*',
+        APP_ENV: 'production',
+        INPUT_BUCKET_NAME: inputBucket.bucketName,
         OUTPUT_BUCKET_NAME: outputBucket.bucketName,
-        OUTPUT_FORMAT: 'json', 
-        SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL || '',
+        BEDROCK_MODEL_ID: process.env.BEDROCK_MODEL_ID || '',
+        PROMPT_FILE_NAME: process.env.PROMPT_FILE_NAME || 'extractor.txt',
+        SLACK_TOKEN_TABLE_NAME: slackTokenTable.tableName,
       },
     });
 
     // 4. 権限（IAM）と トリガー（Event）の設定
 
-    // API Handlerには、Inputバケットへの「書き込む」権限と Slack Token Tableへの「読み込む」・「書き込む」権限を付与
+    // API Handlerには、Inputバケットへの「書き込み」権限と Slack Token Tableへの「読み・書き」権限を付与
     inputBucket.grantWrite(apiHandler);
     slackTokenTable.grantReadWriteData(apiHandler);
 
-    // MainHandlerには、Inputから「読み込む」権限、Outputへ「書き込む」権限を付与
-    inputBucket.grantRead(mainHandler);
-    outputBucket.grantWrite(mainHandler);
+    // ProcessorHandlerには、Inputから「読み取り」権限、Outputへ「書き込み」権限、Slack Token Tableへの「読み取り」権限を付与
+    inputBucket.grantRead(processorHandler);
+    outputBucket.grantWrite(processorHandler);
+    slackTokenTable.grantReadData(processorHandler);
 
-    // MainHandlerにTextractの実行権限を付与
-    mainHandler.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['textract:AnalyzeDocument', 'textract:DetectDocumentText'],
+    // ProcessorHandlerにBedrockの実行権限を付与
+    processorHandler.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['bedrock:InvokeModel'],
       resources: ['*'],
     }));
 
-    // Inputバケットに画像が入ったら MainHandler を自動起動
+    // Inputバケットに画像が入ったら ProcessorHandler を自動起動
     inputBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,
-      new s3n.LambdaDestination(mainHandler)
+      new s3n.LambdaDestination(processorHandler)
     );
 
     // 5. API Gateway の構築 (HTTP API)
