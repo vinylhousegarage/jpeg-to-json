@@ -53,26 +53,7 @@ export class InfraStack extends cdk.Stack {
       removalPolicy,
     });
 
-    // 2. CloudFront の作成
-
-    // CloudFront
-    const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
-      defaultBehavior: {
-        origin: origins.S3BucketOrigin.withOriginAccessControl(websiteBucket),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      },
-      defaultRootObject: 'index.html',
-    });
-
-    // デプロイ時は CloudFront のキャッシュを最新に更新
-    new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset('./test-assets')],
-      destinationBucket: websiteBucket,
-      distribution: distribution,
-      distributionPaths: ['/*'],
-    });
-
-    // 3. Lambda 関数の作成（Goランタイム）
+    // 2. Lambda 関数の作成（Goランタイム）
 
     // API Handler（HTTP API）
     const apiHandler = new lambda.Function(this, 'ApiHandler', {
@@ -103,7 +84,7 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
-    // 4. 権限（IAM）と トリガー（Event）の設定
+    // 3. 権限（IAM）と トリガー（Event）の設定
 
     // API Handlerには、Inputバケットへの「書き込み」権限と Slack Token Tableへの「読み・書き」権限を付与
     inputBucket.grantWrite(apiHandler);
@@ -126,7 +107,7 @@ export class InfraStack extends cdk.Stack {
       new s3n.LambdaDestination(processorHandler)
     );
 
-    // 5. API Gateway の構築 (HTTP API)
+    // 4. API Gateway の構築 (HTTP API)
 
     // HTTP API
     const api = new apigwv2.HttpApi(this, 'JpegToJsonHttpApi', {
@@ -160,6 +141,47 @@ export class InfraStack extends cdk.Stack {
       path: '/api/oauth/slack/callback',
       methods: [apigwv2.HttpMethod.GET],
       integration: apiIntegration,
+    });
+
+    // 5. CloudFront の作成
+
+    // CloudFront
+    const apiOrigin = new origins.HttpOrigin(
+      `${api.apiId}.execute-api.${this.region}.amazonaws.com`,
+      {
+        protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+      },
+    );
+
+    const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(websiteBucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+
+      additionalBehaviors: {
+        '/api/*': {
+          origin: apiOrigin,
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+
+          originRequestPolicy:
+            cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        },
+      },
+
+      defaultRootObject: 'index.html',
+    });
+
+    // デプロイ時は CloudFront のキャッシュを最新に更新
+    new s3deploy.BucketDeployment(this, 'DeployWebsite', {
+      sources: [s3deploy.Source.asset('./test-assets')],
+      destinationBucket: websiteBucket,
+      distribution: distribution,
+      distributionPaths: ['/*'],
     });
 
     // 6. ログでURLを出力
