@@ -138,11 +138,27 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
-    // POST /presign で API Handler を呼び出す
-    const apiIntegration = new HttpLambdaIntegration('ApiIntegration', apiHandler);
+    // API Gateway の各ルートを API Handler に接続
+    const apiIntegration = new HttpLambdaIntegration(
+      'ApiIntegration',
+      apiHandler,
+    );
+
     api.addRoutes({
-      path: '/presign',
+      path: '/api/storage/upload',
       methods: [apigwv2.HttpMethod.POST],
+      integration: apiIntegration,
+    });
+
+    api.addRoutes({
+      path: '/api/oauth/slack/login',
+      methods: [apigwv2.HttpMethod.GET],
+      integration: apiIntegration,
+    });
+
+    api.addRoutes({
+      path: '/api/oauth/slack/callback',
+      methods: [apigwv2.HttpMethod.GET],
       integration: apiIntegration,
     });
 
