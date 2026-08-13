@@ -26,7 +26,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.Load()
+	cfg, err := config.LoadProcessor()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -39,7 +39,7 @@ func main() {
 		log.Fatalf("failed to load AWS config: %v", err)
 	}
 
-	l, err := logger.NewLogger(cfg)
+	l, err := logger.NewLogger(cfg.App.Env)
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize logger: %v", err))
 	}
@@ -53,12 +53,12 @@ func main() {
 	baseDynamoClient := dynamodb.NewFromConfig(awsCfg)
 
 	s3Client := storage.NewS3Client(
-		cfg.Bedrock.InputBucketName,
+		cfg.Storage.InputBucketName,
 		baseS3Client,
 	)
 
 	presignClient := storage.NewS3PresignClient(
-		cfg.Bedrock.InputBucketName,
+		cfg.Storage.InputBucketName,
 		baseS3Client,
 	)
 
@@ -85,7 +85,7 @@ func main() {
 
 	tokenStore := tokenstore.NewStore(
 		baseDynamoClient,
-		cfg.Slack.TokenTableName,
+		cfg.SlackToken.TokenTableName,
 	)
 
 	slackClient := slackapi.NewClient(nil)
@@ -101,7 +101,7 @@ func main() {
 		presignClient,
 		bedrockService,
 		slackNotifier,
-		cfg.Bedrock.OutputBucketName,
+		cfg.Storage.OutputBucketName,
 		l,
 	)
 
