@@ -7,6 +7,7 @@ on:
     paths:
       - 'backend/**'
       - 'infra/**'
+      - 'Makefile'
       - '.github/workflows/dev-cd.yml'
 
 permissions:
@@ -33,21 +34,9 @@ jobs:
         with:
           go-version: '1.26.3'
 
-      - name: Build API Handler
-        working-directory: ./backend
-        run: |
-          mkdir -p bin/api
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
-          go build -tags lambda.norpc -trimpath -ldflags="-s -w" \
-          -o bin/api/bootstrap ./cmd/api/main.go
-
-      - name: Build Processor Handler
-        working-directory: ./backend
-        run: |
-          mkdir -p bin/processor
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
-          go build -tags lambda.norpc -trimpath -ldflags="-s -w" \
-          -o bin/processor/bootstrap ./cmd/processor/main.go
+      - name: Build Lambda binaries
+        working-directory: .
+        run: make build-lambda
 
       # ==========================================
       # 2. インフラのデプロイ
