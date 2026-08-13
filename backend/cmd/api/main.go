@@ -26,7 +26,7 @@ import (
 
 func main() {
 	// 設定の初期化
-	cfg, err := config.Load()
+	cfg, err := config.LoadAPI()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -41,7 +41,7 @@ func main() {
 	}
 
 	// logger の初期化
-	l, err := logger.NewLogger(cfg)
+	l, err := logger.NewLogger(cfg.App.Env)
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize logger: %v", err))
 	}
@@ -56,7 +56,7 @@ func main() {
 
 	// Presign 用依存
 	presignClient := storage.NewS3PresignClient(
-		cfg.Bedrock.InputBucketName,
+		cfg.Storage.InputBucketName,
 		baseS3Client,
 	)
 

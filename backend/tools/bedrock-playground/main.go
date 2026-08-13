@@ -19,13 +19,13 @@ import (
 
 func main() {
 	// 設定の初期化
-	cfg, err := config.Load()
+	cfg, err := config.LoadBedrockPlayground()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
 	// loggerの初期化
-	l, err := logger.NewLogger(cfg)
+	l, err := logger.NewLogger(cfg.App.Env)
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize logger: %v", err))
 	}

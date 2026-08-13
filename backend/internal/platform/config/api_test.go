@@ -2,26 +2,23 @@ package config
 
 import "testing"
 
-func TestLoad(t *testing.T) {
-	t.Setenv("APP_ENV", appEnvDevelopment)
-	t.Setenv("AWS_LAMBDA_FUNCTION_NAME", "")
-	t.Setenv("AWS_REGION", defaultAWSRegion)
-
+func TestLoadAPI(t *testing.T) {
 	t.Setenv(
-		"BEDROCK_MODEL_ID",
-		"jp.anthropic.claude-sonnet-4-6",
+		"APP_ENV",
+		appEnvDevelopment,
 	)
+	t.Setenv(
+		"AWS_LAMBDA_FUNCTION_NAME",
+		"",
+	)
+	t.Setenv(
+		"AWS_REGION",
+		defaultAWSRegion,
+	)
+
 	t.Setenv(
 		"INPUT_BUCKET_NAME",
 		"my-test-bucket",
-	)
-	t.Setenv(
-		"OUTPUT_BUCKET_NAME",
-		"my-output-bucket",
-	)
-	t.Setenv(
-		"PROMPT_FILE_NAME",
-		defaultPromptFileName,
 	)
 
 	t.Setenv(
@@ -41,9 +38,12 @@ func TestLoad(t *testing.T) {
 		"slack-tokens",
 	)
 
-	cfg, err := Load()
+	cfg, err := LoadAPI()
 	if err != nil {
-		t.Fatalf("Load() error = %v", err)
+		t.Fatalf(
+			"LoadAPI() error = %v",
+			err,
+		)
 	}
 
 	if cfg.App.Env != appEnvDevelopment {
@@ -62,19 +62,18 @@ func TestLoad(t *testing.T) {
 		)
 	}
 
-	if cfg.Bedrock.ModelID != "jp.anthropic.claude-sonnet-4-6" {
+	if cfg.Storage.InputBucketName != "my-test-bucket" {
 		t.Errorf(
-			"expected Bedrock.ModelID %q, got %q",
-			"jp.anthropic.claude-sonnet-4-6",
-			cfg.Bedrock.ModelID,
+			"expected Storage.InputBucketName %q, got %q",
+			"my-test-bucket",
+			cfg.Storage.InputBucketName,
 		)
 	}
 
-	if cfg.Bedrock.OutputBucketName != "my-output-bucket" {
+	if cfg.Storage.OutputBucketName != "" {
 		t.Errorf(
-			"expected Bedrock.OutputBucketName %q, got %q",
-			"my-output-bucket",
-			cfg.Bedrock.OutputBucketName,
+			"expected Storage.OutputBucketName to be empty, got %q",
+			cfg.Storage.OutputBucketName,
 		)
 	}
 
@@ -83,6 +82,22 @@ func TestLoad(t *testing.T) {
 			"expected Slack.ClientID %q, got %q",
 			"test-client-id",
 			cfg.Slack.ClientID,
+		)
+	}
+
+	if cfg.Slack.ClientSecret != "test-client-secret" {
+		t.Errorf(
+			"expected Slack.ClientSecret %q, got %q",
+			"test-client-secret",
+			cfg.Slack.ClientSecret,
+		)
+	}
+
+	if cfg.Slack.RedirectURI != "https://example.com/oauth/slack/callback" {
+		t.Errorf(
+			"expected Slack.RedirectURI %q, got %q",
+			"https://example.com/oauth/slack/callback",
+			cfg.Slack.RedirectURI,
 		)
 	}
 
