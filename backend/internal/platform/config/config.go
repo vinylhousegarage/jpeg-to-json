@@ -74,13 +74,12 @@ func LoadBedrockPlayground() (*BedrockPlaygroundConfig, error) {
 func loadAppConfig() AppConfig {
 	env := os.Getenv("APP_ENV")
 	if env == "" {
-		env = appEnvDevelopment
+		env = appEnvLocal
 	}
 
 	return AppConfig{
-		Env: env,
-		CookieSecure: env == appEnvProduction ||
-			env == appEnvStaging,
+		Env:          env,
+		CookieSecure: env == appEnvProduction || env == appEnvStaging,
 	}
 }
 

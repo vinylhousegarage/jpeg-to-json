@@ -10,15 +10,15 @@ func TestLoadAppConfig(t *testing.T) {
 		cookieSecure bool
 	}{
 		{
-			name:         "default development",
+			name:         "default local",
 			env:          "",
-			expectedEnv:  appEnvDevelopment,
+			expectedEnv:  appEnvLocal,
 			cookieSecure: false,
 		},
 		{
-			name:         "development",
-			env:          appEnvDevelopment,
-			expectedEnv:  appEnvDevelopment,
+			name:         "local",
+			env:          appEnvLocal,
+			expectedEnv:  appEnvLocal,
 			cookieSecure: false,
 		},
 		{
