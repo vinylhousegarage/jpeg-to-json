@@ -5,7 +5,7 @@ import "testing"
 func TestLoadAPI(t *testing.T) {
 	t.Setenv(
 		"APP_ENV",
-		appEnvDevelopment,
+		appEnvLocal,
 	)
 	t.Setenv(
 		"AWS_LAMBDA_FUNCTION_NAME",
@@ -46,10 +46,10 @@ func TestLoadAPI(t *testing.T) {
 		)
 	}
 
-	if cfg.App.Env != appEnvDevelopment {
+	if cfg.App.Env != appEnvLocal {
 		t.Errorf(
 			"expected App.Env %q, got %q",
-			appEnvDevelopment,
+			appEnvLocal,
 			cfg.App.Env,
 		)
 	}
