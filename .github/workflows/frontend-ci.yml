@@ -6,7 +6,7 @@ on:
     paths: &frontend-ci-paths
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
-      - 'compose.yml'
+      - 'compose.yaml'
   pull_request:
     branches: dev
     paths: *frontend-ci-paths
@@ -43,14 +43,12 @@ jobs:
   e2e-test:
     needs: test-and-build
     runs-on: ubuntu-latest
+    environment: staging
     permissions:
       id-token: write
       contents: read
     steps:
       - uses: actions/checkout@v7
-
-      - name: Build Services
-        run: docker compose build --no-cache
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v6
@@ -62,7 +60,7 @@ jobs:
         shell: bash
         run: |
           cat <<EOF > .env
-          APP_ENV=${{ vars.APP_ENV }}
+          APP_ENV=local
           AWS_REGION=${{ vars.AWS_REGION }}
           AWS_SDK_LOAD_CONFIG=${{ vars.AWS_SDK_LOAD_CONFIG }}
           BEDROCK_MODEL_ID=${{ vars.BEDROCK_MODEL_ID }}
@@ -71,7 +69,6 @@ jobs:
           OUTPUT_BUCKET_NAME=${{ vars.OUTPUT_BUCKET_NAME }}
           PROMPT_FILE_NAME=${{ vars.PROMPT_FILE_NAME }}
           SLACK_CLIENT_ID=${{ vars.SLACK_CLIENT_ID }}
-          SLACK_REDIRECT_URI=${{ vars.SLACK_REDIRECT_URI }}
           SLACK_TOKEN_TABLE_NAME=${{ vars.SLACK_TOKEN_TABLE_NAME }}
 
           SLACK_CLIENT_SECRET=${{ secrets.SLACK_CLIENT_SECRET }}
@@ -80,11 +77,15 @@ jobs:
           AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
           AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
 
+          SLACK_REDIRECT_URI=http://localhost:8080/api/oauth/slack/callback
           VITE_API_BASE_URL=http://localhost:8080
 
           AWS_LAMBDA_FUNCTION_NAME=
           AWS_PROFILE=
           EOF
+
+      - name: Build Services
+        run: docker compose build --no-cache
 
       - name: Start Services
         run: |
@@ -101,14 +102,20 @@ jobs:
 
       - name: Wait for Services
         run: |
-          echo "Waiting for backend to build and start..."
+          echo "Waiting for services to start..."
+
           for i in {1..30}; do
-            if curl -s http://localhost:8080/presign > /dev/null || [ $? -eq 7 ]; then
-              nc -z localhost 8080 && break
+            if nc -z localhost 8080 && nc -z localhost 8081; then
+              echo "Services are ready."
+              exit 0
             fi
+
             sleep 2
           done
-          sleep 5
+
+          echo "Services did not start in time."
+          docker compose logs frontend backend
+          exit 1
 
       - name: Run E2E Tests
         run: docker compose exec -T frontend npm run test:e2e
@@ -137,3 +144,9 @@ jobs:
 
           echo "--- 3. Network Bridge Details ---"
           docker network inspect app-network
+
+      - name: Stop Services
+        if: always()
+        run: |
+          docker compose down -v
+          rm -f .env
