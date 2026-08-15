@@ -13,6 +13,17 @@ services:
       - ./:/workspace
       - ~/.aws:/home/node/.aws
 
+    environment:
+      - APP_ENV=${APP_ENV}
+      - AWS_PROFILE=${AWS_PROFILE}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_SDK_LOAD_CONFIG=${AWS_SDK_LOAD_CONFIG}
+      - BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID}
+      - PROMPT_FILE_NAME=${PROMPT_FILE_NAME}
+      - SLACK_CLIENT_ID=${SLACK_CLIENT_ID}
+      - SLACK_CLIENT_SECRET=${SLACK_CLIENT_SECRET}
+      - SLACK_REDIRECT_URI=${SLACK_REDIRECT_URI}
+
     command: sleep infinity
     tty: true
     stdin_open: true
