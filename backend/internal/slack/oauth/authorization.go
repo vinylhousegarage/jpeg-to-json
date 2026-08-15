@@ -14,7 +14,7 @@ const (
 	OAuthStateTTL   = 10 * time.Minute
 
 	oauthStateCookieName = "oauth_state"
-	oauthStateCookiePath = "/oauth/slack"
+	oauthStateCookiePath = "/api/oauth/slack"
 
 	slackAuthorizeURL = "https://slack.com/oauth/v2/authorize"
 	slackBotScopes    = "chat:write,im:write"
