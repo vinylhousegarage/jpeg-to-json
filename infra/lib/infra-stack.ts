@@ -10,10 +10,34 @@ import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+
+function requireEnv(name: string): string {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(`${name} is required`);
+  }
+
+  return value;
+}
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const appEnv = requireEnv('APP_ENV');
+    const bedrockModelId = requireEnv('BEDROCK_MODEL_ID');
+    const promptFileName = process.env.PROMPT_FILE_NAME || 'extractor.txt';
+    const slackClientId = requireEnv('SLACK_CLIENT_ID');
+    const slackClientSecretArn = requireEnv('SLACK_CLIENT_SECRET_ARN');
+    const slackRedirectUri = requireEnv('SLACK_REDIRECT_URI');
+
+    const slackSecret = secretsmanager.Secret.fromSecretCompleteArn(
+      this,
+      'SlackClientSecret',
+      slackClientSecretArn,
+    );
 
     // 1. S3 バケットの作成
 
@@ -62,37 +86,46 @@ export class InfraStack extends cdk.Stack {
       architecture: lambda.Architecture.ARM_64,
       code: lambda.Code.fromAsset('../backend/bin/api'),
       environment: {
+        APP_ENV: appEnv,
         INPUT_BUCKET_NAME: inputBucket.bucketName,
+        SLACK_CLIENT_ID: slackClientId,
+        SLACK_CLIENT_SECRET_ARN: slackSecret.secretArn,
+        SLACK_REDIRECT_URI: slackRedirectUri,
         SLACK_TOKEN_TABLE_NAME: slackTokenTable.tableName,
       },
     });
 
     // Processor Handler（Bedrock解析・JSON生成・Slack通知）
-    const processorHandler = new lambda.Function(this, 'ProcessorHandler', {
-      runtime: lambda.Runtime.PROVIDED_AL2023,
-      handler: 'bootstrap',
-      architecture: lambda.Architecture.ARM_64,
-      code: lambda.Code.fromAsset('../backend/bin/processor'),
-      timeout: cdk.Duration.seconds(30),
-      environment: {
-        APP_ENV: 'production',
-        INPUT_BUCKET_NAME: inputBucket.bucketName,
-        OUTPUT_BUCKET_NAME: outputBucket.bucketName,
-        BEDROCK_MODEL_ID: process.env.BEDROCK_MODEL_ID || '',
-        PROMPT_FILE_NAME: process.env.PROMPT_FILE_NAME || 'extractor.txt',
-        SLACK_TOKEN_TABLE_NAME: slackTokenTable.tableName,
+    const processorHandler = new lambda.Function(
+      this,
+      'ProcessorHandler',
+      {
+        runtime: lambda.Runtime.PROVIDED_AL2023,
+        handler: 'bootstrap',
+        architecture: lambda.Architecture.ARM_64,
+        code: lambda.Code.fromAsset('../backend/bin/processor'),
+        timeout: cdk.Duration.seconds(30),
+        environment: {
+          APP_ENV: appEnv,
+          INPUT_BUCKET_NAME: inputBucket.bucketName,
+          OUTPUT_BUCKET_NAME: outputBucket.bucketName,
+          BEDROCK_MODEL_ID: bedrockModelId,
+          PROMPT_FILE_NAME: promptFileName,
+          SLACK_TOKEN_TABLE_NAME: slackTokenTable.tableName,
+        },
       },
-    });
+    );
 
     // 3. 権限（IAM）と トリガー（Event）の設定
 
-    // API Handlerには、Inputバケットへの「書き込み」権限と Slack Token Tableへの「読み・書き」権限を付与
+    // API Handlerには、Inputバケットへの「書き込み」権限と Slack Token Tableへの「読み・書き」と Slack Secret の「読み取り」権限を付与
     inputBucket.grantWrite(apiHandler);
     slackTokenTable.grantReadWriteData(apiHandler);
+    slackSecret.grantRead(apiHandler);
 
-    // ProcessorHandlerには、Inputから「読み取り」権限、Outputへ「書き込み」権限、Slack Token Tableへの「読み取り」権限を付与
+    // ProcessorHandlerには、Inputから「読み取り」権限、Outputへ「読み書き」権限、Slack Token Tableへの「読み取り」権限を付与
     inputBucket.grantRead(processorHandler);
-    outputBucket.grantWrite(processorHandler);
+    outputBucket.grantReadWrite(processorHandler);
     slackTokenTable.grantReadData(processorHandler);
 
     // ProcessorHandlerにBedrockの実行権限を付与
