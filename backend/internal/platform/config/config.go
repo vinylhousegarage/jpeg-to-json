@@ -164,9 +164,11 @@ func loadSlackConfig() (SlackConfig, error) {
 	}
 
 	clientSecret := os.Getenv("SLACK_CLIENT_SECRET")
-	if clientSecret == "" {
+	clientSecretARN := os.Getenv("SLACK_CLIENT_SECRET_ARN")
+
+	if clientSecret == "" && clientSecretARN == "" {
 		return SlackConfig{}, fmt.Errorf(
-			"SLACK_CLIENT_SECRET is required",
+			"SLACK_CLIENT_SECRET or SLACK_CLIENT_SECRET_ARN is required",
 		)
 	}
 
@@ -183,10 +185,11 @@ func loadSlackConfig() (SlackConfig, error) {
 	}
 
 	return SlackConfig{
-		ClientID:       clientID,
-		ClientSecret:   clientSecret,
-		RedirectURI:    redirectURI,
-		TokenTableName: tokenTableName,
+		ClientID:        clientID,
+		ClientSecret:    clientSecret,
+		ClientSecretARN: clientSecretARN,
+		RedirectURI:     redirectURI,
+		TokenTableName:  tokenTableName,
 	}, nil
 }
 

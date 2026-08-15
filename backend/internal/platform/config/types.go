@@ -42,10 +42,11 @@ type BedrockPlaygroundConfig struct {
 }
 
 type SlackConfig struct {
-	ClientID       string
-	ClientSecret   string
-	RedirectURI    string
-	TokenTableName string
+	ClientID        string
+	ClientSecret    string
+	ClientSecretARN string
+	RedirectURI     string
+	TokenTableName  string
 }
 
 type SlackTokenConfig struct {
