@@ -10,11 +10,13 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	awssecretsmanager "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/config"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/logger"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/router"
+	platformsecretsmanager "github.com/vinylhousegarage/jpeg-to-json/backend/internal/platform/secretsmanager"
 	slackapi "github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/api"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/oauth"
 	"github.com/vinylhousegarage/jpeg-to-json/backend/internal/slack/oauth/callback"
@@ -25,6 +27,9 @@ import (
 )
 
 func main() {
+	// 起動処理用のルートコンテキスト
+	ctx := context.Background()
+
 	// 設定の初期化
 	cfg, err := config.LoadAPI()
 	if err != nil {
@@ -33,11 +38,36 @@ func main() {
 
 	// AWS 設定の読み込み
 	awsCfg, err := awsconfig.LoadDefaultConfig(
-		context.TODO(),
+		ctx,
 		awsconfig.WithRegion(cfg.AWS.Region),
 	)
 	if err != nil {
 		log.Fatalf("failed to load AWS config: %v", err)
+	}
+
+	// Slack Client Secret の解決
+	slackClientSecret := cfg.Slack.ClientSecret
+
+	if cfg.Slack.ClientSecretARN != "" {
+		secretsManagerClient :=
+			awssecretsmanager.NewFromConfig(awsCfg)
+
+		secretLoader :=
+			platformsecretsmanager.NewLoader(
+				secretsManagerClient,
+			)
+
+		slackClientSecret, err =
+			secretLoader.LoadClientSecret(
+				ctx,
+				cfg.Slack.ClientSecretARN,
+			)
+		if err != nil {
+			log.Fatalf(
+				"failed to load Slack client secret: %v",
+				err,
+			)
+		}
 	}
 
 	// logger の初期化
@@ -73,7 +103,7 @@ func main() {
 	oauthClient := oauth.NewClient(
 		http.DefaultClient,
 		cfg.Slack.ClientID,
-		cfg.Slack.ClientSecret,
+		slackClientSecret,
 	)
 
 	// Slack API Client
