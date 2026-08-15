@@ -107,7 +107,7 @@ jobs:
           BEDROCK_MODEL_ID: ${{ vars.BEDROCK_MODEL_ID }}
           PROMPT_FILE_NAME: ${{ vars.PROMPT_FILE_NAME }}
           SLACK_CLIENT_ID: ${{ vars.SLACK_CLIENT_ID }}
-          SLACK_CLIENT_SECRET: ${{ secrets.SLACK_CLIENT_SECRET }}
+          SLACK_CLIENT_SECRET_ARN: ${{ vars.SLACK_CLIENT_SECRET_ARN }}
           SLACK_REDIRECT_URI: ${{ vars.SLACK_REDIRECT_URI }}
         run: npx cdk synth Dev-InfraStack
 
@@ -162,12 +162,5 @@ jobs:
         run: npm run build
 
       - name: CDK Deploy to Staging
-        env:
-          APP_ENV: staging
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          BEDROCK_MODEL_ID: ${{ vars.BEDROCK_MODEL_ID }}
-          PROMPT_FILE_NAME: ${{ vars.PROMPT_FILE_NAME }}
-          SLACK_CLIENT_ID: ${{ vars.SLACK_CLIENT_ID }}
-          SLACK_CLIENT_SECRET: ${{ secrets.SLACK_CLIENT_SECRET }}
-          SLACK_REDIRECT_URI: ${{ vars.SLACK_REDIRECT_URI }}
+        env: *staging-env
         run: npx cdk deploy Dev-InfraStack --require-approval never
