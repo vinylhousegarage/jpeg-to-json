@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useAppState } from '../state/useContext';
 import { usePresignUpload } from '../hooks/usePresignUpload';
 import { InputPhase } from './InputPhase';
@@ -9,17 +10,44 @@ export const Main = () => {
   const { state, dispatch } = useAppState();
   const { send } = usePresignUpload(dispatch);
 
+  useEffect(() => {
+    const url = new URL(window.location.href);
+
+    if (url.searchParams.get('slack') !== 'connected') {
+      return;
+    }
+
+    dispatch({
+      type: 'SET_SLACK_LINKED',
+      isSlackLinked: true,
+    });
+
+    url.searchParams.delete('slack');
+
+    window.history.replaceState(
+      {},
+      '',
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+  }, [dispatch]);
+
+  const handleConnectSlack = () => {
+    const apiBaseURL = (
+      import.meta.env.VITE_API_BASE_URL ||
+      window.location.origin
+    ).replace(/\/$/, '');
+
+    window.location.assign(
+      `${apiBaseURL}/api/oauth/slack/login`,
+    );
+  };
+
   switch (state.phase.type) {
     case 'input':
       return (
         <InputPhase
           isSlackLinked={state.isSlackLinked}
-          onConnectSlack={() => {
-            dispatch({
-              type: 'SET_SLACK_LINKED',
-              isSlackLinked: true,
-            });
-          }}
+          onConnectSlack={handleConnectSlack}
         />
       );
 

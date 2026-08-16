@@ -168,5 +168,10 @@ func (h *Handler) ServeHTTP(
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	http.Redirect(
+		w,
+		r,
+		"/?slack=connected",
+		http.StatusSeeOther,
+	)
 }

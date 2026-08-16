@@ -12,9 +12,12 @@ import (
 )
 
 const (
-	testState       = "test-state"
-	testCode        = "test-code"
-	testRedirectURI = "https://example.com/oauth/slack/callback"
+	testState        = "test-state"
+	testCode         = "test-code"
+	testCallbackPath = "/api/oauth/slack/callback"
+	testRedirectURI  = "https://example.com/api/oauth/slack/callback"
+
+	expectedStateCookiePath = "/api/oauth/slack"
 )
 
 type stubCodeExchanger struct {
@@ -79,7 +82,9 @@ func (s *stubTokenStore) Save(
 func newValidCallbackRequest() *http.Request {
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/oauth/slack/callback?state="+testState+"&code="+testCode,
+		testCallbackPath+
+			"?state="+testState+
+			"&code="+testCode,
 		nil,
 	)
 
@@ -164,6 +169,26 @@ func assertDeleteStateCookie(
 		t.Errorf(
 			"cookie value = %q, want empty",
 			cookie.Value,
+		)
+	}
+
+	if cookie.Path != expectedStateCookiePath {
+		t.Errorf(
+			"cookie Path = %q, want %q",
+			cookie.Path,
+			expectedStateCookiePath,
+		)
+	}
+
+	if !cookie.HttpOnly {
+		t.Error("cookie HttpOnly = false, want true")
+	}
+
+	if cookie.SameSite != http.SameSiteLaxMode {
+		t.Errorf(
+			"cookie SameSite = %v, want %v",
+			cookie.SameSite,
+			http.SameSiteLaxMode,
 		)
 	}
 

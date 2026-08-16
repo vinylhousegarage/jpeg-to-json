@@ -85,6 +85,7 @@ export class InfraStack extends cdk.Stack {
       handler: 'bootstrap',
       architecture: lambda.Architecture.ARM_64,
       code: lambda.Code.fromAsset('../backend/bin/api'),
+      timeout: cdk.Duration.seconds(15),
       environment: {
         APP_ENV: appEnv,
         INPUT_BUCKET_NAME: inputBucket.bucketName,
@@ -211,7 +212,7 @@ export class InfraStack extends cdk.Stack {
 
     // デプロイ時は CloudFront のキャッシュを最新に更新
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset('./test-assets')],
+      sources: [s3deploy.Source.asset('../frontend/dist')],
       destinationBucket: websiteBucket,
       distribution: distribution,
       distributionPaths: ['/*'],
