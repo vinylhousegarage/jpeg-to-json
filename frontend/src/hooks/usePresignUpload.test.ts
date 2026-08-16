@@ -75,13 +75,15 @@ describe('usePresignUpload', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
 
     expect(fetch).toHaveBeenCalledWith(
-      `${import.meta.env.VITE_API_BASE_URL}/presign`,
+      `${window.location.origin}/api/storage/upload`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ shotNumber })
+        body: JSON.stringify({
+          shotNumber: 'SHOT-001',
+        }),
       },
     );
 
