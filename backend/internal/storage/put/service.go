@@ -41,7 +41,11 @@ func (s *Service) GeneratePresignURL(
 	request, err := s.s3Presigner.PresignPutObject(
 		ctx,
 		&s3.PutObjectInput{
-			Key: aws.String(objectKey),
+			Key:         aws.String(objectKey),
+			ContentType: aws.String("image/jpeg"),
+			Metadata: map[string]string{
+				"shot-number": shotNumber,
+			},
 		},
 		s3.WithPresignExpires(duration),
 	)

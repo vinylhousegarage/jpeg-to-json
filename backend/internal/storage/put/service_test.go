@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
@@ -14,17 +15,15 @@ import (
 type mockPresigner struct {
 	mockResult *v4.PresignedHTTPRequest
 	mockErr    error
-	gotKey     string
+	gotInput   *s3.PutObjectInput
 }
 
 func (m *mockPresigner) PresignPutObject(
-	ctx context.Context,
+	_ context.Context,
 	params *s3.PutObjectInput,
-	optFns ...func(*s3.PresignOptions),
+	_ ...func(*s3.PresignOptions),
 ) (*v4.PresignedHTTPRequest, error) {
-	if params.Key != nil {
-		m.gotKey = *params.Key
-	}
+	m.gotInput = params
 
 	return m.mockResult, m.mockErr
 }
@@ -33,7 +32,11 @@ func (m *mockPresigner) PresignPutObject(
 func TestService_GeneratePresignURL_Success(t *testing.T) {
 	t.Parallel()
 
-	expectedURL := "https://example.com/presigned-url"
+	const (
+		shotNumber  = "001"
+		expectedURL = "https://example.com/presigned-url"
+	)
+
 	mock := &mockPresigner{
 		mockResult: &v4.PresignedHTTPRequest{
 			URL: expectedURL,
@@ -44,24 +47,56 @@ func TestService_GeneratePresignURL_Success(t *testing.T) {
 
 	url, expiresAt, err := svc.GeneratePresignURL(
 		context.Background(),
-		"001",
+		shotNumber,
 	)
-
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	if url != expectedURL {
-		t.Errorf("expected URL %s, got %s", expectedURL, url)
+		t.Errorf(
+			"expected URL %q, got %q",
+			expectedURL,
+			url,
+		)
 	}
 
-	if mock.gotKey != "001.jpg" {
-		t.Errorf("expected key %q, got %q", "001.jpg", mock.gotKey)
+	if mock.gotInput == nil {
+		t.Fatal("PresignPutObject() input is nil")
 	}
 
-	if time.Until(expiresAt) > 16*time.Minute ||
-		time.Until(expiresAt) < 14*time.Minute {
-		t.Errorf("unexpected expiration time: %v", expiresAt)
+	if aws.ToString(mock.gotInput.Key) != "001.jpg" {
+		t.Errorf(
+			"Key = %q, want %q",
+			aws.ToString(mock.gotInput.Key),
+			"001.jpg",
+		)
+	}
+
+	if aws.ToString(mock.gotInput.ContentType) != "image/jpeg" {
+		t.Errorf(
+			"ContentType = %q, want %q",
+			aws.ToString(mock.gotInput.ContentType),
+			"image/jpeg",
+		)
+	}
+
+	if mock.gotInput.Metadata["shot-number"] != shotNumber {
+		t.Errorf(
+			"Metadata[shot-number] = %q, want %q",
+			mock.gotInput.Metadata["shot-number"],
+			shotNumber,
+		)
+	}
+
+	remaining := time.Until(expiresAt)
+
+	if remaining > 16*time.Minute ||
+		remaining < 14*time.Minute {
+		t.Errorf(
+			"unexpected expiration time: %v",
+			expiresAt,
+		)
 	}
 }
 
@@ -79,7 +114,6 @@ func TestService_GeneratePresignURL_Error(t *testing.T) {
 		context.Background(),
 		"001",
 	)
-
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
