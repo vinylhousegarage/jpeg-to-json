@@ -11,8 +11,12 @@ export const usePresignUpload = (
     blob: Blob,
     shotNumber: string,
   ): Promise<void> => {
+    const apiBaseURL = (
+      import.meta.env.VITE_API_BASE_URL || window.location.origin
+    ).replace(/\/$/, '');
+
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/presign`,
+      `${apiBaseURL}/api/storage/upload`,
       {
         method: 'POST',
         headers: {
