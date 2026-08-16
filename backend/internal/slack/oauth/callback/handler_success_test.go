@@ -44,12 +44,22 @@ func TestHandler_ServeHTTP_Success(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusNoContent {
+	const expectedLocation = "/?slack=connected"
+
+	if rec.Code != http.StatusSeeOther {
 		t.Fatalf(
 			"status = %d, want %d; body = %s",
 			rec.Code,
-			http.StatusNoContent,
+			http.StatusSeeOther,
 			rec.Body.String(),
+		)
+	}
+
+	if location := rec.Header().Get("Location"); location != expectedLocation {
+		t.Errorf(
+			"Location = %q, want %q",
+			location,
+			expectedLocation,
 		)
 	}
 

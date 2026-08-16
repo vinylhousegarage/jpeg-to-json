@@ -28,7 +28,7 @@ func TestHandler_ServeHTTP_RejectsUnsupportedMethod(t *testing.T) {
 
 	req := httptest.NewRequest(
 		http.MethodPost,
-		"/oauth/slack/callback",
+		testCallbackPath,
 		nil,
 	)
 	rec := httptest.NewRecorder()
@@ -77,7 +77,9 @@ func TestHandler_ServeHTTP_MissingStateCookie(t *testing.T) {
 
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/oauth/slack/callback?state="+testState+"&code="+testCode,
+		testCallbackPath+
+			"?state="+testState+
+			"&code="+testCode,
 		nil,
 	)
 	rec := httptest.NewRecorder()
@@ -147,7 +149,8 @@ func TestHandler_ServeHTTP_InvalidState(t *testing.T) {
 
 			req := httptest.NewRequest(
 				http.MethodGet,
-				"/oauth/slack/callback?state="+tt.queryState+
+				testCallbackPath+
+					"?state="+tt.queryState+
 					"&code="+testCode,
 				nil,
 			)
@@ -209,7 +212,8 @@ func TestHandler_ServeHTTP_MissingCode(t *testing.T) {
 
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/oauth/slack/callback?state="+testState,
+		testCallbackPath+
+			"?state="+testState,
 		nil,
 	)
 
