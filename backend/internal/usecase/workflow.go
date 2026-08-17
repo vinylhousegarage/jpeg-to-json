@@ -156,10 +156,12 @@ func (w *Workflow) Execute(
 	_, err = w.s3Putter.PutObject(
 		ctx,
 		&s3.PutObjectInput{
-			Bucket:      aws.String(w.outputBucket),
-			Key:         aws.String(outputKey),
-			Body:        bytes.NewReader(jsonBytes),
-			ContentType: aws.String("application/json"),
+			Bucket: aws.String(w.outputBucket),
+			Key:    aws.String(outputKey),
+			Body:   bytes.NewReader(jsonBytes),
+			ContentType: aws.String(
+				"application/json; charset=utf-8",
+			),
 		},
 	)
 	if err != nil {

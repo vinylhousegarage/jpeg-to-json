@@ -24,14 +24,17 @@ func (m *mockS3Getter) GetObject(
 }
 
 type mockS3Putter struct {
-	putErr error
+	putErr   error
+	putInput *s3.PutObjectInput
 }
 
 func (m *mockS3Putter) PutObject(
-	ctx context.Context,
+	_ context.Context,
 	params *s3.PutObjectInput,
-	optFns ...func(*s3.Options),
+	_ ...func(*s3.Options),
 ) (*s3.PutObjectOutput, error) {
+	m.putInput = params
+
 	return &s3.PutObjectOutput{}, m.putErr
 }
 
