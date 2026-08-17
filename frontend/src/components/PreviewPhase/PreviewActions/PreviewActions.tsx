@@ -16,7 +16,9 @@ export const PreviewActions = ({
       className="button-group"
       style={{
         display: 'flex',
+        justifyContent: 'center',
         gap: '10px',
+        width: '100%',
       }}
     >
       <button
