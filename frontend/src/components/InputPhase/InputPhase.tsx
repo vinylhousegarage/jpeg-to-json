@@ -1,35 +1,21 @@
-import { useAppState } from '../../state/useContext';
-import { useImageProcessor } from '../../hooks/useImageProcessor';
-import { createShotNumber } from '../../utils/createShotNumber';
 import { SlackOAuth } from './SlackOAuth';
 import { CameraInput } from './CameraInput';
 
 type Props = {
   isSlackLinked: boolean;
+  isCompressing: boolean;
   onConnectSlack: () => void;
+  onFileSelected: (
+    file: File,
+  ) => Promise<void>;
 };
 
 export const InputPhase = ({
   isSlackLinked,
+  isCompressing,
   onConnectSlack,
+  onFileSelected,
 }: Props) => {
-  const { dispatch } = useAppState();
-
-  const handleCapture = (blob: Blob) => {
-    const shotNumber = createShotNumber();
-
-    dispatch({
-      type: 'SET_PREVIEW',
-      file: blob,
-      shotNumber,
-    });
-  };
-
-  const { isCompressing, processImage } = useImageProcessor(
-    handleCapture,
-    () => {},
-  );
-
   if (!isSlackLinked) {
     return (
       <SlackOAuth
@@ -53,7 +39,7 @@ export const InputPhase = ({
       </h2>
 
       <CameraInput
-        onFileSelected={processImage}
+        onFileSelected={onFileSelected}
         disabled={isCompressing}
       />
     </div>

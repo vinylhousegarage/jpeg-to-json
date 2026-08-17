@@ -3,7 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { PreviewPhase } from './PreviewPhase';
 
 vi.mock('./PreviewArea', () => ({
-  PreviewArea: ({ blob }: { blob: Blob }) => (
+  PreviewArea: ({
+    blob,
+  }: {
+    blob: Blob;
+  }) => (
     <div data-testid="preview-area">
       {blob.type}
     </div>
@@ -12,127 +16,211 @@ vi.mock('./PreviewArea', () => ({
 
 vi.mock('./PreviewActions', () => ({
   PreviewActions: ({
-    onRetake,
+    onRetakeFileSelected,
     onSubmit,
     isSending,
+    isCompressing,
   }: {
-    onRetake: () => void;
+    onRetakeFileSelected: (
+      file: File,
+    ) => Promise<void>;
     onSubmit: () => void;
     isSending?: boolean;
-  }) => (
-    <div data-testid="preview-actions">
-      <button
-        type="button"
-        onClick={onRetake}
-        disabled={isSending}
-      >
-        撮り直し
-      </button>
+    isCompressing?: boolean;
+  }) => {
+    const disabled =
+      isSending || isCompressing;
 
-      <button
-        type="button"
-        onClick={onSubmit}
-        disabled={isSending}
-      >
-        画像を確定し送信
-      </button>
-    </div>
-  ),
+    return (
+      <div data-testid="preview-actions">
+        <button
+          type="button"
+          onClick={() => {
+            void onRetakeFileSelected(
+              new File(
+                ['retake-image'],
+                'retake.jpg',
+                {
+                  type: 'image/jpeg',
+                },
+              ),
+            );
+          }}
+          disabled={disabled}
+        >
+          撮り直し
+        </button>
+
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={disabled}
+        >
+          画像を確定し送信
+        </button>
+      </div>
+    );
+  },
 }));
 
 describe('PreviewPhase', () => {
-  it('renders the heading, preview area, and preview actions', () => {
-    const blob = new Blob(['test-image'], {
-      type: 'image/jpeg',
-    });
+  it(
+    'renders the heading, preview area, and preview actions',
+    () => {
+      const blob = new Blob(
+        ['test-image'],
+        {
+          type: 'image/jpeg',
+        },
+      );
 
-    render(
-      <PreviewPhase
-        blob={blob}
-        onRetake={vi.fn()}
-        onSend={vi.fn()}
-      />,
-    );
+      render(
+        <PreviewPhase
+          blob={blob}
+          onRetakeFileSelected={vi.fn()}
+          onSend={vi.fn()}
+        />,
+      );
 
-    expect(
-      screen.getByRole('heading', {
-        name: '画像を確認',
-      }),
-    ).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', {
+          name: '画像を確認',
+        }),
+      ).toBeInTheDocument();
 
-    expect(
-      screen.getByTestId('preview-area'),
-    ).toHaveTextContent('image/jpeg');
+      expect(
+        screen.getByTestId('preview-area'),
+      ).toHaveTextContent('image/jpeg');
 
-    expect(
-      screen.getByTestId('preview-actions'),
-    ).toBeInTheDocument();
-  });
+      expect(
+        screen.getByTestId('preview-actions'),
+      ).toBeInTheDocument();
+    },
+  );
 
-  it('calls onRetake when the retake button is clicked', () => {
-    const onRetake = vi.fn();
-    const onSend = vi.fn();
+  it(
+    'passes a retake file when the retake button is clicked',
+    () => {
+      const onRetakeFileSelected =
+        vi.fn().mockResolvedValue(undefined);
+      const onSend = vi.fn();
 
-    render(
-      <PreviewPhase
-        blob={new Blob(['test-image'])}
-        onRetake={onRetake}
-        onSend={onSend}
-      />,
-    );
+      render(
+        <PreviewPhase
+          blob={new Blob(['test-image'])}
+          onRetakeFileSelected={
+            onRetakeFileSelected
+          }
+          onSend={onSend}
+        />,
+      );
 
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: '撮り直し',
-      }),
-    );
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: '撮り直し',
+        }),
+      );
 
-    expect(onRetake).toHaveBeenCalledTimes(1);
-    expect(onSend).not.toHaveBeenCalled();
-  });
+      expect(
+        onRetakeFileSelected,
+      ).toHaveBeenCalledTimes(1);
 
-  it('calls onSend when the submit button is clicked', () => {
-    const onRetake = vi.fn();
-    const onSend = vi.fn();
+      expect(
+        onRetakeFileSelected,
+      ).toHaveBeenCalledWith(
+        expect.any(File),
+      );
 
-    render(
-      <PreviewPhase
-        blob={new Blob(['test-image'])}
-        onRetake={onRetake}
-        onSend={onSend}
-      />,
-    );
+      expect(onSend).not.toHaveBeenCalled();
+    },
+  );
 
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: '画像を確定し送信',
-      }),
-    );
+  it(
+    'calls onSend when the submit button is clicked',
+    () => {
+      const onRetakeFileSelected =
+        vi.fn().mockResolvedValue(undefined);
+      const onSend = vi.fn();
 
-    expect(onSend).toHaveBeenCalledTimes(1);
-    expect(onRetake).not.toHaveBeenCalled();
-  });
+      render(
+        <PreviewPhase
+          blob={new Blob(['test-image'])}
+          onRetakeFileSelected={
+            onRetakeFileSelected
+          }
+          onSend={onSend}
+        />,
+      );
 
-  it('passes isSending to PreviewActions', () => {
-    render(
-      <PreviewPhase
-        blob={new Blob(['test-image'])}
-        onRetake={vi.fn()}
-        onSend={vi.fn()}
-        isSending
-      />,
-    );
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: '画像を確定し送信',
+        }),
+      );
 
-    expect(
-      screen.getByRole('button', {
-        name: '撮り直し',
-      }),
-    ).toBeDisabled();
+      expect(onSend).toHaveBeenCalledTimes(1);
 
-    expect(
-      screen.getByRole('button', {
-        name: '画像を確定し送信',
-      }),
-    ).toBeDisabled();
-  });
+      expect(
+        onRetakeFileSelected,
+      ).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    'passes isSending to PreviewActions',
+    () => {
+      render(
+        <PreviewPhase
+          blob={new Blob(['test-image'])}
+          onRetakeFileSelected={vi.fn()}
+          onSend={vi.fn()}
+          isSending
+        />,
+      );
+
+      expect(
+        screen.getByRole('button', {
+          name: '撮り直し',
+        }),
+      ).toBeDisabled();
+
+      expect(
+        screen.getByRole('button', {
+          name: '画像を確定し送信',
+        }),
+      ).toBeDisabled();
+    },
+  );
+
+  it(
+    'shows the processing state and disables actions while compressing',
+    () => {
+      render(
+        <PreviewPhase
+          blob={new Blob(['test-image'])}
+          onRetakeFileSelected={vi.fn()}
+          onSend={vi.fn()}
+          isCompressing
+        />,
+      );
+
+      expect(
+        screen.getByRole('heading', {
+          name: '画像を処理しています',
+        }),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByRole('button', {
+          name: '撮り直し',
+        }),
+      ).toBeDisabled();
+
+      expect(
+        screen.getByRole('button', {
+          name: '画像を確定し送信',
+        }),
+      ).toBeDisabled();
+    },
+  );
 });

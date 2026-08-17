@@ -3,16 +3,20 @@ import { PreviewActions } from './PreviewActions';
 
 type Props = {
   blob: Blob;
-  onRetake: () => void;
+  onRetakeFileSelected: (
+    file: File,
+  ) => Promise<void>;
   onSend: () => void;
   isSending?: boolean;
+  isCompressing?: boolean;
 };
 
 export const PreviewPhase = ({
   blob,
-  onRetake,
+  onRetakeFileSelected,
   onSend,
   isSending = false,
+  isCompressing = false,
 }: Props) => {
   return (
     <div
@@ -22,14 +26,21 @@ export const PreviewPhase = ({
         textAlign: 'center',
       }}
     >
-      <h2>画像を確認</h2>
+      <h2>
+        {isCompressing
+          ? '画像を処理しています'
+          : '画像を確認'}
+      </h2>
 
       <PreviewArea blob={blob} />
 
       <PreviewActions
-        onRetake={onRetake}
+        onRetakeFileSelected={
+          onRetakeFileSelected
+        }
         onSubmit={onSend}
         isSending={isSending}
+        isCompressing={isCompressing}
       />
     </div>
   );
