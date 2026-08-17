@@ -86,17 +86,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxss1 \
     && rm -rf /var/lib/apt/lists/*
 
+# Playwright用ディレクトリを作成
+RUN mkdir -p /ms-playwright && \
+    chown -R node:node /ms-playwright
+
 # 設定ファイルをコピー
 COPY --chown=node:node package*.json ./
+
+# ユーザー切り替え
+USER node
 
 # npm依存関係をインストール
 RUN npm ci
 
 # Chromiumブラウザをインストール
 RUN npx playwright install chromium
-
-# ユーザー切り替え
-USER node
 
 # Git所有権エラー回避
 RUN git config --global --add safe.directory '*'
