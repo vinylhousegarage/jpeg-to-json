@@ -1,19 +1,45 @@
 import { useEffect } from 'react';
-import { useAppState } from '../state/useContext';
+import { useImageProcessor } from '../hooks/useImageProcessor';
 import { usePresignUpload } from '../hooks/usePresignUpload';
+import { useAppState } from '../state/useContext';
+import { createShotNumber } from '../utils/createShotNumber';
+import { Spinner } from '../common/Spinner';
 import { InputPhase } from './InputPhase';
 import { PreviewPhase } from './PreviewPhase';
 import { ResultPhase } from './ResultPhase';
-import { Spinner } from '../common/Spinner';
 
 export const Main = () => {
   const { state, dispatch } = useAppState();
   const { send } = usePresignUpload(dispatch);
 
+  const handleCapture = (blob: Blob) => {
+    const shotNumber =
+      state.phase.type === 'preview'
+        ? state.phase.shotNumber
+        : createShotNumber();
+
+    dispatch({
+      type: 'SET_PREVIEW',
+      file: blob,
+      shotNumber,
+    });
+  };
+
+  const {
+    isCompressing,
+    processImage,
+  } = useImageProcessor(
+    handleCapture,
+    () => {},
+  );
+
   useEffect(() => {
     const url = new URL(window.location.href);
 
-    if (url.searchParams.get('slack') !== 'connected') {
+    if (
+      url.searchParams.get('slack') !==
+      'connected'
+    ) {
       return;
     }
 
@@ -47,7 +73,9 @@ export const Main = () => {
       return (
         <InputPhase
           isSlackLinked={state.isSlackLinked}
+          isCompressing={isCompressing}
           onConnectSlack={handleConnectSlack}
+          onFileSelected={processImage}
         />
       );
 
@@ -58,7 +86,8 @@ export const Main = () => {
         <PreviewPhase
           blob={file}
           isSending={false}
-          onRetake={() => dispatch({ type: 'RETAKE' })}
+          isCompressing={isCompressing}
+          onRetakeFileSelected={processImage}
           onSend={() =>
             send(
               file,
@@ -81,7 +110,9 @@ export const Main = () => {
       );
 
     default: {
-      const _exhaustiveCheck: never = state.phase;
+      const _exhaustiveCheck: never =
+        state.phase;
+
       return _exhaustiveCheck;
     }
   }
