@@ -35,7 +35,7 @@ flowchart TD
   CF <-->|"バックエンド"| API
   API <-->|"Slack通知設定"| APP
   API <-->|"アップロード用S3署名付きURLを発行"| APP
-  APP <-->|"Slack認証"| OAUTH
+  APP <-->|"Slack認可"| OAUTH
   APP -->|"アクセストークンを保存"| DB
 
   U -->|"アップロード用S3署名付きURLで撮影画像をアップロード"| IN
@@ -50,44 +50,46 @@ flowchart TD
 
 ## 4. 開発目的
 
-- AWS SAP (AWS Certified Solutions Architect – Professional) のハンズオン教材として、Udemyでの販売を目的に開発しました。
-- Excel形式に変換する拡張版のリリースを視野に入れております。
+- 生成AIを用いて紙媒体から情報を抽出・構造化することで、業務効率化を支援することを目的としております。
+
+- AWS SAP (AWS Certified Solutions Architect – Professional) 学習者向けハンズオン教材としての転用を視野に入れております。
 
 ## 5. 技術スタック
 
-- 共通
-  | カテゴリー | 選定技術 |
+- 開発基盤
+  | | |
   | :--- | :--- |
+  | OS | Debian 13 |
+  | 開発環境 | Docker |
   | ソース管理 | Git |
   | リポジトリ | GitHub |
   | CI/CD | GitHub Actions |
-  | 開発環境 | Docker |
-  | OS | Debian 13 |
 
 - バックエンド
-  | カテゴリー | 選定技術 |
+  | | |
   | :--- | :--- |
   | 開発言語 | Go 1.26.3 |
+  | 認可連携 | Slack OAuth |
   | 通知連携 | Slack Web API |
 
 - フロントエンド
-  | カテゴリー | 選定技術 |
+  | | |
   | :--- | :--- |
   | 開発言語 | TypeScript 6.0.3 |
   | 実行環境 | Node.js 24.19.0 |
-  | ライブラリ | React 19.2.7 |
+  | UIライブラリ | React 19.2.7 |
   | ビルドツール | Vite 8.1.0 |
 
 - インフラ（AWS）
-  | カテゴリー | 選定技術 |
+  | | |
   | :--- | :--- |
   | 開発言語 | TypeScript 6.0.3 |
   | 実行環境 | Node.js 24.19.0 |
   | IaC | CloudFormation |
-  | IaCフレームワーク | AWS CDK (aws-cdk-lib 2.264.0) |
+  | IaCフレームワーク | AWS CDK (aws-cdk-lib 2.263.0) |
   | IaC CLI | AWS CDK CLI 2.1127.0 |
   | ホスティング | CloudFront |
-  | API接点 | API Gateway |
+  | API基盤 | API Gateway |
   | APIタイプ | HTTP API |
   | 実行基盤 | Lambda |
   | ストレージ | S3 |
@@ -104,15 +106,21 @@ flowchart TD
 
 - ブラウザのカメラAPIを利用したユーザーインターフェイスと撮影画面の状態管理のため、Reactを採用しました。
 
-- コンパイル型言語による実行性能とLambdaとの親和性を考慮し、バックエンドの開発言語にGo言語を採用しました。
-
-- フロントエンドの配信とバックエンドへのアクセスを同一ドメインにまとめることができるCloudFrontを採用しました。
-
-- S3署名付きURLを用いてブラウザから撮影画像を直接アップロードすることができるS3をストレージに採用しました。
+- コンパイル型言語による実行性能とLambdaとの親和性を考慮し、バックエンドの開発言語にGoを採用しました。
 
 - 性能とコストのバランスを考慮し、Claude Sonnet 4.6を画像解析に採用しました。
 
-- LambdaからのSlack Web API呼び出し、DynamoDBでのアクセストークン管理、Secrets ManagerによるOAuthクライアントシークレット管理を実装し、AWS SAPで扱うサーバーレス構成の学習範囲を広げるため、Slackによる通知機能を採用しました。
+- CloudFrontを採用し、フロントエンドの配信とバックエンドへのアクセスを同一ドメインにまとめました。
+
+- S3を採用し、アップロード用S3署名付きURLを用いてブラウザから撮影画像を直接アップロードする構成としました。
+
+- Slackを採用し、画像解析完了後にダウンロード用S3署名付きURLをDMへ通知する構成としました。
+
+- Slackとの認可連携を行うため、Slack OAuthを採用しました。
+
+- Slack OAuthのクライアントシークレットを安全に取り扱うため、秘匿情報管理にSecrets Managerを採用しました。
+
+- Slack OAuthで取得したアクセストークンをサーバーレスで管理するため、データベースにDynamoDBを採用しました。
 
 ## 7. 公開URL
 
