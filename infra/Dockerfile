@@ -26,9 +26,6 @@ RUN ARCH=$(uname -m) && \
     ./aws/install && \
     rm -rf aws awscliv2.zip
 
-# AWS CDK CLIをインストール
-RUN npm install -g aws-cdk
-
 # nodeユーザーでsudoをパスワードなしで使用可能にする
 RUN echo "node ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/node && \
     chmod 0440 /etc/sudoers.d/node
