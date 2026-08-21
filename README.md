@@ -5,9 +5,9 @@
 - スマートフォンで撮影したJPEG画像から情報を抽出し、JSON形式に変換するWebアプリです。
 - 変換したJSONをダウンロードするURLを、SlackのDMへ通知します。
 
-## 2. デモ（音声あり）
+## 2. デモ（YouTubeショート / 音声あり）
 
-[![jpeg-to-json デモ動画](https://img.youtube.com/vi/RjspkPF2pVg/maxresdefault.jpg)](https://www.youtube.com/shorts/RjspkPF2pVg)
+[![jpeg-to-json: YouTube shorts](https://img.youtube.com/vi/RjspkPF2pVg/maxresdefault.jpg)](https://www.youtube.com/shorts/RjspkPF2pVg)
 
 ## 3. システム構成
 
