@@ -81,7 +81,7 @@ flowchart TD
 - インフラ（AWS）
   | カテゴリー | 選定技術 |
   | :--- | :--- |
-  | 開発言語 | TypeScript 5.9.3 |
+  | 開発言語 | TypeScript 6.0.3 |
   | 実行環境 | Node.js 24.19.0 |
   | IaC | CloudFormation |
   | IaCフレームワーク | AWS CDK (aws-cdk-lib 2.264.0) |
