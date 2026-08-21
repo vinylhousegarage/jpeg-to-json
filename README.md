@@ -84,7 +84,7 @@ flowchart TD
   | 開発言語 | TypeScript 6.0.3 |
   | 実行環境 | Node.js 24.19.0 |
   | IaC | CloudFormation |
-  | IaCフレームワーク | AWS CDK (aws-cdk-lib 2.264.0) |
+  | IaCフレームワーク | AWS CDK (aws-cdk-lib 2.263.0) |
   | IaC CLI | AWS CDK CLI 2.1127.0 |
   | ホスティング | CloudFront |
   | API接点 | API Gateway |
