@@ -13,27 +13,27 @@
 
 ```mermaid
 flowchart TD
-  U["ユーザー / ブラウザ<br/>（スマートフォン）"]
+  U["ユーザー / ブラウザ<br/>(スマートフォン)"]
 
-  CF["CloudFront<br/> (Webアプリ配信)"]
-  DB["DynamoDB<br/>（アクセストークンを保存）"]
-  AI["Bedrock<br/>（Claude Sonnet 4.6）"]
+  CF["CloudFront<br/>(Webアプリ配信)"]
+  DB["DynamoDB<br/>(アクセストークンを保存)"]
+  AI["Bedrock<br/>(Claude Sonnet 4.6)"]
 
-  FE["S3<br/> (配信用バケット)"]
-  IN["S3<br/> (アップロード用バケット)"]
-  OUT["S3<br/> (ダウンロード用バケット)"]
+  FE["S3<br/>(配信用バケット)"]
+  IN["S3<br/>(アップロード用バケット)"]
+  OUT["S3<br/>(ダウンロード用バケット)"]
 
-  API["API Gateway<br/>（HTTP API）"]
-  APP["Lambda<br/>（エンドポイント実行）"]
-  PROC["Lambda<br/>（イベント駆動）"]
+  API["API Gateway<br/>(HTTP API)"]
+  APP["Lambda<br/>(エンドポイント実行)"]
+  PROC["Lambda<br/>(イベント駆動)"]
 
-  OAUTH["Slack OAuth<br/> (認可・アクセストークン発行)"]
-  WEBAPI["Slack Web API<br/>（通知）"]
+  OAUTH["Slack OAuth<br/>(認可 / アクセストークン発行)"]
+  WEBAPI["Slack Web API<br/>(通知)"]
 
   U <-->|jpeg-to-jsonにアクセス| CF
   CF <-->|"フロントエンド"| FE
   CF <-->|"バックエンド"| API
-  U -->|"ログイン・許可"| OAUTH
+  U -->|"ログイン / 許可"| OAUTH
   API <-->|"Slack通知設定"| APP
   API <-->|"アップロード用S3署名付きURLを発行"| APP
   APP <-->|"Slack OAuth連携"| OAUTH
