@@ -60,8 +60,8 @@ flowchart TD
 - 開発基盤
   | 項目 | 技術 |
   | :--- | :--- |
-  | OS | Debian 13 |
   | 開発環境 | Docker |
+  | OS | Debian 13 |
   | ソース管理 | Git |
   | リポジトリ | GitHub |
   | CI/CD | GitHub Actions |
