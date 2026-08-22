@@ -51,9 +51,9 @@ flowchart TD
 
 ## 4. 開発目的
 
-- 生成AIを用いて紙媒体から情報を抽出・構造化することで、業務効率化を支援することを目的としております。
+- 生成AIを用いて紙媒体から情報を抽出・構造化することで、業務効率化を支援することを目的としています。
 
-- AWS SAP (AWS Certified Solutions Architect – Professional) 学習者向け教材としての転用を視野に入れております。
+- AWS SAP (AWS Certified Solutions Architect – Professional) 学習者向け教材としての転用を視野に入れています。
 
 ## 5. 技術スタック
 
