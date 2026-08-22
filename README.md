@@ -36,7 +36,7 @@ flowchart TD
   U -->|"ログイン / 許可"| OAUTH
   API <-->|"Slack通知設定"| APP
   API <-->|"アップロード用S3署名付きURLを発行"| APP
-  APP <-->|"Slack OAuth連携"| OAUTH
+  APP <-->|"認可連携"| OAUTH
   APP -->|"トークンを保存"| DB
 
   U -->|"アップロード用S3署名付きURLで画像をアップロード"| IN
