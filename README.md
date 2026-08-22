@@ -53,7 +53,7 @@ flowchart TD
 
 - 生成AIを用いて紙媒体から情報を抽出・構造化することで、業務効率化を支援することを目的としております。
 
-- AWS SAP (AWS Certified Solutions Architect – Professional) 学習者向けハンズオン教材としての転用を視野に入れております。
+- AWS SAP (AWS Certified Solutions Architect – Professional) 学習者向け教材としての転用を視野に入れております。
 
 ## 5. 技術スタック
 
