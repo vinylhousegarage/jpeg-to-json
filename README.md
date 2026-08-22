@@ -101,13 +101,13 @@ flowchart TD
 
 ## 6. 技術選定
 
-- AWSネイティブなIaCサービス、CloudFormationを採用しました。
+- AWSが提供するIaCサービス、CloudFormationを採用しました。
 
 - CloudFormationテンプレートを生成することができるIaCフレームワーク、AWS CDKを採用しました。
 
-- AWS CDKのサンプルが多いTypeScriptをインフラの開発言語に採用しました。
+- AWS公式ドキュメントやAWS CDKのTypeScript向けサンプルが充実しているため、インフラの開発言語にTypeScriptを採用しました。
 
-- ブラウザのカメラAPIを利用したUIと撮影画面の状態管理のため、Reactを採用しました。
+- ブラウザのカメラAPIを利用したUIと撮影画面の状態管理のため、UIライブラリであるReactを採用しました。
 
 - コンパイル型言語による実行性能とLambdaとの親和性を考慮し、バックエンドの開発言語にGoを採用しました。
 
