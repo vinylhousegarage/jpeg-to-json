@@ -27,7 +27,7 @@ flowchart TD
   APP["Lambda<br/>（エンドポイント実行）"]
   PROC["Lambda<br/>（イベント駆動）"]
 
-  OAUTH["Slack OAuth<br/> (認可・トークン交換)"]
+  OAUTH["Slack OAuth<br/> (認可・アクセストークン発行)"]
   WEBAPI["Slack Web API<br/>（通知）"]
 
   U <-->|jpeg-to-jsonにアクセス| CF
