@@ -9,6 +9,8 @@
 
 [![jpeg-to-json: YouTube shorts](https://img.youtube.com/vi/RjspkPF2pVg/maxresdefault.jpg)](https://www.youtube.com/shorts/RjspkPF2pVg)
 
+　**※現在、Webアプリは停止しています。**
+
 ## 3. システム構成
 
 ```mermaid
@@ -128,10 +130,6 @@ flowchart TD
 
 - Slack OAuthで取得したアクセストークンをサーバーレスで管理するため、データベースにDynamoDBを採用しました。
 
-## 7. 公開URL
-
-  - [https://d1kpxnknxob065.cloudfront.net](https://d1kpxnknxob065.cloudfront.net)
-
-## 8. ライセンス
+## 7. ライセンス
 
 - 本リポジトリは [MIT License](./LICENSE) のもとで公開しています。
