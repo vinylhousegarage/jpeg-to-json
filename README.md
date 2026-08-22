@@ -27,7 +27,7 @@ flowchart TD
   APP["Lambda<br/>(エンドポイント実行)"]
   PROC["Lambda<br/>(イベント駆動)"]
 
-  OAUTH["Slack OAuth<br/>(認可 / トークン発行)"]
+  OAUTH["Slack OAuth<br/>(認可 / トークンを発行)"]
   WEBAPI["Slack Web API<br/>(通知)"]
 
   U <-->|jpeg-to-jsonにアクセス| CF
@@ -37,11 +37,11 @@ flowchart TD
   API <-->|"Slack通知設定"| APP
   API <-->|"アップロード用S3署名付きURLを発行"| APP
   APP <-->|"Slack OAuth連携"| OAUTH
-  APP -->|"Slack OAuthにより発行されたトークンを保存"| DB
+  APP -->|"データベースにトークンを保存"| DB
 
   U -->|"アップロード用S3署名付きURLで撮影画像をアップロード"| IN
   IN -->|"イベント発生"| PROC
-  PROC -->|"Slack OAuthにより発行されたトークンを取得"| DB
+  PROC -->|"データベースからトークンを取得"| DB
   PROC <-->|"画像解析"| AI
   PROC -->|"JSONを保存"| OUT
   PROC -->|"ダウンロード用S3署名付きURLを含むDM通知を要求"| WEBAPI
