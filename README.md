@@ -30,23 +30,26 @@ flowchart TD
   OAUTH["Slack OAuth<br/>(認可 / トークンを発行)"]
   WEBAPI["Slack Web API<br/>(通知)"]
 
+  U -->|"ログイン / 許可"| OAUTH
   U <-->|jpeg-to-jsonにアクセス| CF
+  U -->|"ダウンロード用S3署名付きURLでJSONをダウンロード"| OUT
+  U -->|"アップロード用S3署名付きURLで画像をアップロード"| IN
+  WEBAPI -->|"DMへ通知"| U
+
+  IN -->|"イベント発生"| PROC
   CF <-->|"フロントエンド"| FE
   CF <-->|"バックエンド"| API
-  U -->|"ログイン / 許可"| OAUTH
+
   API <-->|"Slack通知設定"| APP
   API <-->|"アップロード用S3署名付きURLを発行"| APP
-  APP <-->|"認可連携"| OAUTH
-  APP -->|"トークンを保存"| DB
 
-  U -->|"アップロード用S3署名付きURLで画像をアップロード"| IN
-  IN -->|"イベント発生"| PROC
+  PROC -->|"JSONを保存"| OUT
   PROC -->|"トークンを取得"| DB
   PROC <-->|"画像解析"| AI
-  PROC -->|"JSONを保存"| OUT
   PROC -->|"ダウンロード用S3署名付きURLを含むDM通知を要求"| WEBAPI
-  WEBAPI -->|"DMへ通知"| U
-  U -->|"ダウンロード用S3署名付きURLでJSONをダウンロード"| OUT
+
+  APP <-->|"認可連携"| OAUTH
+  APP -->|"トークンを保存"| DB
 ```
 
 ## 4. 開発目的
