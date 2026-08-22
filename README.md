@@ -33,6 +33,7 @@ flowchart TD
   U <-->|jpeg-to-jsonにアクセス| CF
   CF <-->|"フロントエンド"| FE
   CF <-->|"バックエンド"| API
+  U -->|"ログイン・認可"| OAUTH
   API <-->|"Slack通知設定"| APP
   API <-->|"アップロード用S3署名付きURLを発行"| APP
   APP <-->|"Slack OAuth連携"| OAUTH
