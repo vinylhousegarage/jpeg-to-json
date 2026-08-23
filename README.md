@@ -2,14 +2,14 @@
 
 ## 1. 概要
 
-- スマートフォンで撮影したJPEG画像から情報を抽出し、JSON形式に変換するWebアプリです。
+- スマートフォンで撮影した画像内の文字情報を、生成AIでJSON形式に変換するWebアプリです。
 - 変換したJSONをダウンロードするURLを、SlackのDMへ通知します。
 
 ## 2. デモ（YouTubeショート / 音声あり）
 
 [![jpeg-to-json: YouTube shorts](https://img.youtube.com/vi/RjspkPF2pVg/maxresdefault.jpg)](https://www.youtube.com/shorts/RjspkPF2pVg)
 
-　**※現在、Webアプリは停止しています。**
+　**※公開時に撮影したデモです。現在、Webアプリの公開は停止しています。**
 
 ## 3. システム構成
 
@@ -56,9 +56,7 @@ flowchart TD
 
 ## 4. 開発目的
 
-- 生成AIを用いて紙媒体から必要な情報を抽出しJSON形式に構造化することで、データ入力や転記に伴う作業の効率化を支援することを目的としています。
-
-- AWS SAP (AWS Certified Solutions Architect – Professional) 取得後に取り組む教材としての転用を視野に入れています。
+- 紙媒体に記載された文字情報を生成AIでJSON形式に構造化することで、データ入力や転記に伴う作業の効率化を支援することを目的としています。
 
 ## 5. 技術スタック
 
@@ -77,6 +75,8 @@ flowchart TD
   | 開発言語 | Go 1.26.3 |
   | 認可連携 | Slack OAuth |
   | 通知連携 | Slack Web API |
+  | 生成AI基盤 | Amazon Bedrock |
+  | 生成AIモデル | Claude Sonnet 4.6 |
 
 - フロントエンド
   | 項目 | 技術 |
@@ -94,15 +94,13 @@ flowchart TD
   | IaC | CloudFormation |
   | IaCフレームワーク | AWS CDK (aws-cdk-lib 2.263.0) |
   | IaC CLI | AWS CDK CLI 2.1127.0 |
-  | ホスティング | CloudFront |
+  | 配信基盤 | CloudFront |
+  | ストレージ | S3 |
   | API基盤 | API Gateway |
   | APIタイプ | HTTP API |
   | 実行基盤 | Lambda |
-  | ストレージ | S3 |
   | データベース | DynamoDB |
-  | 生成AI基盤 | Bedrock |
-  | モデル | Claude Sonnet 4.6 |
-  | 秘匿情報管理 | Secrets Manager |
+  | 秘匿情報管理 | AWS Secrets Manager |
 
 ## 6. 技術選定
 
@@ -116,7 +114,7 @@ flowchart TD
 
 - コンパイル型言語による実行性能とLambdaとの親和性を考慮し、バックエンドの開発言語にGoを採用しました。
 
-- 画像から情報を抽出してJSONとして構造化する精度と運用コストのバランスを考慮し、画像解析モデルにClaude Sonnet 4.6を採用しました。
+- 画像内の文字情報をJSON形式に構造化する精度と運用コストのバランスを考慮し、生成AIモデルにClaude Sonnet 4.6を採用しました。
 
 - CloudFrontを採用し、フロントエンドの配信とバックエンドへのアクセスを同一ドメインにまとめました。
 
@@ -126,7 +124,7 @@ flowchart TD
 
 - Slackとの認可連携を行うため、Slack OAuthを採用しました。
 
-- Slack OAuthのクライアントシークレットを安全に取り扱うため、秘匿情報管理にSecrets Managerを採用しました。
+- Slack OAuthのクライアントシークレットを安全に管理するため、AWS Secrets Managerを採用しました。
 
 - Slack OAuthで取得したアクセストークンをサーバーレスで管理するため、データベースにDynamoDBを採用しました。
 
