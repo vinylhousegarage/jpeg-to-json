@@ -75,6 +75,8 @@ flowchart TD
   | 開発言語 | Go 1.26.3 |
   | 認可連携 | Slack OAuth |
   | 通知連携 | Slack Web API |
+  | 生成AI基盤 | Bedrock |
+  | 生成AIモデル | Claude Sonnet 4.6 |
 
 - フロントエンド
   | 項目 | 技術 |
@@ -92,14 +94,12 @@ flowchart TD
   | IaC | CloudFormation |
   | IaCフレームワーク | AWS CDK (aws-cdk-lib 2.263.0) |
   | IaC CLI | AWS CDK CLI 2.1127.0 |
-  | ホスティング | CloudFront |
+  | 配信基盤 | CloudFront |
+  | ストレージ | S3 |
   | API基盤 | API Gateway |
   | APIタイプ | HTTP API |
   | 実行基盤 | Lambda |
-  | ストレージ | S3 |
   | データベース | DynamoDB |
-  | 生成AI基盤 | Bedrock |
-  | モデル | Claude Sonnet 4.6 |
   | 秘匿情報管理 | Secrets Manager |
 
 ## 6. 技術選定
