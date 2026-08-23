@@ -82,20 +82,20 @@ flowchart TD
   | 項目 | 技術 |
   | :--- | :--- |
   | 開発言語 | TypeScript 6.0.3 |
-  | 実行環境 | Node.js 24.19.0 |
   | UIライブラリ | React 19.2.7 |
   | ビルドツール | Vite 8.1.0 |
+  | ビルド環境 | Node.js 24.19.0 |
 
 - インフラ（AWS）
   | 項目 | 技術 |
   | :--- | :--- |
   | 開発言語 | TypeScript 6.0.3 |
-  | 実行環境 | Node.js 24.19.0 |
   | IaC | CloudFormation |
   | IaCフレームワーク | AWS CDK (aws-cdk-lib 2.263.0) |
   | IaC CLI | AWS CDK CLI 2.1127.0 |
+  | AWS CDK実行環境 | Node.js 24.19.0 |
   | 配信基盤 | CloudFront |
-  | ストレージ | S3 |
+  | オブジェクトストレージ | S3 |
   | API基盤 | API Gateway |
   | APIタイプ | HTTP API |
   | 実行基盤 | Lambda |
