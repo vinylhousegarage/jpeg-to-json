@@ -9,7 +9,7 @@
 
 [![jpeg-to-json: YouTube shorts](https://img.youtube.com/vi/RjspkPF2pVg/maxresdefault.jpg)](https://www.youtube.com/shorts/RjspkPF2pVg)
 
-　**※現在、Webアプリは停止しています。**
+　**※公開時に撮影したデモです。現在、Webアプリの公開は停止しています。**
 
 ## 3. システム構成
 
