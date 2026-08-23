@@ -75,7 +75,7 @@ flowchart TD
   | 開発言語 | Go 1.26.3 |
   | 認可連携 | Slack OAuth |
   | 通知連携 | Slack Web API |
-  | 生成AI基盤 | Bedrock |
+  | 生成AI基盤 | Amazon Bedrock |
   | 生成AIモデル | Claude Sonnet 4.6 |
 
 - フロントエンド
@@ -100,7 +100,7 @@ flowchart TD
   | APIタイプ | HTTP API |
   | 実行基盤 | Lambda |
   | データベース | DynamoDB |
-  | 秘匿情報管理 | Secrets Manager |
+  | 秘匿情報管理 | AWS Secrets Manager |
 
 ## 6. 技術選定
 
