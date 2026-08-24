@@ -38,9 +38,9 @@ flowchart TD
   U -->|"アップロード用S3署名付きURLで画像をアップロード"| IN
   WEBAPI -->|"DMへ通知"| U
 
-  IN -->|"イベント発生"| PROC
-  CF <-->|"フロントエンド"| FE
   CF <-->|"バックエンド"| API
+  CF <-->|"フロントエンド"| FE
+  IN -->|"イベント発生"| PROC
 
   API <-->|"Slack通知設定"| APP
   API <-->|"アップロード用S3署名付きURLを発行"| APP
