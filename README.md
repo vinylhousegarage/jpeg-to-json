@@ -13,46 +13,7 @@
 
 ## 3. システム構成
 
-```mermaid
-flowchart TD
-  U["ユーザー / ブラウザ<br/>(スマートフォン)"]
-
-  CF["CloudFront<br/>(Webアプリ配信)"]
-  DB["DynamoDB<br/>(トークンを保存)"]
-  AI["Bedrock<br/>(Claude Sonnet 4.6)"]
-
-  FE["S3<br/>(配信用バケット)"]
-  IN["S3<br/>(アップロード用バケット)"]
-  OUT["S3<br/>(ダウンロード用バケット)"]
-
-  API["API Gateway<br/>(HTTP API)"]
-  APP["Lambda<br/>(エンドポイント実行)"]
-  PROC["Lambda<br/>(イベント駆動)"]
-
-  OAUTH["Slack OAuth<br/>(認可 / トークンを発行)"]
-  WEBAPI["Slack Web API<br/>(通知)"]
-
-  U -->|"ログイン / 許可"| OAUTH
-  U <-->|jpeg-to-jsonにアクセス| CF
-  U -->|"ダウンロード用S3署名付きURLでJSONをダウンロード"| OUT
-  U -->|"アップロード用S3署名付きURLで画像をアップロード"| IN
-  WEBAPI -->|"DMへ通知"| U
-
-  CF <-->|"バックエンド"| API
-  CF <-->|"フロントエンド"| FE
-  IN -->|"イベント発生"| PROC
-
-  API <-->|"Slack通知設定"| APP
-  API <-->|"アップロード用S3署名付きURLを発行"| APP
-
-  PROC -->|"JSONを保存"| OUT
-  PROC -->|"トークンを取得"| DB
-  PROC <-->|"画像解析"| AI
-  PROC -->|"ダウンロード用S3署名付きURLを含むDM通知を要求"| WEBAPI
-
-  APP <-->|"認可連携"| OAUTH
-  APP -->|"トークンを保存"| DB
-```
+![システム構成図](docs/system-diagram.png)
 
 ## 4. 開発目的
 
